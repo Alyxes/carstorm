@@ -35,19 +35,29 @@ var b=0;
 var Now = 0;
 var LastDraw = 0;
 var ElapsedTime = 0;
+var ElapsedCarsTime = 0; // Shut up, this is a great name for this variable!
 
-// I want the slow blocky framerate. 
+// Snow frame rate is smooth
 var fps = 60;
 var fpsInterval = 1000 / fps; // milliseconds.
 
+// Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
 var gamespeedMS = 1000 / gamespeed; // milliseconds.
-
 
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
 
-var player;
+// Creating the player.
+var player = new Object();
+player.HasMoved;
+player.Yposition;
+player.Xposition;
+player.RoadPos;
+player.Ysize;
+player.Xsize;
+
+// Variable to store a fifth of the screens width, regardless of resolution.
 var screenwidthFifth;
 
 // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
@@ -73,6 +83,19 @@ window.addEventListener('blur', function(){
 window.addEventListener('focus', function(){
   ResumeFromSomeKindOfPause();
 }, false);
+document.addEventListener("keydown", (e) => {
+  e = e || window.event;
+  if (e.keyCode === 37)
+  {
+    // left arrow pressed.
+    PlayerMove("left");
+  }
+  else if (e.keyCode === 39)
+  {
+    // right arrow pressed.
+    PlayerMove("right");
+  }
+});
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -95,6 +118,9 @@ function init()
   
   Now = Date.now();
   LastDraw = 0; // Make it draw first frame at once.
+  
+  // Initiate all the data of the player object.
+  initPlayer();
   
   // Start the game loop!
   GameLoop();
@@ -119,8 +145,10 @@ function Resize()
 
 function initPlayer()
 {
+  player.HasMoved = false;
   player.Yposition = (ScreenHeight/9) * 8;
-  player.Xpositon = screenwidthFifth * 2
+  player.Xposition = screenwidthFifth * 2;
+  player.RoadPos = 1; // Middle of road.
   player.Ysize = ScreenHeight/10;
   player.Xsize = screenwidthFifth;
   
@@ -139,6 +167,43 @@ function ResumeFromSomeKindOfPause()
   GameLoop();
 }
 
+// Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
+function PlayerMove(direction)
+{
+  if (player.HasMoved == true)
+    return; // Player has already moved this frame, so no more of that thank you very much.
+  
+  if (direction == "left")
+  {
+    if (player.RoadPos <= 0)
+      return;
+    else
+    {
+      player.RoadPos--;
+      player.HasMoved = true;
+    }
+  }
+  else if (direction == "right")
+  {
+    if (player.RoadPos >= 2)
+      return;
+    else
+    {
+      player.RoadPos++;
+      player.HasMoved = true;
+    }
+  }
+}
+// Updates ALL cars positions.
+function UpdateCarPositions()
+{
+  // If the player has moved, thereby changed it's RoadPos, it will now become visible.
+  player.Xposition = screenwidthFifth * (player.RoadPos +1);
+  // Reset the boolean so the player can move again next frame.
+  player.HasMoved = false;
+  
+}
+
 // The infurious loop
 function GameLoop()
 {
@@ -150,6 +215,14 @@ function GameLoop()
 
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
+  ElapsedCarsTime += ElapsedTime;
+  
+  if (ElapsedCarsTime >= gamespeedMS)
+  {
+    // Enough time has passed for all cars to update their positions.
+    UpdateCarPositions();
+    ElapsedCarsTime = 0;
+  }
   
   if (ElapsedTime >= fpsInterval)
   {
@@ -173,7 +246,7 @@ function Draw(ctx)
   
   // Copy the center rectangle, margins 10 px in from screen border. (meaning the copied picture is 20 px smaller on each side than original)
   var imgData = ctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
-
+  
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
   
@@ -184,20 +257,40 @@ function Draw(ctx)
   // Stretch out the copied (smaller) image over the entire canvas.
   // Note! We are drawing the _canvas_ object, not its 2d context. 
   ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
-
+  
   // Now draw some snow particles in the center of the image.
-  //ctx.fillStyle = "#fff"; 
-  ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)"; 
+  //ctx.fillStyle = "#fff";
+  ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
   for(var i=0; i<10; i++)
   {
-    var max = 50;
+    // Round snow
+    var max = ScreenHeight/10;
+    var minSize = ScreenHeight/400;
+    var maxSize = ScreenHeight/80;
+    
     var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
     var yRand = max - Math.floor(Math.random() * (max));
     xRand -= max / 2;
     yRand -= max / 2;
     
-    var side = 2 + Math.floor(Math.random() * (10));
+    var size = minSize + Math.floor(Math.random() * (maxSize));
     
-    ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
+    ctx.beginPath();
+    ctx.arc(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Square snow
+    // var max = 50;
+    // var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
+    // var yRand = max - Math.floor(Math.random() * (max));
+    // xRand -= max / 2;
+    // yRand -= max / 2;
+    
+    // var side = 2 + Math.floor(Math.random() * (10));
+    
+    // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
   }
+  // Draws the player car.
+  ctx.fillStyle = "blue";
+  ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
 }
