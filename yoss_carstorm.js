@@ -45,6 +45,8 @@ var fpsInterval = 1000 / fps; // milliseconds.
 var gamespeed = 1;
 var gamespeedMS = 1000 / gamespeed; // milliseconds.
 
+var streetLightTimer = 1000;
+
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
 
@@ -216,6 +218,7 @@ function GameLoop()
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   ElapsedCarsTime += ElapsedTime;
+  streetLightTimer += ElapsedTime;
   
   if (ElapsedCarsTime >= gamespeedMS)
   {
@@ -290,6 +293,33 @@ function Draw(ctx)
     
     // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
   }
+  if (streetLightTimer >= 500)
+  {
+    var lightWidth = ScreenWidth/23;
+    var lightHeight = ScreenHeight/20;
+    var orangeLightSize = ScreenHeight/215;
+    var yellowLightSize = ScreenHeight/350;
+    
+    // Draws two "street lights"...
+    ctx.fillStyle = "orange";
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    streetLightTimer = 0;
+  }
+  
   // Draws the player car.
   ctx.fillStyle = "blue";
   ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
