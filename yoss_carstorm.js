@@ -172,8 +172,9 @@ function ResumeFromSomeKindOfPause()
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
 function PlayerMove(direction)
 {
-  if (player.HasMoved == true)
-    return; // Player has already moved this frame, so no more of that thank you very much.
+  // Removed the if-statement that shuts this function down if the boolean is true, to enable multisteps.
+  // if (player.HasMoved == true)
+    // return; // Player has already moved this frame, so no more of that thank you very much.
   
   if (direction == "left")
   {
