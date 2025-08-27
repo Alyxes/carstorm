@@ -4,14 +4,12 @@
 /**
  * This javascript has been designed to run with the app "Your Own Screen Saver". 
  * It is open source and free to use. Please leave these lines as a reference in code if you modify it. 
- * Programmer: Jon Lennryd 2019.
+ * Programmer: Jon and Timothy Lennryd 2025.
  * 
   * See more code examples at http://app.madskullcreations.com/yoss to get a better understanding about events and how to use the screen saver in different ways!
  *
  * What's this? 
- *  This is me thinking about an old demo on the Amiga in the terrific language Amos. The demo did exactly this: Snow-storm. 
- *  The effect is simple, it looks a bit like you are driving into the snow. 
- *  I put a slow framerate to mimick how slow it was on my Amiga. :) 
+ *  This is inspired from an old handheld car racing game from the '80ies! You can move the car left and right with the keyboard arrows.
  * 
  *  This is using the canvas functions getImageData() and putImageData() with the drawImage() to copy the central part of the image, 
  *  and in the next frame draw it back, this time a tiny bit stretched to the edges of the screen, giving the effect of zooming in.
@@ -109,7 +107,9 @@ function init()
   // Fetch the html element with the id 'canvas'. This is where we will do all drawing.
   var c = document.getElementById("canvas");
   
-  ctx = c.getContext("2d");
+  // Setting willReadFrequently to true might increase speed as we are reading the entire image and redrawing it every frame.
+  // https://stackoverflow.com/questions/74101155/chrome-warning-willreadfrequently-attribute-set-to-true
+  ctx = c.getContext("2d", { willReadFrequently: true });
   
   // Not sure it makes a difference right here, but scaling up gets pixelated, not softened. 
   c.style.imageRendering = "pixelated";
