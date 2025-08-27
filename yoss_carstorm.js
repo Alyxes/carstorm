@@ -20,9 +20,9 @@
 var ScreenWidth;
 var ScreenHeight;
 
-// It starts in paused mode, and gets activated by the focus event.
-var screenSaverPaused = true;
-    
+// If true, it starts in paused mode, and gets activated by the focus event.
+var screenSaverPaused = false;
+
 // Canvas 2d surface, for drawing on.
 var ctx = null;
 
