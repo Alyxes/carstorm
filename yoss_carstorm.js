@@ -48,14 +48,7 @@ var streetLightTimer = 1000;
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
 
-// Creating the player.
-var player = new Object();
-player.HasMoved;
-player.Yposition;
-player.Xposition;
-player.RoadPos;
-player.Ysize;
-player.Xsize;
+var player = {};
 
 // Variable to store a fifth of the screens width, regardless of resolution.
 var screenwidthFifth;
@@ -122,7 +115,7 @@ function init()
   LastDraw = 0; // Make it draw first frame at once.
   
   // Initiate all the data of the player object.
-  initPlayer();
+  createPlayer();
   
   // Start the game loop!
   GameLoop();
@@ -142,18 +135,25 @@ function Resize()
   
   screenwidthFifth = ScreenWidth/5;
   
+  resizePlayer();
   //console.log();
 }
 
-function initPlayer()
+function createPlayer()
 {
-  player.HasMoved = false;
-  player.Yposition = (ScreenHeight/9) * 8;
+  player = {
+    HasMoved: false,
+    RoadPos: 1, // Middle of road.
+  };  
+  
+  resizePlayer();
+}
+function resizePlayer()
+{
   player.Xposition = screenwidthFifth * 2;
-  player.RoadPos = 1; // Middle of road.
+  player.Yposition = (ScreenHeight/9) * 8;
   player.Ysize = ScreenHeight/10;
   player.Xsize = screenwidthFifth;
-  
 }
 
 function EnterSomeKindOfPause()
