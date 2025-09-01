@@ -44,6 +44,12 @@ var gamespeed = 1;
 var gamespeedMS = 1000 / gamespeed; // milliseconds.
 
 var streetLightTimer = 1000;
+var lightWidth = 0; //Global because we just so happens to use them as the width of the road as well.
+var lightHeight = 0;
+var orangeLightSize = 0;
+var yellowLightSize = 0;
+
+var roadWidth = 0;
 
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
@@ -52,6 +58,9 @@ var player = {};
 
 // The level is just a 3x3 double-array.
 var level = [];
+
+// Goes true every "game tick" so new cars can be inserted into the level, and most important, drawn to the screen.
+var timeToCreateNewCars = false;
 
 // Variable to store a fifth of the screens width, regardless of resolution.
 var screenwidthFifth;
@@ -140,6 +149,13 @@ function Resize()
   
   screenwidthFifth = ScreenWidth/5;
   
+  lightWidth = ScreenWidth/23;
+  lightHeight = ScreenHeight/20;
+  orangeLightSize = ScreenHeight/215;
+  yellowLightSize = ScreenHeight/350;
+  
+  roadWidth = lightWidth * 2;
+  
   resizePlayer();
   //console.log();
 }
@@ -150,15 +166,21 @@ function createLevel()
   level = [];
   for(var y=0;y<3;y++)
   {
-    level[y] = [];
-
-    for(var x=0;x<3;x++)
-    {
-      level[y][x] = {
-        hasCar: false
-      };
-    }
+    level[y] = createLevelRow();
   }
+}
+function createLevelRow()
+{
+  var row = [];
+
+  for(var x=0;x<3;x++)
+  {
+    row[x] = {
+      hasCar: false
+    };
+  }
+  
+  return row;
 }
 
 function createPlayer()
@@ -166,6 +188,8 @@ function createPlayer()
   player = {
     HasMoved: false,
     RoadPos: 2, // Starting on the left side of the road.
+    HasCollided: false,
+    DeadTick: 0,
   };  
   
   resizePlayer();
@@ -221,10 +245,6 @@ function PlayerMove(direction)
     player.HasMoved = false;
   }
 }
-// Updates ALL cars positions.
-function UpdateCarPositions()
-{
-}
 
 // The infurious loop
 function GameLoop()
@@ -243,8 +263,9 @@ function GameLoop()
   if (ElapsedCarsTime >= gamespeedMS)
   {
     // Enough time has passed for all cars to update their positions.
-    UpdateCarPositions();
     ElapsedCarsTime = 0;
+    
+    timeToCreateNewCars = true;
   }
   
   if (ElapsedTime >= fpsInterval)
@@ -257,6 +278,104 @@ function GameLoop()
   
   // Always keep asking for the next animation frame.
   window.requestAnimationFrame(GameLoop);
+}
+
+// Every "game tick" check if the gamers car collides with any car in the bottom array. 
+// Then move down the existing cars in the array, and create new ones on the top.
+// Also draws the new ones, as in any real good unreadable code-snippet.
+function GameTickTheCars(ctx)
+{
+  if(checkIfPlayerCollidesWithOtherCars())
+  {
+    // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
+    player.HasCollided = true;
+    player.DeadTick = 5;
+  }
+  
+  tickDownAllCarsOneRow();
+  createAndDrawNewCars(ctx);
+}
+function checkIfPlayerCollidesWithOtherCars()
+{
+  return level[2][player.RoadPos].hasCar;
+}
+function tickDownAllCarsOneRow()
+{
+  level[2] = level[1];
+  level[1] = level[0];
+  level[0] = createLevelRow(); // and fill up with an empty row at the top.
+}
+function createAndDrawNewCars(ctx)
+{
+  var c = 0;
+  for(var x=0;x<3;x++)
+  {
+    if(randomizeBool())
+    {
+      level[0][x].hasCar = true;
+      c++;
+    }
+  }
+  
+  if(c == 3)
+  {
+    level[0][0].hasCar = false;
+  }
+
+  for(var x=0;x<3;x++)
+  {
+    if(level[0][x].hasCar == true)
+    {
+      ctx.fillStyle = "green";
+      ctx.fillRect(
+        (ScreenWidth / 2) - lightWidth + x * (roadWidth / 3) + lightWidth * 0.2, // as in 3 lanes. 
+        (ScreenHeight / 2) + lightHeight, 
+        orangeLightSize * 4, 
+        orangeLightSize * 3);
+    }
+  }
+}
+function randomizeBool()
+{
+  if(Math.random() < 0.5)
+    return false;
+  
+  return true;
+}
+
+function DrawStreetLights(ctx)
+{
+  ctx.fillStyle = "orange";
+  ctx.beginPath();
+  ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+  ctx.fill();
+  
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+  ctx.fill();
+  
+  streetLightTimer = 0;
+}
+
+function drawPlayerCar(ctx)
+{
+  if(player.HasCollided)
+  {
+    ctx.fillStyle = "red";
+  }
+  else
+  {
+    ctx.fillStyle = "blue";
+  }
+  
+  ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
 }
 
 // Draw everything.
@@ -313,34 +432,29 @@ function Draw(ctx)
     
     // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
   }
+
+  // Draws two "street lights"...
   if (streetLightTimer >= 500)
   {
-    var lightWidth = ScreenWidth/23;
-    var lightHeight = ScreenHeight/20;
-    var orangeLightSize = ScreenHeight/215;
-    var yellowLightSize = ScreenHeight/350;
+    DrawStreetLights(ctx);
+  }
+  
+  if(timeToCreateNewCars)
+  {
+    GameTickTheCars(ctx);
+    timeToCreateNewCars = false;
     
-    // Draws two "street lights"...
-    ctx.fillStyle = "orange";
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    ctx.fillStyle = "yellow";
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    streetLightTimer = 0;
+    if(player.DeadTick > 0)
+    {
+      player.DeadTick--;
+      
+      if(player.DeadTick <= 0)
+      {
+        player.HasCollided = false;
+      }
+    }
   }
   
   // Draws the player car.
-  ctx.fillStyle = "blue";
-  ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+  drawPlayerCar(ctx);
 }
