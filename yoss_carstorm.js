@@ -50,6 +50,9 @@ var hiddenCtx = hiddenCanvas.getContext("2d");
 
 var player = {};
 
+// The level is just a 3x3 double-array.
+var level = [];
+
 // Variable to store a fifth of the screens width, regardless of resolution.
 var screenwidthFifth;
 
@@ -114,6 +117,8 @@ function init()
   Now = Date.now();
   LastDraw = 0; // Make it draw first frame at once.
   
+  createLevel();
+  
   // Initiate all the data of the player object.
   createPlayer();
   
@@ -139,11 +144,28 @@ function Resize()
   //console.log();
 }
 
+// Create a double array of this format: level[y][x], where each "cell" is an object.
+function createLevel()
+{
+  level = [];
+  for(var y=0;y<3;y++)
+  {
+    level[y] = [];
+
+    for(var x=0;x<3;x++)
+    {
+      level[y][x] = {
+        hasCar: false
+      };
+    }
+  }
+}
+
 function createPlayer()
 {
   player = {
     HasMoved: false,
-    RoadPos: 1, // Middle of road.
+    RoadPos: 2, // Starting on the left side of the road.
   };  
   
   resizePlayer();
@@ -172,10 +194,6 @@ function ResumeFromSomeKindOfPause()
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
 function PlayerMove(direction)
 {
-  // Removed the if-statement that shuts this function down if the boolean is true, to enable multisteps.
-  // if (player.HasMoved == true)
-    // return; // Player has already moved this frame, so no more of that thank you very much.
-  
   if (direction == "left")
   {
     if (player.RoadPos <= 0)
@@ -196,15 +214,16 @@ function PlayerMove(direction)
       player.HasMoved = true;
     }
   }
+  
+  if(player.HasMoved)
+  {
+    player.Xposition = screenwidthFifth * (player.RoadPos +1);
+    player.HasMoved = false;
+  }
 }
 // Updates ALL cars positions.
 function UpdateCarPositions()
 {
-  // If the player has moved, thereby changed it's RoadPos, it will now become visible.
-  player.Xposition = screenwidthFifth * (player.RoadPos +1);
-  // Reset the boolean so the player can move again next frame.
-  player.HasMoved = false;
-  
 }
 
 // The infurious loop
