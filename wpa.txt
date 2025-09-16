@@ -1,0 +1,70 @@
+
+PWA
+https://web.dev/learn/pwa/welcome?continue=https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2F%23article-https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2Fwelcome
+  -Verkar va en fin kurs.
+
+Kort: Det går inte att skydda källkoden i en pwa-app.
+  https://stackoverflow.com/questions/46072037/is-there-a-way-to-protect-data-from-being-scraped-in-a-pwa?rq=3
+  
+Fullscreen i windows:
+  https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API
+  
+Lite om css, user-select: none; och annat vettigt:
+  https://web.dev/learn/pwa/app-design
+  
+Att skapa en service-worker som underlättar att göra appen offline och ladda filerna lokalt istället och i första hand:
+  https://web.dev/learn/pwa/service-workers
+    -js-filen ska ligga i roten eftersom den har kontroll över filerna i katalogen den ligger i, och dess underkataloger.
+    -Den enklaste ser ut så här, och ser till att _ingenting_ laddas, men allt hamnar fint i loggen. :)
+      self.addEventListener("fetch", event => {
+          console.log(`URL requested: ${event.request.url}`);
+      });
+    -Mer här: https://web.dev/learn/pwa/serving
+    
+    self.addEventListener("fetch", event => {
+        const response = .... // a response or a Promise of response
+        event.respondWith(response);
+    });
+    <-respondWith() interceptar ett fetch-event och låter mig göra saker där. Ifall du inte gör en respondWith() för en specifik fetch, så går browsern automagiskt vidare och laddar resursen online.
+    
+    return caches.match(event.request)
+      <-Letar i cachen efter den requestade filen. Kompakt och fint. :)
+      
+    return cachedResponse || fetch(event.request);
+      <-Om jag kan tolka det hela rätt, så returneras cachedResponse om den inte är null, annars körs fetch() och det värdet returneras.
+    
+  https://web.dev/learn/pwa/caching
+    Caution: The Cache Storage API doesn't update your assets if you change them on your server nor does it delete them. 
+    -Det är upp till dig att kolla om din app kör en äldre version, tex. genom att alltid ladda en liten textfil med versionsnr i och aldrig cacha den. :)
+    -Om äldre, uppdatera själv. Se mer här:
+      https://developer.mozilla.org/en-US/docs/Web/API/Cache
+      Jag antar att man kan köra 
+      Cache.delete()
+      och sedan 
+      Cache.add()
+      för att ladda senaste versionen av en fil. 
+      ..enklast möjliga versionshantering slänger samtliga cachade filer, och kör sedan addAll() eller vad den heter. 
+      
+  https://web.dev/learn/pwa/offline-data
+    -Use the Cache Storage API for network resources, things you'd access by requesting them via a URL, such as HTML, CSS, JavaScript, images, videos, and audio.
+    -Use IndexedDB to store structured data. 
+    
+  https://web.dev/learn/pwa/installation
+    https://developer.chrome.com/blog/how_chrome_helps_users_install_the_apps_they_value#manual_installation_of_any_app
+    Developers can take it one step further and offer a customized install experience. Squoosh-appen gör det med en snygg Install-knapp som dyker upp på sidan i browsern på plattformar som stöder det.
+    
+    about:apps
+      <-Visar appar installerade som wpa via den här browsern.
+      
+  https://web.dev/learn/pwa/web-app-manifest
+    app.webmanifest
+      <-Bör filen heta, den ska i varje fall ha ändelsen. (kan heta knull.json också för allt jag förstår)
+      
+      {
+         "name": "carstorm"
+      }
+      
+      <!--Tala om för browsern att filen finns också. Denna rad ska finnas i alla html-filer om man nu skulle ha flera.-->
+      <html>
+        <link rel="manifest" href="/app.webmanifest">
+      </html>

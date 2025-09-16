@@ -1,0 +1,7 @@
+
+1. Starta chrome via genvägen. (Du får skapa en egen genväg kanske, lägg då till --allow-file-access-from-files
+2. Öppna wpa_index.html
+
+Wörks. Eller kolla Console i browsern, där ska inte dyka upp någr CROSS origin fel. 
+
+Kolla sen fliken Application, klicka på Manifest. Där ska den klaga på att jag slarvat med vad en app.webmanifest fil ska innehålla.
