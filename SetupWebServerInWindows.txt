@@ -1,0 +1,39 @@
+Man får ju skapa ett sånt här dokument då och då, för man glömmer ju var man lägger step-by-step guiderna.. :-P
+
+1. Kontrollpanelen->Programs->Turn Windows features on or off 
+  (Möjligen under Programs and Features)
+2. Klicka i "Web Management Tools" och "World Wide Web Services" under "Internet Information Services".
+3. Nu installeras de.
+
+Sedan skriver man iis i sökrutan i windows, starta den därifrån. Eller gå till Control Panel\System and Security\Windows Tools.
+
+Skriv localhost i browsern. Nu ska en standard sida dyka upp.
+
+--Steg 2---
+
+Nu till det lilla helvetet:
+1. Skapa en ny Site i iis manager. Döp den till samma som katalogen den ska peka till.
+2. Leta upp din katalog. 
+3. Se till att den pekar på port 80. Disabla Default Web Site så länge.
+4. Lämna Host name tomt.
+
+Yeah. Det kommer inte att fungera eftersom "användaren" inte kommer åt sökvägen. Så:
+
+1. Gå till katalogen som siten pekar på, välj settings. 
+2. Gå till fliken Security, välj Edit...
+3. Klicka på Add...
+4. Skriv "Everyone", klicka på Check Names. Klicka ok.
+5. Markera Everyone i listan, klicka i Full control. Klicka Apply.
+
+Done. Ladda om localhost, nu ska din index.html jävel-fil laddas korrekt. KUL VA?!
+
+-----app.webmanifest------
+
+Eftersom du kan ladda app.json utan problem, men inte .webmanifest filer, så beror det på iis, igen:
+  https://stackoverflow.com/questions/49566446/how-can-i-have-iis-properly-serve-webmanifest-files-on-my-web-site
+  
+1. Klicka fram din server i iis. 
+2. Klicka på MIME Types, klicka Add.
+3. Specify .webmanifest in the file name extension box application/manifest+json in the MIME type box.
+
+Nu ska du kunna ladda in filen. Logiskt så här i efterhand.

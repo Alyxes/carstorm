@@ -68,3 +68,8 @@ Att skapa en service-worker som underlättar att göra appen offline och ladda f
       <html>
         <link rel="manifest" href="/app.webmanifest">
       </html>
+      
+----
+
+  Fett! När jag väl fick igång webservern i iss ordentligt, så laddade också bildjäveln/icon i webmanifest ordentligt, OCH DÅ tyckte chrome att sajten dög, och en ikon dök upp för att installera appen. :)
+  (Tja, den hade kanske dykt upp ändå, eftersom det nu faktiskt är en riktig sajt.)
