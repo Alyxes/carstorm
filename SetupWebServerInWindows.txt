@@ -27,8 +27,7 @@ Yeah. Det kommer inte att fungera eftersom "användaren" inte kommer åt sökvä
 
 Done. Ladda om localhost, nu ska din index.html jävel-fil laddas korrekt. KUL VA?!
 
-SIST MEN INTE MINST: 
-  Det är localhost/wpa_index.html du ska ladda.
+Och, det här är jättespännande: Om det inte fungerar ändå, vilket det inte gör: Då slänger du hela sajten och gör om rubbet, så tycker iis att det hela fungerar fin-fint. (Hände både på Tims och min dator, windows 10 och windows 11.)
 
 -----app.webmanifest------
 
