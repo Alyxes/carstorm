@@ -27,6 +27,9 @@ Yeah. Det kommer inte att fungera eftersom "användaren" inte kommer åt sökvä
 
 Done. Ladda om localhost, nu ska din index.html jävel-fil laddas korrekt. KUL VA?!
 
+SIST MEN INTE MINST: 
+  Det är localhost/wpa_index.html du ska ladda.
+
 -----app.webmanifest------
 
 Eftersom du kan ladda app.json utan problem, men inte .webmanifest filer, så beror det på iis, igen:
