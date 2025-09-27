@@ -25,6 +25,7 @@ var screenSaverPaused = false;
 
 // Canvas 2d surface, for drawing on.
 var ctx = null;
+var topctx = null;
 
 var r=0;
 var g=0;
@@ -111,16 +112,19 @@ function init()
     
   // Fetch the html element with the id 'canvas'. This is where we will do all drawing.
   var c = document.getElementById("canvas");
+  var c2 = document.getElementById("top_canvas");
   
   // Setting willReadFrequently to true might increase speed as we are reading the entire image and redrawing it every frame.
   // https://stackoverflow.com/questions/74101155/chrome-warning-willreadfrequently-attribute-set-to-true
   ctx = c.getContext("2d", { willReadFrequently: true });
+  topctx = c2.getContext("2d", { willReadFrequently: true });
   
   // Not sure it makes a difference right here, but scaling up gets pixelated, not softened. 
   c.style.imageRendering = "pixelated";
+  c2.style.imageRendering = "pixelated";
   hiddenCanvas.style.imageRendering = "pixelated";
   
-  // A winterstorm background should be almost white, not green. :) 
+  // A winterstorm background should be almost white, not green. :)
   c.style.backgroundColor = "#eee";
   
   Now = Date.now();
