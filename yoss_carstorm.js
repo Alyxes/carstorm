@@ -289,7 +289,7 @@ function GameTickTheCars(ctx)
   {
     // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
     player.HasCollided = true;
-    player.DeadTick = 5;
+    player.DeadTick = 2;
   }
   
   tickDownAllCarsOneRow();
