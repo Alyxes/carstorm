@@ -15,6 +15,8 @@
  *  and in the next frame draw it back, this time a tiny bit stretched to the edges of the screen, giving the effect of zooming in.
  * 
  */
+ 
+ // TODO: Ta in pauskod från nyare skärmsläckare.
   
 // See Resize().
 var ScreenWidth;
@@ -63,11 +65,16 @@ var player = {};
 // The level is just a 3x3 double-array.
 var level = [];
 
+// Rad 4 är spelarens rad, och ska vara 1.0. Rad 0 är högst upp och ska vara 0. Rad 1 och 2 är de magiska feel-good siffrorna.
+var rowPercentages = [0, 0.21, 0.6, 1.3];
+
 // Goes true every "game tick" so new cars can be inserted into the level, and most important, drawn to the screen.
 var timeToCreateNewCars = false;
 
 // Variable to store a fifth of the screens width, regardless of resolution.
 var screenwidthFifth;
+
+var roadStartLeft;
 
 // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
 // screen saver app gets minimized and maximized. 
@@ -166,6 +173,21 @@ function Resize()
   yellowLightSize = ScreenHeight/350;
   
   roadWidth = lightWidth * 2;
+  
+  roadStartLeft = ScreenWidth/2 - lightWidth;
+  
+  // Eftersom perspektiv är skumt, så konstaterar vi följande:
+  // 
+  //    /-| <- roadStartLeft
+  //   /  |
+  //  /   |
+  // /----| <- screenwidthFifth
+  //      ^
+  //      Mitten av skärmen.
+  // 
+  // Så vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
+  // 
+  // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
   resizePlayer();
   //console.log();
@@ -319,17 +341,18 @@ function tickDownAllCarsOneRow()
 }
 function createNewCars()
 {
+  var fillAll = true;
   var c = 0;
   for(var x=0;x<3;x++)
   {
-    if(randomizeBool())
+    if(fillAll || randomizeBool())
     {
       level[0][x].hasCar = true;
       c++;
     }
   }
   
-  if(c == 3)
+  if(c == 3 && !fillAll)
   {
     level[0][0].hasCar = false;
   }
@@ -351,14 +374,17 @@ function drawAllCars()
 {
   for(var y=0;y<4;y++)
   {
+    var xPos = roadStartLeft - screenwidthFifth * rowPercentages[y];
+    var yPos = (ScreenHeight / 2) * rowPercentages[y] * 0.5;
+    
     for (var x=0;x<3;x++)
     {
       if(level[y][x].hasCar == true)
-      {          
+      {
         topctx.fillStyle = "green";
         topctx.fillRect(
-          (ScreenWidth / 2) - lightWidth + x * (roadWidth / 3) + lightWidth * 0.2, // as in 3 lanes. 
-          (ScreenHeight / 2) + lightHeight + (y*50), 
+          xPos + x * ((roadWidth / 2.54) + (roadWidth * 2.38) * rowPercentages[y]), // as in 3 lanes. 
+          (ScreenHeight / 2) + lightHeight + yPos, 
           orangeLightSize * 4, 
           orangeLightSize * 3);
       }
