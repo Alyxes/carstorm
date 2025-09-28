@@ -39,12 +39,12 @@ var ElapsedTime = 0;
 var ElapsedCarsTime = 0; // Shut up, this is a great name for this variable!
 
 // Snow frame rate is smooth
-var fps = 60;
+var fps = 30;
 var fpsInterval = 1000 / fps; // milliseconds.
 
 // Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
-var gamespeedMS = 1000 / gamespeed; // milliseconds.
+var gamespeedMS = 1000 * gamespeed; // milliseconds.
 
 var streetLightTimer = 1000;
 var lightWidth = 0; //Global because we just so happens to use them as the width of the road as well.
@@ -293,19 +293,20 @@ function GameLoop()
 
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
-  ElapsedCarsTime += ElapsedTime;
-  streetLightTimer += ElapsedTime;
-  
-  if (ElapsedCarsTime >= gamespeedMS)
-  {
-    // Enough time has passed for all cars to update their positions.
-    ElapsedCarsTime = 0;
-    
-    timeToCreateNewCars = true;
-  }
   
   if (ElapsedTime >= fpsInterval)
   {
+    ElapsedCarsTime += ElapsedTime;
+    streetLightTimer += ElapsedTime;
+    
+    if (ElapsedCarsTime >= gamespeedMS)
+    {
+      // Enough time has passed for all cars to update their positions.
+      ElapsedCarsTime = 0;
+      
+      timeToCreateNewCars = true;
+    }
+    
     // Enough time has passed, time to draw.
     LastDraw = Now;
     
@@ -321,15 +322,15 @@ function GameLoop()
 // Also draws the new ones, as in any real good unreadable code-snippet.
 function GameTickTheCars()
 {
+  tickDownAllCarsOneRow();
+  createNewCars();
+  
   if(checkIfPlayerCollidesWithOtherCars())
   {
     // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
     player.HasCollided = true;
     player.DeadTick = 2;
   }
-  
-  tickDownAllCarsOneRow();
-  createNewCars();
 }
 function checkIfPlayerCollidesWithOtherCars()
 {
@@ -344,7 +345,7 @@ function tickDownAllCarsOneRow()
 }
 function createNewCars()
 {
-  var fillAll = true;
+  var fillAll = false;
   var c = 0;
   for(var x=0;x<3;x++)
   {
@@ -456,7 +457,7 @@ function Draw()
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
   
-  var speed = 0.015;//0.01;  // Zoom-in speed.
+  var speed = 0.0107;//0.01;  // Zoom-in speed.
   var xSide = ScreenWidth * speed;
   var ySide = ScreenHeight * speed;
   
@@ -498,7 +499,7 @@ function Draw()
   }
 
   // Draws two "street lights"...
-  if (streetLightTimer >= 500)
+  if (streetLightTimer >= 1000)
   {
     DrawStreetLights();
   }
