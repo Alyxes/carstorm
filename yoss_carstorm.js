@@ -16,7 +16,7 @@
  * 
  */
  
- // TODO: Ta in pauskod frÃ¥n nyare skÃ¤rmslÃ¤ckare.
+ // TODO: Ta in pauskod från nyare skärmsläckare.
   
 // See Resize().
 var ScreenWidth;
@@ -65,7 +65,7 @@ var player = {};
 // The level is just a 3x3 double-array.
 var level = [];
 
-// Rad 4 Ã¤r spelarens rad, och ska vara 1.0. Rad 0 Ã¤r hÃ¶gst upp och ska vara 0. Rad 1 och 2 Ã¤r de magiska feel-good siffrorna.
+// Rad 4 är spelarens rad, och ska vara 1.0. Rad 0 är högst upp och ska vara 0. Rad 1 och 2 är de magiska feel-good siffrorna.
 var rowPercentages = [0, 0.21, 0.6, 1.3];
 
 // Goes true every "game tick" so new cars can be inserted into the level, and most important, drawn to the screen.
@@ -172,22 +172,25 @@ function Resize()
   orangeLightSize = ScreenHeight/215;
   yellowLightSize = ScreenHeight/350;
   
+  carWidth = ScreenWidth/42;
+  carHeight = ScreenHeight/50;
+  
   roadWidth = lightWidth * 2;
   
   roadStartLeft = ScreenWidth/2 - lightWidth;
   
-  // Eftersom perspektiv Ã¤r skumt, sÃ¥ konstaterar vi fÃ¶ljande:
+  // Eftersom perspektiv är skumt, så konstaterar vi följande:
   // 
   //    /-| <- roadStartLeft
   //   /  |
   //  /   |
   // /----| <- screenwidthFifth
   //      ^
-  //      Mitten av skÃ¤rmen.
+  //      Mitten av skärmen.
   // 
-  // SÃ¥ vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
+  // Så vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
   // 
-  // Sen fÃ¶r att placera bilarna pÃ¥ rÃ¤tt x-pos pÃ¥ respektive rad, sÃ¥ multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
+  // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
   resizePlayer();
   //console.log();
@@ -363,10 +366,10 @@ function createNewCars()
     {
       ctx.fillStyle = "rgba(150,150,150,0.8)";
       ctx.fillRect(
-        (ScreenWidth / 2) - lightWidth + x * (roadWidth / 3) + lightWidth * 0.2, // as in 3 lanes. 
+        (ScreenWidth / 2) - (lightWidth * 1.26) + x * (roadWidth / 2.54) + lightWidth * 0.2, // as in 3 lanes. 
         (ScreenHeight / 2) + lightHeight, 
-        orangeLightSize * 4, 
-        orangeLightSize * 3);
+        carWidth, 
+        carHeight);
     }
   }
 }
@@ -385,8 +388,8 @@ function drawAllCars()
         topctx.fillRect(
           xPos + x * ((roadWidth / 2.54) + (roadWidth * 2.38) * rowPercentages[y]), // as in 3 lanes. 
           (ScreenHeight / 2) + lightHeight + yPos, 
-          orangeLightSize * 4, 
-          orangeLightSize * 3);
+          carWidth, 
+          carHeight);
       }
     }
   }
