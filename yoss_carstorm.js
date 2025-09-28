@@ -165,6 +165,9 @@ function Resize()
   orangeLightSize = ScreenHeight/215;
   yellowLightSize = ScreenHeight/350;
   
+  carWidth = ScreenWidth/42;
+  carHeight = ScreenHeight/50;
+  
   roadWidth = lightWidth * 2;
   
   resizePlayer();
@@ -340,10 +343,10 @@ function createNewCars()
     {
       ctx.fillStyle = "rgba(150,150,150,0.8)";
       ctx.fillRect(
-        (ScreenWidth / 2) - lightWidth + x * (roadWidth / 3) + lightWidth * 0.2, // as in 3 lanes. 
+        (ScreenWidth / 2) - (lightWidth * 1.26) + x * (roadWidth / 2.54) + lightWidth * 0.2, // as in 3 lanes. 
         (ScreenHeight / 2) + lightHeight, 
-        orangeLightSize * 4, 
-        orangeLightSize * 3);
+        carWidth, 
+        carHeight);
     }
   }
 }
@@ -357,10 +360,10 @@ function drawAllCars()
       {          
         topctx.fillStyle = "green";
         topctx.fillRect(
-          (ScreenWidth / 2) - lightWidth + x * (roadWidth / 3) + lightWidth * 0.2, // as in 3 lanes. 
+          (ScreenWidth / 2) - (lightWidth * 1.26) + x * (roadWidth / 2.54) + lightWidth * 0.2, // as in 3 lanes. 
           (ScreenHeight / 2) + lightHeight + (y*50), 
-          orangeLightSize * 4, 
-          orangeLightSize * 3);
+          carWidth, 
+          carHeight);
       }
     }
   }
