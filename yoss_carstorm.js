@@ -55,6 +55,8 @@ var yellowLightSize = 0;
 var carWidth = 0;
 var carHeight = 0;
 
+var finalScore = 0;
+
 var roadWidth = 0;
 
 var hiddenCanvas = document.createElement('canvas');
@@ -223,9 +225,11 @@ function createPlayer()
 {
   player = {
     HasMoved: false,
+    CanMove: true,
     RoadPos: 2, // Starting on the left side of the road.
     HasCollided: false,
     DeadTick: 0,
+    Lives: 3,
     Score: 0,
   };  
   
@@ -255,24 +259,27 @@ function ResumeFromSomeKindOfPause()
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
 function PlayerMove(direction)
 {
-  if (direction == "left")
+  if (player.CanMove)
   {
-    if (player.RoadPos <= 0)
-      return;
-    else
+    if (direction == "left")
     {
-      player.RoadPos--;
-      player.HasMoved = true;
+      if (player.RoadPos <= 0)
+        return;
+      else
+      {
+        player.RoadPos--;
+        player.HasMoved = true;
+      }
     }
-  }
-  else if (direction == "right")
-  {
-    if (player.RoadPos >= 2)
-      return;
-    else
+    else if (direction == "right")
     {
-      player.RoadPos++;
-      player.HasMoved = true;
+      if (player.RoadPos >= 2)
+        return;
+      else
+      {
+        player.RoadPos++;
+        player.HasMoved = true;
+      }
     }
   }
   
@@ -326,12 +333,20 @@ function GameTickTheCars()
   if (player.DeadTick == 0)
     createNewCars();
   
-  if(checkIfPlayerCollidesWithOtherCars())
+  if(player.DeadTick == 0 && checkIfPlayerCollidesWithOtherCars())
   {
     // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
     player.HasCollided = true;
-    player.Score = 0;
+    player.Lives--;
     player.DeadTick = 4;
+    
+    if (player.Lives <= 0)
+    {
+      finalScore = player.Score;
+      player.Score = 0;
+      player.DeadTick = -1;
+      player.CanMove = false;
+    }
   }
 }
 function checkIfPlayerCollidesWithOtherCars()
@@ -564,7 +579,8 @@ function Draw()
     else
     {
       // Player didn't die! Check if there were any cars to pass that will grant some score.
-      player.Score += 10 * checkAmountOfCarsToGetPoints();
+      if (player.Lives > 0)
+        player.Score += 10 * checkAmountOfCarsToGetPoints();
     }
   }
   
@@ -578,9 +594,21 @@ function Draw()
   
   topctx.fillStyle = "black";
   
-  if (player.DeadTick > 0)
-    topctx.fillStyle = "red";
+  for (var i = 0; i < player.Lives; i++)
+  {
+    topctx.fillRect(50 + 130 * i, 100, 100, 35);
+  }
   
   topctx.font = "64px Arial";
   topctx.fillText(player.Score, ScreenWidth - 180, 80);
+  
+  if (player.Lives <= 0)
+  {
+    topctx.fillStyle = "red";
+    topctx.font = "100px Arial";
+    topctx.fillText("GAME OVER", ScreenWidth/2 -310, ScreenHeight/2);
+    topctx.fillStyle = "black";
+    topctx.font = "42px Arial";
+    topctx.fillText("Your final score was " + finalScore, ScreenWidth/2 -220, ScreenHeight/2 + 64);
+  }
 }
