@@ -226,6 +226,7 @@ function createPlayer()
     RoadPos: 2, // Starting on the left side of the road.
     HasCollided: false,
     DeadTick: 0,
+    Score: 0,
   };  
   
   resizePlayer();
@@ -319,22 +320,33 @@ function GameLoop()
 
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
 // Then move down the existing cars in the array, and create new ones on the top.
-// Also draws the new ones, as in any real good unreadable code-snippet.
 function GameTickTheCars()
 {
   tickDownAllCarsOneRow();
-  createNewCars();
+  if (player.DeadTick == 0)
+    createNewCars();
   
   if(checkIfPlayerCollidesWithOtherCars())
   {
     // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
     player.HasCollided = true;
-    player.DeadTick = 2;
+    player.Score = 0;
+    player.DeadTick = 4;
   }
 }
 function checkIfPlayerCollidesWithOtherCars()
 {
   return level[3][player.RoadPos].hasCar;
+}
+function checkAmountOfCarsToGetPoints()
+{
+  var amount = 0;
+  for (var i = 0; i < 3; i++)
+  {
+    if (level[3][i].hasCar)
+      amount++;
+  }
+  return amount;
 }
 function tickDownAllCarsOneRow()
 {
@@ -343,6 +355,7 @@ function tickDownAllCarsOneRow()
   level[1] = level[0];
   level[0] = createLevelRow(); // and fill up with an empty row at the top.
 }
+
 function createNewCars()
 {
   var fillAll = false;
@@ -360,37 +373,67 @@ function createNewCars()
   {
     level[0][0].hasCar = false;
   }
-  
-  for (var x=0;x<3;x++)
-  {
-    if(level[0][x].hasCar == true)
-    {
-      ctx.fillStyle = "rgba(150,150,150,0.8)";
-      ctx.fillRect(
-        (ScreenWidth / 2) - (lightWidth * 1.26) + x * (roadWidth / 2.54) + lightWidth * 0.2, // as in 3 lanes. 
-        (ScreenHeight / 2) + lightHeight, 
-        carWidth, 
-        carHeight);
-    }
-  }
 }
 function drawAllCars()
 {
-  for(var y=0;y<4;y++)
+  // Precise numbers to center the cars and give them perfect space between.
+  // Don't touch without saving original numbers!!
+  var roadWidthDivide = 2.75;
+  var roadWidthMultiply = 2.305;
+  
+  var greyTone = 230;
+
+  for(var y=0;y<3;y++)
   {
     var xPos = roadStartLeft - screenwidthFifth * rowPercentages[y];
     var yPos = (ScreenHeight / 2) * rowPercentages[y] * 0.5;
+    
+    switch (y)
+    {
+      case 0:
+        greyTone = 170;
+        break;
+      case 1:
+        greyTone = 142;
+        break;
+      case 2:
+        greyTone = 64;
+        break;
+    }
     
     for (var x=0;x<3;x++)
     {
       if(level[y][x].hasCar == true)
       {
-        topctx.fillStyle = "green";
+        switch (x)
+        {
+          case 0:
+            xPos = roadStartLeft - screenwidthFifth * rowPercentages[y];
+            break;
+          case 1:
+            xPos = (roadStartLeft - screenwidthFifth * rowPercentages[y]) - (carWidth * 2.25 * rowPercentages[y]);
+            break;
+          case 2:
+            xPos = (roadStartLeft - screenwidthFifth * rowPercentages[y]) - (carWidth * 4.5 * rowPercentages[y]);
+            break;
+        }
+
+        if (timeToCreateNewCars && y == 0)
+        {
+          ctx.fillStyle = "rgba(0,0,0,0.25)";
+          ctx.fillRect(
+            xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
+            (ScreenHeight / 2) + lightHeight  + yPos, 
+            carWidth + (carWidth * 4.5 * rowPercentages[y]), 
+            carHeight + (carHeight * 3.5 * rowPercentages[y]));
+        }
+        
+        topctx.fillStyle = "rgba(" + greyTone + "," + greyTone + "," + greyTone + ",1)";
         topctx.fillRect(
-          xPos + x * ((roadWidth / 2.54) + (roadWidth * 2.38) * rowPercentages[y]), // as in 3 lanes. 
+          xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
           (ScreenHeight / 2) + lightHeight + yPos, 
-          carWidth, 
-          carHeight);
+          carWidth + (carWidth * 4.5 * rowPercentages[y]), 
+          carHeight + (carHeight * 3.5 * rowPercentages[y]));
       }
     }
   }
@@ -428,13 +471,13 @@ function drawPlayerCar()
 {
   if(player.HasCollided)
   {
-    topctx.fillStyle = "red";
-    ctx.fillStyle = "rgba(255,0,0,0.33)";
+    topctx.fillStyle = "rgba(255,200,0,1)";
+    ctx.fillStyle = "rgba(255,120,0,0.2)";
   }
   else
   {
-    topctx.fillStyle = "blue";
-    ctx.fillStyle = "rgba(80,80,80,0.5)";
+    topctx.fillStyle = "black";
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
   }
   
   ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
@@ -457,7 +500,7 @@ function Draw()
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
   
-  var speed = 0.0107;//0.01;  // Zoom-in speed.
+  var speed = 0.0106;//0.01;  // Zoom-in speed.
   var xSide = ScreenWidth * speed;
   var ySide = ScreenHeight * speed;
   
@@ -507,20 +550,37 @@ function Draw()
   if(timeToCreateNewCars)
   {
     GameTickTheCars();
-    timeToCreateNewCars = false;
     
-    if(player.DeadTick > 0)
+    if (player.DeadTick > 0)
     {
       player.DeadTick--;
       
       if(player.DeadTick <= 0)
       {
+        player.DeadTick = 0;
         player.HasCollided = false;
       }
+    }
+    else
+    {
+      // Player didn't die! Check if there were any cars to pass that will grant some score.
+      player.Score += 10 * checkAmountOfCarsToGetPoints();
     }
   }
   
   // Draws the player car.
   drawAllCars();
+  
+  if(timeToCreateNewCars)
+    timeToCreateNewCars = false;
+  
   drawPlayerCar();
+  
+  topctx.fillStyle = "black";
+  
+  if (player.DeadTick > 0)
+    topctx.fillStyle = "red";
+  
+  topctx.font = "64px Arial";
+  topctx.fillText(player.Score, ScreenWidth - 180, 80);
 }
