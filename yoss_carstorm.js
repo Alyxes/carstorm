@@ -596,19 +596,19 @@ function Draw()
   
   for (var i = 0; i < player.Lives; i++)
   {
-    topctx.fillRect(50 + 130 * i, 100, 100, 35);
+    topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
   }
   
-  topctx.font = "64px Arial";
-  topctx.fillText(player.Score, ScreenWidth - 180, 80);
+  topctx.font = "42pt Arial";
+  topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
   
-  if (player.Lives <= 0)
+  if (true) // player.Lives <= 0
   {
     topctx.fillStyle = "red";
-    topctx.font = "100px Arial";
-    topctx.fillText("GAME OVER", ScreenWidth/2 -310, ScreenHeight/2);
+    topctx.font = "70pt Arial";
+    topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.85, ScreenHeight/2);
     topctx.fillStyle = "black";
-    topctx.font = "42px Arial";
-    topctx.fillText("Your final score was " + finalScore, ScreenWidth/2 -220, ScreenHeight/2 + 64);
+    topctx.font = "32pt Arial";
+    topctx.fillText("Your final score was " + finalScore, ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2 + ScreenHeight/17);
   }
 }
