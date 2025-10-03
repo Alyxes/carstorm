@@ -391,6 +391,10 @@ function GameTickTheCars()
       player.Score = 0;
       player.DeadTick = -1;
       player.CanMove = false;
+      
+      // Tycker detta ska resettas först när man väljer att försöka igen.
+      // gamespeed = 1;
+      // gamespeedMS = 1000/gamespeed;
     }
   }
 }
