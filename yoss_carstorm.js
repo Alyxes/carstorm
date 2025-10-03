@@ -44,23 +44,13 @@ var fpsInterval = 1000 / fps; // milliseconds.
 
 // Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
-var gamespeedMS = 1000 * gamespeed; // milliseconds.
+var gamespeedMS = 1000/gamespeed; // milliseconds.
 
 var streetLightTimer = 1000;
 var lightWidth = 0; //Global because we just so happens to use them as the width of the road as well.
 var lightHeight = 0;
 var orangeLightSize = 0;
 var yellowLightSize = 0;
-
-var carWidth = 0;
-var carHeight = 0;
-
-var finalScore = 0;
-
-var roadWidth = 0;
-
-var hiddenCanvas = document.createElement('canvas');
-var hiddenCtx = hiddenCanvas.getContext("2d");
 
 var player = {};
 
@@ -69,6 +59,19 @@ var level = [];
 
 // Rad 4 är spelarens rad, och ska vara 1.0. Rad 0 är högst upp och ska vara 0. Rad 1 och 2 är de magiska feel-good siffrorna.
 var rowPercentages = [0, 0.21, 0.6, 1.3];
+
+var carWidth = 0;
+var carHeight = 0;
+
+var message = "";
+var messageTimer = 0;
+var nextLevel = 300;
+var finalScore = 0;
+
+var roadWidth = 0;
+
+var hiddenCanvas = document.createElement('canvas');
+var hiddenCtx = hiddenCanvas.getContext("2d");
 
 // Goes true every "game tick" so new cars can be inserted into the level, and most important, drawn to the screen.
 var timeToCreateNewCars = false;
@@ -79,8 +82,7 @@ var screenwidthFifth;
 var roadStartLeft;
 
 // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
-// screen saver app gets minimized and maximized. 
-// 
+// screen saver app gets minimized and maximized.
 window.onresize = function() {
   Resize();
 };
@@ -119,6 +121,10 @@ document.addEventListener("keydown", (e) => {
 // The init() function is the only function you need to have to make the screen saver work.
 function init()
 {
+  createLevel();
+  // Initiate all the data of the player object.
+  createPlayer();
+
   // Resize the canvas so it fill up the entire screen.
   Resize();
     
@@ -141,11 +147,6 @@ function init()
   
   Now = Date.now();
   LastDraw = 0; // Make it draw first frame at once.
-  
-  createLevel();
-  
-  // Initiate all the data of the player object.
-  createPlayer();
   
   // Start the game loop!
   GameLoop();
@@ -194,6 +195,7 @@ function Resize()
   // 
   // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
+  // This must happen here as well, and therefore it must only happen here, and not inside createPlayer().
   resizePlayer();
   //console.log();
 }
@@ -231,9 +233,9 @@ function createPlayer()
     DeadTick: 0,
     Lives: 3,
     Score: 0,
-  };  
+  };
   
-  resizePlayer();
+  // resizePlayer();
 }
 function resizePlayer()
 {
@@ -304,8 +306,19 @@ function GameLoop()
   
   if (ElapsedTime >= fpsInterval)
   {
+    LastDraw = Now;
+    
     ElapsedCarsTime += ElapsedTime;
     streetLightTimer += ElapsedTime;
+    if (messageTimer > 0)
+    {
+      messageTimer -= ElapsedTime;
+      if (messageTimer < 0)
+      {
+        messageTimer = 0;
+        message = "";
+      }
+    }
     
     if (ElapsedCarsTime >= gamespeedMS)
     {
@@ -315,8 +328,40 @@ function GameLoop()
       timeToCreateNewCars = true;
     }
     
-    // Enough time has passed, time to draw.
-    LastDraw = Now;
+    if (timeToCreateNewCars)
+    {
+      GameTickTheCars();
+      
+      if (player.DeadTick > 0)
+      {
+        player.DeadTick--;
+        
+        if(player.DeadTick <= 0)
+        {
+          player.DeadTick = 0;
+          player.HasCollided = false;
+        }
+      }
+      else
+      {
+        // Player didn't die! Check if there were any cars to pass that will grant some score.
+        if (player.Lives > 0)
+        {
+          player.Score += 10 * checkAmountOfCarsToGetPoints();
+          
+          if (player.Score >= nextLevel)
+          {
+            gamespeed += 0.2;
+            gamespeedMS = 1000/gamespeed;
+            
+            nextLevel += 300 * gamespeed;
+            
+            message = "SPEED INCREASE";
+            messageTimer = 2000;
+          }
+        }
+      }
+    }
     
     Draw();
   }
@@ -515,7 +560,7 @@ function Draw()
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
   
-  var speed = 0.0106;//0.01;  // Zoom-in speed.
+  var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
   var xSide = ScreenWidth * speed;
   var ySide = ScreenHeight * speed;
   
@@ -562,28 +607,6 @@ function Draw()
     DrawStreetLights();
   }
   
-  if(timeToCreateNewCars)
-  {
-    GameTickTheCars();
-    
-    if (player.DeadTick > 0)
-    {
-      player.DeadTick--;
-      
-      if(player.DeadTick <= 0)
-      {
-        player.DeadTick = 0;
-        player.HasCollided = false;
-      }
-    }
-    else
-    {
-      // Player didn't die! Check if there were any cars to pass that will grant some score.
-      if (player.Lives > 0)
-        player.Score += 10 * checkAmountOfCarsToGetPoints();
-    }
-  }
-  
   // Draws the player car.
   drawAllCars();
   
@@ -599,16 +622,30 @@ function Draw()
     topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
   }
   
-  topctx.font = "42pt Arial";
+  // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
+  var scoreFontSize = 3.5;
+  var gameOverFontSize = 5.5;
+  var finalScoreFontSize = 2.6;
+  var messageFontSize = 3;
+  
+  topctx.font = scoreFontSize + "vw Arial";
   topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
   
-  if (true) // player.Lives <= 0
+  if (messageTimer > 0 && messageTimer%600 < 300)
   {
-    topctx.fillStyle = "red";
-    topctx.font = "70pt Arial";
+    topctx.fillStyle = "black";
+    topctx.font = messageFontSize + "vw Arial";
+    topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
+  }
+  
+  if (player.Lives <= 0)
+  {
+    topctx.fillStyle = "darkorange";
+    topctx.font = gameOverFontSize + "vw Arial";
     topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.85, ScreenHeight/2);
     topctx.fillStyle = "black";
-    topctx.font = "32pt Arial";
-    topctx.fillText("Your final score was " + finalScore, ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2 + ScreenHeight/17);
+    topctx.font = finalScoreFontSize + "vw Arial";
+    topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 + ScreenHeight/17);
+    topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/9);
   }
 }
