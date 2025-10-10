@@ -1,0 +1,36 @@
+Step by step guiden för att göra en android-app av vår lilla pwa:
+  https://developers.google.com/codelabs/pwa-in-play#1
+  
+  Lite jobbigt att det är snudd på omöjlen att få detta att köra på två datorer, det är en uppsjö av grejer att installera, så jag kör allt på min stationära hajburk.
+
+Setup bubblewrap:
+  https://developer.chrome.com/docs/android/trusted-web-activity/quick-start/
+  1. Nodejs behöver vara installerat: https://nodejs.org/en/
+      (en omstart av datorn behövs efter installation)
+  2. Dra igång en dos-prompt. [Blasfemi! Det är en kommando-blaha!]
+  3. npm i -g @bubblewrap/cli
+  4. Oops. Du måste lägga upp carstorm på en web-url. Jag använder localhost så länge:
+      bubblewrap init --manifest=localhost/manifest.json
+  5. bubblewrap slänger upp en helylle-doslogga. <3 :-) Låt den installera sitt JDK, och Android SDK. (hoppas inte den sabbar Android Studio)
+      ,-----.        ,--.  ,--.  ,--.
+      |  |) /_,--.,--|  |-.|  |-.|  |,---.,--.   ,--,--.--.,--,--.,---.
+      |  .-.  |  ||  | .-. | .-. |  | .-. |  |.'.|  |  .--' ,-.  | .-. |
+      |  '--' '  ''  | `-' | `-' |  \   --|   .'.   |  |  \ '-'  | '-' '
+      `------' `----' `---' `---'`--'`----'--'   '--`--'   `--`--|  |-'
+                                                                 `--'
+  6. Bajs. Den gillar inte localhost. Får slänga upp en subdomän:
+      https://carstorm.madskullcreations.com/
+      Sajten uppe och fungerar, tom. install-knappen för pwa funkar.
+  7. Nu då:
+     bubblewrap init --manifest=https://carstorm.madskullcreations.com/app.webmanifest
+     Wow! Nu börjar bubblewrap tala om för mig vad som saknas i filen!
+     TODO: Gör det också. :-)
+     
+---FTP---
+Inte så ofta man använder filezilla numera, men nu funkar "madskullcreations.com root" kontot att ansluta med. 
+
+FILER SOM SKA LIGGA PÅ SERVERN:
+app.webmanifest
+index.html
+yoss_carstorm.js
+icons/alla-bilder-gåes-här.päengee
