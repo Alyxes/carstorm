@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.mask.carstorm",
+        "sha256_cert_fingerprints": ["A1:2F:24:81:BE:CE:07:8B:65:0B:1B:90:64:19:60:8C:E8:E1:16:4D:59:64:34:E5:2A:C8:AD:14:82:B4:D2:B1"]
+      }
+    }]
