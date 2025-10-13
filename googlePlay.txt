@@ -2,6 +2,8 @@
   Vem fan är mblinvestment@gmail.com ?!
   <-Låg som utvecklare i min list "Hackers" som får mycket access till våra projekt i google store............... Inte så kul!
 
+NU: Se steg 10.
+
 ------
 Step by step guiden för att göra en android-app av vår lilla pwa:
   https://developers.google.com/codelabs/pwa-in-play#1
@@ -70,7 +72,15 @@ Setup bubblewrap:
   9. Nu kan du faktiskt öppna och köra projektet i Android Studio! Trevligt att kunna debugga appen där i. 
     -Telefonen (den virtuella) tycker att den ska starta i chrome, och det suger ju lite. Det skapas en stor äcklig top-bar som ser ut som nåt från när sonyericssons telefoner visade en liten rektangel-karta fullt med skrotmenyer runt om som tog upp all plats..
 
-    Lite om varför jag valde ditten eller datten:
+  10. Jag går ju igenom stepbysteppen här, och ska nu börja på steg 5:
+        https://developers.google.com/codelabs/pwa-in-play#5
+          <-Här får jag reda på bland annat att vi inte får fullskärm ännu förrän google har verifierat ägarskapet av urlen, så klart! Känner jag igen från deras reklam-skrot på sajter.
+
+
+
+---------------
+
+    Lite om varför jag valde ditten eller datten i steg 7:
       * Application ID: Här har jag tänkt använda "mask" som är kort för madskullcreations:
       com.mask.carstorm
           <-Bubblewraps förslag var (com.madskullcreations.carstorm.twa) som jag inte gillade.
@@ -81,6 +91,7 @@ Setup bubblewrap:
       * OBS: Key store location: 
         Lösenord: BribbelFlaarrpSmetaGrodGegg
           <-Man skapar en sån här nyckel i Android Studio, i menyn Generate Signed App blabla under Build, sedan knappen Create new i härkepärket där. 
+
 
 ---FTP---
 Inte så ofta man använder filezilla numera, men nu funkar "madskullcreations.com root" kontot att ansluta med. 
