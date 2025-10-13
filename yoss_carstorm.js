@@ -116,6 +116,21 @@ document.addEventListener("keydown", (e) => {
     PlayerMove("right");
   }
 });
+document.addEventListener("mousedown", (e) => {
+  e = e || window.event;
+  if(e.button == 0) // Most of the time the left button
+  {
+    if(e.clientX < ScreenWidth / 2)
+    {
+      PlayerMove("left");
+    }
+    else
+    {
+      PlayerMove("right");
+    }
+  }
+});
+
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
