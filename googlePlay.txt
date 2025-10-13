@@ -1,3 +1,8 @@
+
+  Vem fan är mblinvestment@gmail.com ?!
+  <-Låg som utvecklare i min list "Hackers" som får mycket access till våra projekt i google store............... Inte så kul!
+
+------
 Step by step guiden för att göra en android-app av vår lilla pwa:
   https://developers.google.com/codelabs/pwa-in-play#1
   
@@ -23,9 +28,60 @@ Setup bubblewrap:
       Sajten uppe och fungerar, tom. install-knappen för pwa funkar.
   7. Nu då:
      bubblewrap init --manifest=https://carstorm.madskullcreations.com/app.webmanifest
+      <-OBS: Kör ifrån dos, OCH KÖR ifrån D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles så att filjävlarna som produceras inte skapas där dos-prompten råkar starta...
      Wow! Nu börjar bubblewrap tala om för mig vad som saknas i filen!
-     TODO: Gör det också. :-)
-     
+     Här goes:
+      ? Domain: carstorm.madskullcreations.com
+      ? URL path: /     
+      ? Application name: carstorm
+      ? Short name: carstorm
+      ? Application ID: com.mask.carstorm
+      ? Starting version code for the new app version: 1
+      ? Display mode: fullscreen
+      ? Orientation: any
+      ? Status bar color: #FFFFFF     
+      ? Splash screen color: #FFFFFF
+      ? Icon URL: https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png
+      ? Maskable icon URL:  https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png
+      ? Monochrome icon URL: https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png
+      ? Include support for Play Billing? No
+      ? Request geolocation permission? No
+      ? Key store location: D:\Use\Programming\Javascript\carstorm\carstormKeystore.jks
+      ? Key name: android
+      
+      Allt detta hamnar i bubblewrap_buildfiles/twa-manifest.json.
+      
+     Yey! Nu säger den "Generating Android Project" och ber mig skriva:
+  8. bubblewrap build
+      * Accept the license.
+      * password: BribbelFlaarrpSmetaGrodGegg
+      
+      oooch tadaaaa! Det kraschar! :'-D
+      https://github.com/GoogleChromeLabs/bubblewrap/issues/481
+      <-Fixen verkade vara att lägga in den här raden i bubblewrap_buildfiles\gradle.properties:
+        org.gradle.jvmargs=-XX\:MaxHeapSize\=256m -Xmx256m
+          <-Kommentera bara bort den första raden med jvmargs istället!
+            Sen fungerade det hela på ca. 2 sekunder!!!!
+
+      Filer av vikt:
+      * app-release-bundle.aab - Your PWA's Android App Bundle. This is the file you will upload to the Google Play Store.
+      * app-release-signed.apk - An Android packaging format that can be used to install the application directly to a development device using the bubblewrap install command.
+
+  9. Nu kan du faktiskt öppna och köra projektet i Android Studio! Trevligt att kunna debugga appen där i. 
+    -Telefonen (den virtuella) tycker att den ska starta i chrome, och det suger ju lite. Det skapas en stor äcklig top-bar som ser ut som nåt från när sonyericssons telefoner visade en liten rektangel-karta fullt med skrotmenyer runt om som tog upp all plats..
+
+    Lite om varför jag valde ditten eller datten:
+      * Application ID: Här har jag tänkt använda "mask" som är kort för madskullcreations:
+      com.mask.carstorm
+          <-Bubblewraps förslag var (com.madskullcreations.carstorm.twa) som jag inte gillade.
+      * Orientation: any <- Här fanns det en uppsjö varianter, så jag valde any eftersom vi snackade om att det är bättre om spelet faktiskt fungerar i vilket läge som helst, och appen faktiskt skalar om korrekt även om det blir fuult ibland. :-) Dessutom finns det ju "foldables" som vi kanske helt automatiskt stödjer på det här viset!
+      * OBS: Maskable icon URL: Detta är ikonen som appen får i android!
+      * OBS:  Include support for Play Billing? Är en grej vi bör läsa in oss på:
+      https://stackoverflow.com/questions/77293542/are-google-play-billing-subscription-base-plans-supported-in-bubblewrap-twa
+      * OBS: Key store location: 
+        Lösenord: BribbelFlaarrpSmetaGrodGegg
+          <-Man skapar en sån här nyckel i Android Studio, i menyn Generate Signed App blabla under Build, sedan knappen Create new i härkepärket där. 
+
 ---FTP---
 Inte så ofta man använder filezilla numera, men nu funkar "madskullcreations.com root" kontot att ansluta med. 
 
@@ -34,3 +90,8 @@ app.webmanifest
 index.html
 yoss_carstorm.js
 icons/alla-bilder-gåes-här.päengee
+
+--------
+
+Högerklicksmenyn i windows och app-ikon-menyn i android kan man speca! Se här:
+  https://web.dev/articles/app-shortcuts
