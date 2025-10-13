@@ -2,7 +2,7 @@
   Vem fan är mblinvestment@gmail.com ?!
   <-Låg som utvecklare i min list "Hackers" som får mycket access till våra projekt i google store............... Inte så kul!
 
-NU: Se steg 10.
+NU: Allt färdigt här! 
 
 ------
 Step by step guiden för att göra en android-app av vår lilla pwa:
@@ -75,7 +75,27 @@ Setup bubblewrap:
   10. Jag går ju igenom stepbysteppen här, och ska nu börja på steg 5:
         https://developers.google.com/codelabs/pwa-in-play#5
           <-Här får jag reda på bland annat att vi inte får fullskärm ännu förrän google har verifierat ägarskapet av urlen, så klart! Känner jag igen från deras reklam-skrot på sajter.
+          <-Remember, this certificate is different than the one used to upload your application. 
+      * Test and release -> App Integrity -> Klicka på settings bredvid Play app signing.
+        Kopiera SHA-256 fingerprintet:
+        A1:2F:24:81:BE:CE:07:8B:65:0B:1B:90:64:19:60:8C:E8:E1:16:4D:59:64:34:E5:2A:C8:AD:14:82:B4:D2:B1
+        
+      * bubblewrap fingerprint add A1:2F:24:81:BE:CE:07:8B:65:0B:1B:90:64:19:60:8C:E8:E1:16:4D:59:64:34:E5:2A:C8:AD:14:82:B4:D2:B1
+        <-Yey, den uppdaterade assetlinks.json filen med fingerprinten. :-)
+        <-Längst ner App integrity sidan hittar du också hela .json filen de hjälpt mig sätta ihop. :) Digital Asset Links JSON
 
+          
+      * Släng in filen på servern i carstoem/.wellknown katalogen.
+      * Gå hit: 
+        https://developers.google.com/digital-asset-links/tools/generator
+          Fyll i
+          https://carstorm.madskullcreations.com/
+          com.mask.carstorm
+          fingerprinten
+        Klicka sen på Test statement, så ska den säga "Success! Host https://carstorm.madskullcreations.com grants app deep linking to com.mask.carstorm."
+      * Works! Man måste avinstallera och installera om appen, men sedan är den fullskärm. :-) 
+    11. Done! Hela guiden "Bubblewrapping your pwa" gick rätt smärtfritt att göra. Olikt googles grejer. :-D 
+    
 
 
 ---------------
