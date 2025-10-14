@@ -1,6 +1,25 @@
 
 JUST NU: Service workers och caching.
 
+Visa anslutna telefoner, och starta mjonklapjärer härifrån o debugga chrome-browsern i telefonen!
+  chrome://inspect/#devices
+
+  https://developer.chrome.com/docs/devtools/remote-debugging
+  
+  :'-D HELA jävla telefon-emulatorn kraschar när jag öppnar chrome i den och sedan öppnar carstorms hemsida. 
+  
+Sätta igång usb developer mode på telefjånen:
+  https://developer.android.com/studio/debug/dev-options.html
+  
+Att debugga WPA-appen på din telefon!!
+  1. Koppla in telefonen, nu är ju developer mode igång. 
+  2. I chrome på pcn, öppna chrome://inspect/#devices
+  3. Klicka på inspect på Carstorm! Det är ju WPA-appen som så tacksamt ligger och finns där. 
+  4. Inspect kommer fram, dessutom MED en realtids skärmdump/video av telefonens skärm. 
+  5. Kolla allt. :-) Du kan ju se service workern o att alla filer laddas från cache o såna finfina saker. 
+  
+----------------
+
 PWA
 https://web.dev/learn/pwa/welcome?continue=https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2F%23article-https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2Fwelcome
   -Verkar va en fin kurs.
