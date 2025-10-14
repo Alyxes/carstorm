@@ -81,61 +81,69 @@ var screenwidthFifth;
 
 var roadStartLeft;
 
-// The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
-// screen saver app gets minimized and maximized.
-window.onresize = function() {
-  Resize();
-};
-document.addEventListener("visibilitychange", function() {
-  // This happen when browser gets minimized.
-  if(document.hidden)
-  {
-  	EnterSomeKindOfPause();
-  }
-  else
-  {
-  	ResumeFromSomeKindOfPause();
-  }
-}, false);
-window.addEventListener('blur', function(){
-  EnterSomeKindOfPause();
-}, false);
-window.addEventListener('focus', function(){
-  ResumeFromSomeKindOfPause();
-}, false);
-document.addEventListener("keydown", (e) => {
-  e = e || window.event;
-  if (e.keyCode === 37)
-  {
-    // left arrow pressed.
-    PlayerMove("left");
-  }
-  else if (e.keyCode === 39)
-  {
-    // right arrow pressed.
-    PlayerMove("right");
-  }
-});
-document.addEventListener("mousedown", (e) => {
-  e = e || window.event;
-  if(e.button == 0) // Most of the time the left button
-  {
-    if(e.clientX < ScreenWidth / 2)
-    {
-      PlayerMove("left");
-    }
-    else
-    {
-      PlayerMove("right");
-    }
-  }
-});
-
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
 function init()
 {
+  // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
+  // screen saver app gets minimized and maximized.
+  window.onresize = function() {
+    Resize();
+  };
+  document.addEventListener("visibilitychange", function() {
+    // This happen when browser gets minimized.
+    if(document.hidden)
+    {
+      EnterSomeKindOfPause();
+    }
+    else
+    {
+      ResumeFromSomeKindOfPause();
+    }
+  }, false);
+  window.addEventListener('blur', function(){
+    EnterSomeKindOfPause();
+  }, false);
+  window.addEventListener('focus', function(){
+    ResumeFromSomeKindOfPause();
+  }, false);
+  document.addEventListener("keydown", (e) => {
+    e = e || window.event;
+    if (e.keyCode === 37)
+    {
+      // left arrow pressed.
+      PlayerMove("left");
+    }
+    else if (e.keyCode === 39)
+    {
+      // right arrow pressed.
+      PlayerMove("right");
+    }
+  });
+  document.addEventListener("mousedown", (e) => {
+    e = e || window.event;
+    if(e.button == 0) // Most of the time the left button
+    {
+      if(e.clientX < ScreenWidth / 2)
+      {
+        console.log("mousedown left");
+        PlayerMove("left");
+      }
+      else
+      {
+        console.log("mousedown right");
+        PlayerMove("right");
+      }
+    }
+  });
+  
+  // https://web.dev/learn/pwa/service-workers
+  if ('serviceWorker' in navigator) 
+  {
+    navigator.serviceWorker.register("/service_worker.js");
+  }
+  
   createLevel();
   // Initiate all the data of the player object.
   createPlayer();

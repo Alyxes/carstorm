@@ -1,4 +1,6 @@
 
+JUST NU: Service workers och caching.
+
 PWA
 https://web.dev/learn/pwa/welcome?continue=https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2F%23article-https%3A%2F%2Fweb.dev%2Flearn%2Fpwa%2Fwelcome
   -Verkar va en fin kurs.
@@ -47,7 +49,18 @@ Att skapa en service-worker som underlättar att göra appen offline och ladda f
       Cache.add()
       för att ladda senaste versionen av en fil. 
       ..enklast möjliga versionshantering slänger samtliga cachade filer, och kör sedan addAll() eller vad den heter. 
-      
+
+      // Här drar den ner alla filerna en enda gång, vid install eventet. Det är sub-optimalt eftersom om man stänger tabben så körs "install" eventet igen när man åter öppnar sidan. Antar att det kan gälla för pwa också, tex om spelaren dödar spelet.
+      const urlsToCache = ["/", "app.js", "styles.css", "logo.svg"];
+      self.addEventListener("install", event => {
+         event.waitUntil(
+            caches.open("pwa-assets")
+            .then(cache => {
+               return cache.addAll(urlsToCache);
+            });
+         );
+      });    
+    
   https://web.dev/learn/pwa/offline-data
     -Use the Cache Storage API for network resources, things you'd access by requesting them via a URL, such as HTML, CSS, JavaScript, images, videos, and audio.
     -Use IndexedDB to store structured data. 
