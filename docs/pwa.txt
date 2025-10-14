@@ -45,6 +45,9 @@ Att skapa en service-worker som underlättar att göra appen offline och ladda f
       });
     -Mer här: https://web.dev/learn/pwa/serving
     
+// A must-read-many-times:
+// https://web.dev/articles/service-worker-lifecycle
+    
     self.addEventListener("fetch", event => {
         const response = .... // a response or a Promise of response
         event.respondWith(response);
