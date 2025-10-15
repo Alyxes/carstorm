@@ -42,6 +42,19 @@ var ElapsedCarsTime = 0; // Shut up, this is a great name for this variable!
 var fps = 30;
 var fpsInterval = 1000 / fps; // milliseconds.
 
+// Let the name and string be the same to avoid confusion. 
+var gsNothing = "Nothing";
+var gsStartScreen = "StartScreen";
+var gsPlaying = "Playing";
+var gsPaused = "Paused";
+var gsGameOver = "GameOver";
+
+// This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
+var gameStates = [gsNothing,gsStartScreen,gsPlaying,gsPaused,gsGameOver];
+
+// Then we set the state like this, to avoid spelling errors.
+var gameState = gsNothing;
+
 // Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
 var gamespeedMS = 1000/gamespeed; // milliseconds.
@@ -80,7 +93,6 @@ var timeToCreateNewCars = false;
 var screenwidthFifth;
 
 var roadStartLeft;
-
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -125,15 +137,36 @@ function init()
     e = e || window.event;
     if(e.button == 0) // Most of the time the left button
     {
-      if(e.clientX < ScreenWidth / 2)
+      // Eeh, ugly but works. Spreading out game state checks this way is error prone.
+      // TODO: Also, mousedown and touch events happens outside of the game loop, meaning it might
+      // happen in the middle of things, yes/no? That can break things badly.
+      if(gameState == gsPlaying)
       {
-        console.log("mousedown left");
-        PlayerMove("left");
+        if(e.clientX < ScreenWidth / 2)
+        {
+          console.log("mousedown left");
+          PlayerMove("left");
+        }
+        else
+        {
+          console.log("mousedown right");
+          PlayerMove("right");
+        }
       }
-      else
+      else if(gameState == gsStartScreen)
       {
-        console.log("mousedown right");
-        PlayerMove("right");
+        // Clicking the start screen starts a new game.
+        SetState(gsPlaying);
+      }
+      else if(gameState == gsPaused)
+      {
+        // Clicking the pause screen resumes the game.
+        SetState(gsPlaying);
+      }
+      else if(gameState == gsGameOver)
+      {
+        // Clicking the game over screen return you to the start screen.
+        SetState(gsStartScreen);
       }
     }
   });
@@ -171,12 +204,22 @@ function init()
   Now = Date.now();
   LastDraw = 0; // Make it draw first frame at once.
   
+  // We enter the game with the start screen visible.
+  SetState(gsStartScreen);
+  
   // Start the game loop!
   GameLoop();
 }
 
 function Resize()
 {
+  // If we are playing and the screen is resizing, it usually means player rotate the 
+  // screen. So pause an active game to avoid chaos. :-)
+  if(gameState == gsPlaying)
+  {
+    SetState(gsPaused);
+  }
+  
   ScreenWidth = window.innerWidth;
   ScreenHeight = window.innerHeight;
     
@@ -272,13 +315,112 @@ function EnterSomeKindOfPause()
 {
   // Loosing focus or getting hidden, meaning screen saver should pause.
   screenSaverPaused = true;
+  
+  // If we are playing it might be nice to return to a paused screen. :-)
+  if(gameState == gsPlaying)
+  {
+    SetState(gsPaused);
+  }
 }
 function ResumeFromSomeKindOfPause()
 {
   // Regaining focus, meaning screen saver is back in full screen.
   screenSaverPaused = false;
-    
+  
   GameLoop();
+}
+
+function SetState(newState)
+{
+  if(gameStates.indexOf(newState) == -1)
+  {
+    throw "The state " + newState + " is not a valid state!";
+  }
+  
+  // For example, going from the start screen to playing is cool, but nothing else.
+  var transitionCool = false;
+  switch(gameState)
+  {
+    case gsNothing:
+      if(newState == gsStartScreen)
+      {
+        OnEnterStartScreen();
+        transitionCool = true;
+      }
+      break;
+    case gsStartScreen:
+      if(newState == gsPlaying)
+      {
+        TransitFromStartScreenToPlaying();
+        transitionCool = true;
+      }
+      break;
+    case gsPlaying:
+      // You can pause the game and you can die. The game is full of options.
+      if(newState == gsPaused)
+      {
+        OnEnterPaused();
+        transitionCool = true;
+      }
+      else if(newState == gsGameOver)
+      {
+        OnEnterGameOver();
+        transitionCool = true;
+      }
+      break;
+    case gsPaused:
+      // To keep stuff simple, there is no restart or abort game button in pause mode.
+      if( newState == gsPlaying)
+      {
+        TransitFromPausedToPlaying();
+        transitionCool = true;
+      }
+      break;
+    case gsGameOver:
+      // To keep stuff simple, the start screen show up very short after game over.
+      if(newState == gsStartScreen)
+      {
+        OnEnterStartScreen();
+        transitionCool = true;
+      }
+      break;
+  }
+  
+  if(!transitionCool)
+  {
+    throw "Transition from " + gameState + " to " + newState + " is not valid!";
+  }
+  
+  console.log("Transition from " + gameState + " to " + newState + "!");
+  
+  // The transition is ok, do it.
+  gameState = newState;
+}
+
+function OnEnterStartScreen()
+{
+  // Play a melody!
+}
+function TransitFromStartScreenToPlaying()
+{
+  // Starting a new game.
+  createLevel();
+  createPlayer();
+  
+  // TODO: Nåt händer här i som gör att bilen dyker upp som den ska efter game over. :) Fixa. 
+  Resize();
+}
+function TransitFromPausedToPlaying()
+{
+  // Resume playing. I guess here will happen nothing.
+}
+function OnEnterPaused()
+{
+  // Start a pause sound. (Lets see what happens when the app gets minimized..)
+}
+function OnEnterGameOver()
+{
+  // Start the game over trudelutt.
 }
 
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
@@ -327,6 +469,42 @@ function GameLoop()
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   
+  GameLoopGameState();
+    
+  // Always keep asking for the next animation frame.
+  window.requestAnimationFrame(GameLoop);
+}
+
+function GameLoopGameState()
+{
+  switch(gameState)
+  {
+    case gsNothing:
+      // This should never happen.
+      break;
+    case gsStartScreen:
+      // Draw the start screen! Look for a touch/click meaning user want to start a new game!
+      GameLoopStartScreen();
+      break;
+    case gsPlaying:
+      // Draw game as usual.
+      GameLoopPlaying();
+      break;
+    case gsPaused:
+      // Draw game as usual, except time has "stopped". 
+      // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
+      break;
+    case gsGameOver:
+      // Draw game as usual, except time has "stopped" and the car is showing a crash-icon.
+      break;
+  }
+}
+function GameLoopStartScreen()
+{
+  // Draw the start screen. Look for touch event to start the game.
+}
+function GameLoopPlaying()
+{
   if (ElapsedTime >= fpsInterval)
   {
     LastDraw = Now;
@@ -386,11 +564,8 @@ function GameLoop()
       }
     }
     
-    Draw();
-  }
-  
-  // Always keep asking for the next animation frame.
-  window.requestAnimationFrame(GameLoop);
+    DrawGame();
+  }  
 }
 
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
@@ -403,17 +578,20 @@ function GameTickTheCars()
   
   if(player.DeadTick == 0 && checkIfPlayerCollidesWithOtherCars())
   {
-    // Game over! Draw some explosion, make a sound. Let it time out and then restart the game.
+    // Crashing into a car! Draw some explosion, make a sound. 
     player.HasCollided = true;
     player.Lives--;
     player.DeadTick = 4;
     
     if (player.Lives <= 0)
     {
+      // Game over! Show and play death animation. Wait for user to click away.
       finalScore = player.Score;
       player.Score = 0;
       player.DeadTick = -1;
       player.CanMove = false;
+      
+      SetState(gsGameOver);
       
       // Tycker detta ska resettas först när man väljer att försöka igen.
       // gamespeed = 1;
@@ -572,7 +750,7 @@ function drawPlayerCar()
 }
 
 // Draw everything.
-function Draw()
+function DrawGame()
 {
   topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
   
