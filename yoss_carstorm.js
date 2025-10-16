@@ -94,6 +94,9 @@ var screenwidthFifth;
 
 var roadStartLeft;
 
+var StartBGImage = new Image();
+StartBGImage.src = "graphics/StartBackground.png";
+
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
 function init()
@@ -125,11 +128,13 @@ function init()
     if (e.keyCode === 37)
     {
       // left arrow pressed.
+      // console.log("button left");
       PlayerMove("left");
     }
     else if (e.keyCode === 39)
     {
       // right arrow pressed.
+      // console.log("button right");
       PlayerMove("right");
     }
   });
@@ -144,12 +149,12 @@ function init()
       {
         if(e.clientX < ScreenWidth / 2)
         {
-          console.log("mousedown left");
+          // console.log("mousedown left");
           PlayerMove("left");
         }
         else
         {
-          console.log("mousedown right");
+          // console.log("mousedown right");
           PlayerMove("right");
         }
       }
@@ -172,9 +177,9 @@ function init()
   });
   
   // https://web.dev/learn/pwa/service-workers
-  if ('serviceWorker' in navigator) 
+  if ('ServiceWorker' in navigator)
   {
-    navigator.serviceWorker.register("/service_worker.js");
+    navigator.ServiceWorker.register("/service_worker.js");
   }
   
   createLevel();
@@ -202,7 +207,7 @@ function init()
   c.style.backgroundColor = "#eee";
   
   Now = Date.now();
-  LastDraw = 0; // Make it draw first frame at once.
+  LastDraw = Now; // Setting this to Now fixed bug that set timers to zero in the beginning of the game.
   
   // We enter the game with the start screen visible.
   SetState(gsStartScreen);
@@ -248,6 +253,8 @@ function Resize()
   
   roadStartLeft = ScreenWidth/2 - lightWidth;
   
+  resizePlayer();
+  
   // Eftersom perspektiv är skumt, så konstaterar vi följande:
   // 
   //    /-| <- roadStartLeft
@@ -261,8 +268,6 @@ function Resize()
   // 
   // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
-  // This must happen here as well, and therefore it must only happen here, and not inside createPlayer().
-  resizePlayer();
   //console.log();
 }
 
@@ -292,16 +297,17 @@ function createLevelRow()
 function createPlayer()
 {
   player = {
-    HasMoved: false,
-    CanMove: true,
+    CanMove: false,
     RoadPos: 2, // Starting on the left side of the road.
     HasCollided: false,
     DeadTick: 0,
     Lives: 3,
     Score: 0,
+    Xposition: 0,
+    Yposition: 0,
+    Ysize: 0,
+    Xsize: 0,
   };
-  
-  // resizePlayer();
 }
 function resizePlayer()
 {
@@ -309,6 +315,20 @@ function resizePlayer()
   player.Yposition = (ScreenHeight/9) * 8;
   player.Ysize = ScreenHeight/10;
   player.Xsize = screenwidthFifth;
+}
+function ResetGameVariables()
+{
+  // player
+  player.RoadPos = 2;
+  player.DeadTick = 0;
+  player.Lives = 3;
+  player.HasCollided = false;
+  
+  // game
+  finalScore = 0;
+  gamespeed = 1;
+  gamespeedMS = 1000/gamespeed;
+  nextLevel = 300;
 }
 
 function EnterSomeKindOfPause()
@@ -380,7 +400,7 @@ function SetState(newState)
       // To keep stuff simple, the start screen show up very short after game over.
       if(newState == gsStartScreen)
       {
-        OnEnterStartScreen();
+        TransitFromGameOverToStartScreen();
         transitionCool = true;
       }
       break;
@@ -399,20 +419,30 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
+  messageTimer = 2000;
+  ctx.drawImage(StartBGImage, 0, 0, 1024, 640, 0, 0, ScreenWidth, ScreenHeight);
   // Play a melody!
 }
 function TransitFromStartScreenToPlaying()
 {
-  // Starting a new game.
-  createLevel();
-  createPlayer();
+  player.CanMove = true;
+  messageTimer = 0;
   
-  // TODO: Nåt händer här i som gör att bilen dyker upp som den ska efter game over. :) Fixa. 
-  Resize();
+  // Starting a new game.
+  // createLevel();
+  // createPlayer();
+  
+  // TODO: Nåt händer här i som gör att bilen dyker upp som den ska efter game over. :) Jag tror det är fixat...
+  // Resize();
 }
 function TransitFromPausedToPlaying()
 {
   // Resume playing. I guess here will happen nothing.
+}
+function TransitFromGameOverToStartScreen()
+{
+  ResetGameVariables();
+  messageTimer = 2000;
 }
 function OnEnterPaused()
 {
@@ -426,6 +456,7 @@ function OnEnterGameOver()
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
 function PlayerMove(direction)
 {
+  var HasMoved = false;
   if (player.CanMove)
   {
     if (direction == "left")
@@ -435,7 +466,7 @@ function PlayerMove(direction)
       else
       {
         player.RoadPos--;
-        player.HasMoved = true;
+        HasMoved = true;
       }
     }
     else if (direction == "right")
@@ -445,15 +476,14 @@ function PlayerMove(direction)
       else
       {
         player.RoadPos++;
-        player.HasMoved = true;
+        HasMoved = true;
       }
     }
   }
   
-  if(player.HasMoved)
+  if(HasMoved)
   {
     player.Xposition = screenwidthFifth * (player.RoadPos +1);
-    player.HasMoved = false;
   }
 }
 
@@ -496,76 +526,114 @@ function GameLoopGameState()
       break;
     case gsGameOver:
       // Draw game as usual, except time has "stopped" and the car is showing a crash-icon.
+      GameLoopGameOver();
       break;
+  }
+}
+function UpdateTimers()
+{
+  LastDraw = Now;
+    
+  ElapsedCarsTime += ElapsedTime;
+  streetLightTimer += ElapsedTime;
+}
+function checkMessageTimer()
+{
+  if (messageTimer > 0)
+  {
+    messageTimer -= ElapsedTime;
+    if (messageTimer < 0)
+    {
+      messageTimer = 0;
+      message = "";
+    }
+  }
+}
+function checkElapsedCarsTime()
+{
+  if (ElapsedCarsTime >= gamespeedMS)
+  {
+    // Enough time has passed for all cars to update their positions.
+    ElapsedCarsTime = 0;
+    
+    timeToCreateNewCars = true;
+    
+    if (timeToCreateNewCars)
+      GameTickTheCars();
+  }
+}
+function checkPlayerTimersAndScore()
+{
+  if (timeToCreateNewCars)
+  {
+    if (player.DeadTick > 0)
+    {
+      player.DeadTick--;
+      
+      if(player.DeadTick <= 0)
+      {
+        player.DeadTick = 0;
+        player.HasCollided = false;
+      }
+    }
+    else
+    {
+      // Player didn't die! Check if there were any cars to pass that will grant some score.
+      if (player.Lives > 0)
+      {
+        player.Score += 10 * checkAmountOfCarsToGetPoints();
+        
+        if (player.Score >= nextLevel)
+        {
+          gamespeed += 0.2;
+          gamespeedMS = 1000/gamespeed;
+          
+          nextLevel += 300 * gamespeed;
+          
+          message = "SPEED INCREASE";
+          messageTimer = 2000;
+        }
+      }
+    }
   }
 }
 function GameLoopStartScreen()
 {
+  if (ElapsedTime >= fpsInterval)
+  {
+    UpdateTimers();
+    
+    checkMessageTimer();
+    
+    DrawGame();
+  }
   // Draw the start screen. Look for touch event to start the game.
 }
 function GameLoopPlaying()
 {
   if (ElapsedTime >= fpsInterval)
   {
-    LastDraw = Now;
+    UpdateTimers();
     
-    ElapsedCarsTime += ElapsedTime;
-    streetLightTimer += ElapsedTime;
-    if (messageTimer > 0)
-    {
-      messageTimer -= ElapsedTime;
-      if (messageTimer < 0)
-      {
-        messageTimer = 0;
-        message = "";
-      }
-    }
+    checkMessageTimer();
     
-    if (ElapsedCarsTime >= gamespeedMS)
-    {
-      // Enough time has passed for all cars to update their positions.
-      ElapsedCarsTime = 0;
-      
-      timeToCreateNewCars = true;
-    }
+    checkElapsedCarsTime();
     
-    if (timeToCreateNewCars)
-    {
-      GameTickTheCars();
-      
-      if (player.DeadTick > 0)
-      {
-        player.DeadTick--;
-        
-        if(player.DeadTick <= 0)
-        {
-          player.DeadTick = 0;
-          player.HasCollided = false;
-        }
-      }
-      else
-      {
-        // Player didn't die! Check if there were any cars to pass that will grant some score.
-        if (player.Lives > 0)
-        {
-          player.Score += 10 * checkAmountOfCarsToGetPoints();
-          
-          if (player.Score >= nextLevel)
-          {
-            gamespeed += 0.2;
-            gamespeedMS = 1000/gamespeed;
-            
-            nextLevel += 300 * gamespeed;
-            
-            message = "SPEED INCREASE";
-            messageTimer = 2000;
-          }
-        }
-      }
-    }
+    checkPlayerTimersAndScore();
     
     DrawGame();
   }  
+}
+function GameLoopGameOver()
+{
+  if (ElapsedTime >= fpsInterval)
+  {
+    UpdateTimers();
+    
+    checkElapsedCarsTime();
+    
+    DrawGame();
+  }
 }
 
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
@@ -574,28 +642,31 @@ function GameTickTheCars()
 {
   tickDownAllCarsOneRow();
   if (player.DeadTick == 0)
+  {
     createNewCars();
   
-  if(player.DeadTick == 0 && checkIfPlayerCollidesWithOtherCars())
-  {
-    // Crashing into a car! Draw some explosion, make a sound. 
-    player.HasCollided = true;
-    player.Lives--;
-    player.DeadTick = 4;
-    
-    if (player.Lives <= 0)
+    if(checkIfPlayerCollidesWithOtherCars())
     {
-      // Game over! Show and play death animation. Wait for user to click away.
-      finalScore = player.Score;
-      player.Score = 0;
-      player.DeadTick = -1;
-      player.CanMove = false;
+      // Crashing into a car! Draw some explosion, make a sound. 
+      player.HasCollided = true;
+      player.Lives--;
+      player.DeadTick = 4;
       
-      SetState(gsGameOver);
-      
-      // Tycker detta ska resettas först när man väljer att försöka igen.
-      // gamespeed = 1;
-      // gamespeedMS = 1000/gamespeed;
+      if (player.Lives <= 0)
+      {
+        // Game over! Show and play death animation. Wait for user to click away.
+        messageTimer = 0; // For safety, so that the message won't be perpetuated on the game over screen.
+        finalScore = player.Score;
+        player.Score = 0;
+        player.DeadTick = -1;
+        player.CanMove = false;
+        
+        SetState(gsGameOver);
+        
+        // Tycker detta ska resettas först när man väljer att försöka igen.
+        // gamespeed = 1;
+        // gamespeedMS = 1000/gamespeed;
+      }
     }
   }
 }
@@ -805,52 +876,73 @@ function DrawGame()
     
     // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
   }
-
-  // Draws two "street lights"...
-  if (streetLightTimer >= 1000)
+  
+  if (gameState == gsStartScreen)
   {
-    DrawStreetLights();
-  }
-  
-  // Draws the player car.
-  drawAllCars();
-  
-  if(timeToCreateNewCars)
-    timeToCreateNewCars = false;
-  
-  drawPlayerCar();
-  
-  topctx.fillStyle = "black";
-  
-  for (var i = 0; i < player.Lives; i++)
-  {
-    topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
-  }
-  
-  // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-  var scoreFontSize = 3.5;
-  var gameOverFontSize = 5.5;
-  var finalScoreFontSize = 2.6;
-  var messageFontSize = 3;
-  
-  topctx.font = scoreFontSize + "vw Arial";
-  topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
-  
-  if (messageTimer > 0 && messageTimer%600 < 300)
-  {
+    var gameTitleFontSize = 6.5;
+    var touchScreenToPlayFontSize = 3;
+    
     topctx.fillStyle = "black";
-    topctx.font = messageFontSize + "vw Arial";
-    topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
+    topctx.font = gameTitleFontSize + "vw Arial";
+    topctx.fillText("CARSTORM", ScreenWidth/2 -ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/5);
+    
+    if (messageTimer == 0)
+    {
+      topctx.font = touchScreenToPlayFontSize + "vw Arial";
+      topctx.fillText("touch screen to drive", ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2- ScreenHeight/18);
+    }
   }
-  
-  if (player.Lives <= 0)
+  else
   {
-    topctx.fillStyle = "darkorange";
-    topctx.font = gameOverFontSize + "vw Arial";
-    topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.85, ScreenHeight/2);
+    // Draws two "street lights"...
+    if (streetLightTimer >= 1000)
+    {
+      DrawStreetLights();
+    }
+    
+    // Draws the player car.
+    drawAllCars();
+    
+    if(timeToCreateNewCars)
+      timeToCreateNewCars = false;
+    
+    drawPlayerCar();
+    
     topctx.fillStyle = "black";
-    topctx.font = finalScoreFontSize + "vw Arial";
-    topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 + ScreenHeight/17);
-    topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/9);
+    
+    for (var i = 0; i < player.Lives; i++)
+    {
+      topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
+    }
+    
+    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
+    var scoreFontSize = 3.5;
+    var gameOverFontSize = 6;
+    var finalScoreFontSize = 2.6;
+    var messageFontSize = 3;
+    
+    if (player.Lives > 0)
+    {
+      topctx.font = scoreFontSize + "vw Arial";
+      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
+    }
+    
+    if (messageTimer > 0 && messageTimer%600 < 300)
+    {
+      topctx.fillStyle = "black";
+      topctx.font = messageFontSize + "vw Arial";
+      topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
+    }
+    
+    if (player.Lives <= 0)
+    {
+      topctx.fillStyle = "darkorange";
+      topctx.font = gameOverFontSize + "vw Arial";
+      topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.35, ScreenHeight/2 -ScreenHeight/8);
+      topctx.fillStyle = "black";
+      topctx.font = finalScoreFontSize + "vw Arial";
+      topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 -ScreenHeight/25);
+      topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/60);
+    }
   }
 }
