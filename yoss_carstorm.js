@@ -191,9 +191,6 @@ function init()
   
   CreateLevel();
   CreatePlayer();
-
-  // Resize the canvas so it fill up the entire screen.
-  Resize();
     
   // Fetch the html element with the id 'canvas'. This is where we will do all drawing.
   var c = document.getElementById("canvas");
@@ -214,6 +211,9 @@ function init()
   
   Now = Date.now();
   LastDraw = Now; // Setting this to Now fixed bug that set timers to zero in the beginning of the game.
+  
+  // Resize the canvas so it fill up the entire screen.
+  Resize();
   
   // We enter the game with the start screen visible.
   SetState(gsStartScreen);
@@ -260,6 +260,8 @@ function Resize()
   roadStartLeft = ScreenWidth/2 - lightWidth;
   
   ResizePlayer();
+  
+  ctx.drawImage(StartBGImage, 0, 0, 1024, 640, 0, 0, ScreenWidth, ScreenHeight);
   
   // Eftersom perspektiv är skumt, så konstaterar vi följande:
   // 
@@ -429,7 +431,6 @@ function SetState(newState)
 function OnEnterStartScreen()
 {
   messageTimer = 2000;
-  ctx.drawImage(StartBGImage, 0, 0, 1024, 640, 0, 0, ScreenWidth, ScreenHeight);
   // Play a melody!
 }
 function TransitFromStartScreenToPlaying()
