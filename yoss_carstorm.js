@@ -189,7 +189,7 @@ function init()
     navigator.ServiceWorker.register("/service_worker.js");
   }
   
-  createLevel();
+  CreateLevel();
   CreatePlayer();
 
   // Resize the canvas so it fill up the entire screen.
@@ -278,15 +278,15 @@ function Resize()
 }
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
-function createLevel()
+function CreateLevel()
 {
   level = [];
   for(var y=0;y<4;y++)
   {
-    level[y] = createLevelRow();
+    level[y] = CreateLevelRow();
   }
 }
-function createLevelRow()
+function CreateLevelRow()
 {
   var row = [];
 
@@ -303,7 +303,7 @@ function createLevelRow()
 function CreatePlayer()
 {
   player = {
-    RoadPos: 2, // Starting on the left side of the road.
+    RoadPos: 2, // Starting on the right side of the road.
     HasCollided: false,
     DeadTick: 0,
     Lives: 3,
@@ -689,7 +689,7 @@ function tickDownAllCarsOneRow()
   level[3] = level[2];
   level[2] = level[1];
   level[1] = level[0];
-  level[0] = createLevelRow(); // and fill up with an empty row at the top.
+  level[0] = CreateLevelRow(); // and fill up with an empty row at the top.
 }
 
 function createNewCars()
@@ -718,7 +718,7 @@ function drawAllCars()
   var roadWidthMultiply = 2.305;
   
   var greyTone = 230;
-
+  
   for(var y=0;y<3;y++)
   {
     var xPos = roadStartLeft - screenwidthFifth * rowPercentages[y];
