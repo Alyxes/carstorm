@@ -65,7 +65,7 @@ var lightHeight = 0;
 var orangeLightSize = 0;
 var yellowLightSize = 0;
 
-var player = {};
+var player = null;
 
 // The level is just a 3x3 double-array.
 var level = [];
@@ -125,23 +125,30 @@ function init()
   }, false);
   document.addEventListener("keydown", (e) => {
     e = e || window.event;
-    if (e.keyCode === 37)
+    
+    // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
+    if(gameState == gsPlaying)
     {
-      // left arrow pressed.
-      // console.log("button left");
-      PlayerMove("left");
-    }
-    else if (e.keyCode === 39)
-    {
-      // right arrow pressed.
-      // console.log("button right");
-      PlayerMove("right");
+      if (e.keyCode === 37)
+      {
+        // left arrow pressed.
+        // console.log("button left");
+        PlayerMove("left");
+      }
+      else if (e.keyCode === 39)
+      {
+        // right arrow pressed.
+        // console.log("button right");
+        PlayerMove("right");
+      }
     }
   });
   document.addEventListener("mousedown", (e) => {
     e = e || window.event;
     if(e.button == 0) // Most of the time the left button
     {
+      // console.log("mousedown: " + e.button);
+      
       // Eeh, ugly but works. Spreading out game state checks this way is error prone.
       // TODO: Also, mousedown and touch events happens outside of the game loop, meaning it might
       // happen in the middle of things, yes/no? That can break things badly.
@@ -183,8 +190,7 @@ function init()
   }
   
   createLevel();
-  // Initiate all the data of the player object.
-  createPlayer();
+  CreatePlayer();
 
   // Resize the canvas so it fill up the entire screen.
   Resize();
@@ -253,7 +259,7 @@ function Resize()
   
   roadStartLeft = ScreenWidth/2 - lightWidth;
   
-  resizePlayer();
+  ResizePlayer();
   
   // Eftersom perspektiv är skumt, så konstaterar vi följande:
   // 
@@ -294,10 +300,9 @@ function createLevelRow()
   return row;
 }
 
-function createPlayer()
+function CreatePlayer()
 {
   player = {
-    CanMove: false,
     RoadPos: 2, // Starting on the left side of the road.
     HasCollided: false,
     DeadTick: 0,
@@ -308,21 +313,25 @@ function createPlayer()
     Ysize: 0,
     Xsize: 0,
   };
+  
+  // As it also position the player onscreen, this is sensible to call after player creation. :-)
+  ResizePlayer();
 }
-function resizePlayer()
+function ResizePlayer()
 {
-  player.Xposition = screenwidthFifth * 2;
-  player.Yposition = (ScreenHeight/9) * 8;
-  player.Ysize = ScreenHeight/10;
-  player.Xsize = screenwidthFifth;
+  // Eventually a resize event happens before a player object has been created, so check for it.
+  if(player)
+  {
+    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    player.Yposition = (ScreenHeight/9) * 8;
+    player.Ysize = ScreenHeight/10;
+    player.Xsize = screenwidthFifth;
+  }
 }
 function ResetGameVariables()
 {
   // player
-  player.RoadPos = 2;
-  player.DeadTick = 0;
-  player.Lives = 3;
-  player.HasCollided = false;
+  CreatePlayer();
   
   // game
   finalScore = 0;
@@ -425,15 +434,7 @@ function OnEnterStartScreen()
 }
 function TransitFromStartScreenToPlaying()
 {
-  player.CanMove = true;
   messageTimer = 0;
-  
-  // Starting a new game.
-  // createLevel();
-  // createPlayer();
-  
-  // TODO: Nåt händer här i som gör att bilen dyker upp som den ska efter game over. :) Jag tror det är fixat...
-  // Resize();
 }
 function TransitFromPausedToPlaying()
 {
@@ -457,33 +458,33 @@ function OnEnterGameOver()
 function PlayerMove(direction)
 {
   var HasMoved = false;
-  if (player.CanMove)
+
+  //console.log("player.RoadPos: " + player.RoadPos);
+  
+  if (direction == "left")
   {
-    if (direction == "left")
+    if (player.RoadPos <= 0)
+      return;
+    else
     {
-      if (player.RoadPos <= 0)
-        return;
-      else
-      {
-        player.RoadPos--;
-        HasMoved = true;
-      }
+      player.RoadPos--;
+      HasMoved = true;
     }
-    else if (direction == "right")
+  }
+  else if (direction == "right")
+  {
+    if (player.RoadPos >= 2)
+      return;
+    else
     {
-      if (player.RoadPos >= 2)
-        return;
-      else
-      {
-        player.RoadPos++;
-        HasMoved = true;
-      }
+      player.RoadPos++;
+      HasMoved = true;
     }
   }
   
   if(HasMoved)
   {
-    player.Xposition = screenwidthFifth * (player.RoadPos +1);
+    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
   }
 }
 
@@ -659,7 +660,6 @@ function GameTickTheCars()
         finalScore = player.Score;
         player.Score = 0;
         player.DeadTick = -1;
-        player.CanMove = false;
         
         SetState(gsGameOver);
         
