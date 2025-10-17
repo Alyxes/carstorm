@@ -510,17 +510,13 @@ function GameLoop()
     return;
   }
 
+  // Gives milliseconds since January 1, 1970. TODO: Use timestamp as param in GameLoop() !!
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   
-  GameLoopGameState();
-    
-  // Always keep asking for the next animation frame.
-  window.requestAnimationFrame(GameLoop);
-}
+  // TODO: Should be here, but Date.now() returns integer ms, and the diff (ElapsedTime) can be zero sometimes.
+  // LastDraw = Now;
 
-function GameLoopGameState()
-{
   switch(gameState)
   {
     case gsNothing:
@@ -543,11 +539,15 @@ function GameLoopGameState()
       GameLoopGameOver();
       break;
   }
+    
+  // Always keep asking for the next animation frame.
+  window.requestAnimationFrame(GameLoop);
 }
+
 function UpdateTimers()
 {
   LastDraw = Now;
-    
+  
   ElapsedCarsTime += ElapsedTime;
   streetLightTimer += ElapsedTime;
   if (clearStreetTimer > 0)
@@ -628,7 +628,23 @@ function GameLoopStartScreen()
     
     checkMessageTimer();
     
-    DrawGame();
+    DrawSnowstorm();
+    
+    var gameTitleFontSize = 6.5;
+    var touchScreenToPlayFontSize = 3;
+    
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+    
+    topctx.fillStyle = "black";
+    topctx.font = gameTitleFontSize + "vw Arial";
+    topctx.fillText("CARSTORM", ScreenWidth/2 -ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/5);
+    
+    if (messageTimer == 0)
+    {
+      topctx.font = touchScreenToPlayFontSize + "vw Arial";
+      topctx.fillText("touch screen to drive", ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2- ScreenHeight/18);
+    }
   }
   // Draw the start screen. Look for touch event to start the game.
 }
@@ -643,8 +659,52 @@ function GameLoopPlaying()
     checkElapsedCarsTime();
     
     checkPlayerTimersAndScore();
+
+    DrawSnowstorm();
+
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+   
+    // Draws two "street lights"...
+    if (streetLightTimer >= 1000)
+    {
+      DrawStreetLights();
+    }
     
-    DrawGame();
+    // Draws the player car.
+    drawAllCars();
+    
+    if(timeToCreateNewCars)
+      timeToCreateNewCars = false;
+    
+    drawPlayerCar();
+    
+    topctx.fillStyle = "black";
+    
+    var LifeHeight = carWidth * 0.555;
+    
+    for (var i = 0; i < player.Lives; i++)
+    {
+      // topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
+      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 3.5 * i, LifeHeight * 4.5, carWidth * 2.5, LifeHeight * 2.8);
+    }
+    
+    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
+    var scoreFontSize = 3.5;
+    var messageFontSize = 3;
+    
+    if (player.Lives > 0)
+    {
+      topctx.font = scoreFontSize + "vw Arial";
+      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
+    }
+    
+    if (messageTimer > 0 && messageTimer%600 < 300)
+    {
+      topctx.fillStyle = "black";
+      topctx.font = messageFontSize + "vw Arial";
+      topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
+    }
   }  
 }
 function GameLoopGameOver()
@@ -654,8 +714,23 @@ function GameLoopGameOver()
     UpdateTimers();
     
     checkElapsedCarsTime();
-    
-    DrawGame();
+      
+    DrawSnowstorm();
+
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+
+    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
+    var gameOverFontSize = 6;
+    var finalScoreFontSize = 2.6;
+
+    topctx.fillStyle = "darkorange";
+    topctx.font = gameOverFontSize + "vw Arial";
+    topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.35, ScreenHeight/2 -ScreenHeight/8);
+    topctx.fillStyle = "black";
+    topctx.font = finalScoreFontSize + "vw Arial";
+    topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 -ScreenHeight/25);
+    topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/60);
   }
 }
 
@@ -916,11 +991,8 @@ function drawPlayerCar()
   topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
 }
 
-// Draw everything.
-function DrawGame()
+function DrawSnowstorm()
 {
-  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-  
   var min = 200;
   var max = 255 - min;
   r = min + Math.floor(Math.random() * max);
@@ -971,77 +1043,6 @@ function DrawGame()
     // var side = 2 + Math.floor(Math.random() * (10));
     
     // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
-  }
-  
-  if (gameState == gsStartScreen)
-  {
-    var gameTitleFontSize = 6.5;
-    var touchScreenToPlayFontSize = 3;
-    
-    topctx.fillStyle = "black";
-    topctx.font = gameTitleFontSize + "vw Arial";
-    topctx.fillText("CARSTORM", ScreenWidth/2 -ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/5);
-    
-    if (messageTimer == 0)
-    {
-      topctx.font = touchScreenToPlayFontSize + "vw Arial";
-      topctx.fillText("touch screen to drive", ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2- ScreenHeight/18);
-    }
-  }
-  else
-  {
-    // Draws two "street lights"...
-    if (streetLightTimer >= 1000)
-    {
-      DrawStreetLights();
-    }
-    
-    // Draws the player car.
-    drawAllCars();
-    
-    if(timeToCreateNewCars)
-      timeToCreateNewCars = false;
-    
-    drawPlayerCar();
-    
-    topctx.fillStyle = "black";
-    
-    var LifeHeight = carWidth * 0.555;
-    
-    for (var i = 0; i < player.Lives; i++)
-    {
-      // topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
-      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 3.5 * i, LifeHeight * 4.5, carWidth * 2.5, LifeHeight * 2.8);
-    }
-    
-    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-    var scoreFontSize = 3.5;
-    var gameOverFontSize = 6;
-    var finalScoreFontSize = 2.6;
-    var messageFontSize = 3;
-    
-    if (player.Lives > 0)
-    {
-      topctx.font = scoreFontSize + "vw Arial";
-      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
-    }
-    
-    if (messageTimer > 0 && messageTimer%600 < 300)
-    {
-      topctx.fillStyle = "black";
-      topctx.font = messageFontSize + "vw Arial";
-      topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
-    }
-    
-    if (player.Lives <= 0)
-    {
-      topctx.fillStyle = "darkorange";
-      topctx.font = gameOverFontSize + "vw Arial";
-      topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.35, ScreenHeight/2 -ScreenHeight/8);
-      topctx.fillStyle = "black";
-      topctx.font = finalScoreFontSize + "vw Arial";
-      topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 -ScreenHeight/25);
-      topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/60);
-    }
-  }
+  }  
 }
+
