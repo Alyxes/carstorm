@@ -86,6 +86,7 @@ Att skapa en service-worker som underlättar att göra appen offline och ladda f
   https://web.dev/learn/pwa/offline-data
     -Use the Cache Storage API for network resources, things you'd access by requesting them via a URL, such as HTML, CSS, JavaScript, images, videos, and audio.
     -Use IndexedDB to store structured data. 
+    -Mer här: https://web.dev/articles/offline-cookbook
     
   https://web.dev/learn/pwa/installation
     https://developer.chrome.com/blog/how_chrome_helps_users_install_the_apps_they_value#manual_installation_of_any_app

@@ -29,6 +29,50 @@ Done. Ladda om localhost, nu ska din index.html jävel-fil laddas korrekt. KUL V
 
 Och, det här är jättespännande: Om det inte fungerar ändå, vilket det inte gör: Då slänger du hela sajten och gör om rubbet, så tycker iis att det hela fungerar fin-fint. (Hände både på Tims och min dator, windows 10 och windows 11.)
 
+---Se till att iis tar hand om php---
+
+Install 'vcredist_x64.exe' o 'vcredist_x86.exe' (Visual C++ 2012 Redistributable) https://www.microsoft.com/en-US/download/details.aspx?id=30679
+
+Enabla FastCGI för iis:
+  https://learn.microsoft.com/en-us/iis/configuration/system.webServer/fastCgi/
+  I Windows Features, klicka dig ner i:
+    Internet Information Services->Word Wide Web Services->Application Development Features,
+    Klicka i CGI.
+
+* Dra ner en non-threadsafe x64 version här: (zip)
+  https://windows.php.net/download/
+* Lägg allt i 'C:\PHP\'
+* Open then 'Internet Information Services Administrator IIS'.
+* Select the root item in the left panel.
+* Double click on 'Handler Mappings' (Asignaciones de Controlador).
+* On the right side panel click on 'Add Module Mapping'
+* Värden:
+    Request Path: *.php
+    Module: FastCgiModule
+    Executable: C:\PHP\php-cgi.exe
+    Name: PHP_FastCGI
+    Request Restrictions: Folder or File, All Verbs, Access: Script
+* Nu frågar den om du vill skapa en FastCGI application! Klicka Yes. <-Eller vet inte, kanske funkar utan. 
+
+Läs hans step by step här:
+  https://stackoverflow.com/questions/34799141/instaling-php-on-windows-with-iis
+
+OBS: Raderna nedan kanske inte behövdes, för i slutändan var det service_worker.js som spökade och cachade upp på nåt konstigt sätt.
+
+Mer specifikt här:
+  https://www.php.net/manual/en/install.windows.iis.php
+
+  Kör de här raderna i admin-dosprompt rad för rad: (Observera PHP_FastCGI, som jag skapade ovan)
+  set phppath=c:\php
+  %windir%\system32\inetsrv\appcmd clear config /section:system.webServer/fastCGI
+  %windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /-[name='PHP_FastCGI']
+  %windir%\system32\inetsrv\appcmd set config /section:system.webServer/fastCGI /+[fullPath='%phppath%\php-cgi.exe']
+  %windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /+[name='PHP_via_FastCGI',path='*.php',verb='*',modules='FastCgiModule',scriptProcessor='%phppath%\php-cgi.exe',resourceType='Unspecified']
+  %windir%\system32\inetsrv\appcmd set config /section:system.webServer/handlers /accessPolicy:Read,Script
+  %windir%\system32\inetsrv\appcmd set config -section:system.webServer/fastCgi /[fullPath='%phppath%\php-cgi.exe'].instanceMaxRequests:10000
+  %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
+  %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phppath%\php.ini']"
+  
 -----app.webmanifest------
 
 Eftersom du kan ladda app.json utan problem, men inte .webmanifest filer, så beror det på iis, igen:
