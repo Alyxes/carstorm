@@ -80,6 +80,7 @@ var message = "";
 var messageTimer = 0;
 var nextLevel = 300;
 var finalScore = 0;
+var clearStreetTimer = 0;
 
 var roadWidth = 0;
 
@@ -96,6 +97,16 @@ var roadStartLeft;
 
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
+var PlayerCarImage = new Image();
+PlayerCarImage.src = "graphics/PlayerCar.png";
+var PlayerLifeImage = new Image();
+PlayerLifeImage.src = "graphics/PlayerLife.png";
+var EnemyCar1Image = new Image();
+EnemyCar1Image.src = "graphics/EnemyCar1.png";
+var EnemyCar2Image = new Image();
+EnemyCar2Image.src = "graphics/EnemyCar2.png";
+var EnemyCar3Image = new Image();
+EnemyCar3Image.src = "graphics/EnemyCar3.png";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -253,7 +264,8 @@ function Resize()
   yellowLightSize = ScreenHeight/350;
   
   carWidth = ScreenWidth/42;
-  carHeight = ScreenHeight/50;
+  carHeight = carWidth * 0.536;
+  // carHeight = ScreenHeight/50;
   
   roadWidth = lightWidth * 2;
   
@@ -261,7 +273,7 @@ function Resize()
   
   ResizePlayer();
   
-  ctx.drawImage(StartBGImage, 0, 0, 1024, 640, 0, 0, ScreenWidth, ScreenHeight);
+  ctx.drawImage(StartBGImage, 0, 0, ScreenWidth, ScreenHeight);
   
   // Eftersom perspektiv är skumt, så konstaterar vi följande:
   // 
@@ -325,9 +337,9 @@ function ResizePlayer()
   if(player)
   {
     player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-    player.Yposition = (ScreenHeight/9) * 8;
-    player.Ysize = ScreenHeight/10;
+    player.Yposition = (ScreenHeight/5) * 4;
     player.Xsize = screenwidthFifth;
+    player.Ysize = player.Xsize * 0.548;
   }
 }
 function ResetGameVariables()
@@ -538,6 +550,15 @@ function UpdateTimers()
     
   ElapsedCarsTime += ElapsedTime;
   streetLightTimer += ElapsedTime;
+  if (clearStreetTimer > 0)
+  {
+    clearStreetTimer -= ElapsedTime;
+    if (clearStreetTimer <= 0)
+    {
+      clearStreetTimer = 0;
+      ClearTheStreet();
+    }
+  }
 }
 function checkMessageTimer()
 {
@@ -587,7 +608,7 @@ function checkPlayerTimersAndScore()
         
         if (player.Score >= nextLevel)
         {
-          gamespeed += 0.2;
+          gamespeed += 0.1;
           gamespeedMS = 1000/gamespeed;
           
           nextLevel += 300 * gamespeed;
@@ -654,6 +675,8 @@ function GameTickTheCars()
       player.Lives--;
       player.DeadTick = 4;
       
+      clearStreetTimer = 250;
+      
       if (player.Lives <= 0)
       {
         // Game over! Show and play death animation. Wait for user to click away.
@@ -663,10 +686,6 @@ function GameTickTheCars()
         player.DeadTick = -1;
         
         SetState(gsGameOver);
-        
-        // Tycker detta ska resettas först när man väljer att försöka igen.
-        // gamespeed = 1;
-        // gamespeedMS = 1000/gamespeed;
       }
     }
   }
@@ -693,22 +712,89 @@ function tickDownAllCarsOneRow()
   level[0] = CreateLevelRow(); // and fill up with an empty row at the top.
 }
 
+// This will be moved and/or integrated somehow into the level object.
+var xCount = [0,0,0];
+
 function createNewCars()
 {
+  // The new if-statements and checks is seemingly working to make sure an even spread of cars along the road.
+  // It might be messier than it need, and some further tests shall be made to see if we can clean it up a bit.
   var fillAll = false;
   var c = 0;
   for(var x=0;x<3;x++)
   {
-    if(fillAll || randomizeBool())
+    if (fillAll)
+      level[0][x].hasCar = true;
+    else if (xCount[x] < -1)
     {
+      console.log("First if-statement: xCount[x] < -1");
+      xCount[x] = 0;
       level[0][x].hasCar = true;
       c++;
+      xCount[x]++;
+    }
+    else if (xCount[x] > 1)
+    {
+      console.log("Second if-statement: xCount[x] > 1");
+      xCount[x] = 0;
+      xCount[x]--;
+    }
+    else if(randomizeBool())
+    {
+      console.log("Third if-statement: randomizeBool()");
+      if (xCount[x] < 2)
+      {
+        console.log("Third if-statement: xCount[x] < 2");
+        if (xCount[x] < 0)
+            xCount[x] = 0;
+            
+        level[0][x].hasCar = true;
+        c++;
+        xCount[x]++;
+      }
+      else
+        xCount[x] = 0;
+    }
+    else
+    {
+      console.log("Fourth if-statement: else");
+      if (xCount[x] > -1)
+      {
+        console.log("Fourth if-statement: xCount[x] > -1");
+        if (xCount[x] > 0)
+          xCount[x] = 0;
+        
+        // We never need to set a levelposition.hasCar to false, it's false by default.
+        xCount[x]--;
+      }
+      else
+      {
+        xCount[x] = 0;
+        level[0][x].hasCar = true;
+        c++;
+        xCount[x]++;
+      }
     }
   }
   
-  if(c == 3 && !fillAll)
+  if(c == 3)
   {
-    level[0][0].hasCar = false;
+    // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should...
+    var rand = randomizeNumber(3);
+    level[0][rand].hasCar = false;
+    if (xCount[rand] > 0)
+      xCount[rand] = 0;
+    xCount[rand]--;
+  }
+}
+function ClearTheStreet()
+{
+  for(var x=0;x<3;x++)
+  {
+    for(var y=0;y<3;y++)
+    {
+      level[y][x].hasCar = false;
+    }
   }
 }
 function drawAllCars()
@@ -718,7 +804,8 @@ function drawAllCars()
   var roadWidthDivide = 2.75;
   var roadWidthMultiply = 2.305;
   
-  var greyTone = 230;
+  // var greyTone = 230;
+  var enemyImg;
   
   for(var y=0;y<3;y++)
   {
@@ -728,13 +815,19 @@ function drawAllCars()
     switch (y)
     {
       case 0:
-        greyTone = 170;
+        // greyTone = 170;
+        enemyImg = EnemyCar1Image;
+        carHeight = carWidth * 0.536;
         break;
       case 1:
-        greyTone = 142;
+        // greyTone = 142;
+        enemyImg = EnemyCar2Image;
+        carHeight = carWidth * 0.545;
         break;
       case 2:
-        greyTone = 64;
+        // greyTone = 64;
+        enemyImg = EnemyCar3Image;
+        carHeight = carWidth * 0.545;
         break;
     }
     
@@ -760,17 +853,22 @@ function drawAllCars()
           ctx.fillStyle = "rgba(0,0,0,0.25)";
           ctx.fillRect(
             xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
-            (ScreenHeight / 2) + lightHeight  + yPos, 
+            (ScreenHeight / 2) + lightHeight -lightHeight/10  + yPos, 
             carWidth + (carWidth * 4.5 * rowPercentages[y]), 
-            carHeight + (carHeight * 3.5 * rowPercentages[y]));
+            (carWidth * 0.45) + ((carWidth * 0.45) * rowPercentages[y]));
         }
         
-        topctx.fillStyle = "rgba(" + greyTone + "," + greyTone + "," + greyTone + ",1)";
-        topctx.fillRect(
-          xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
-          (ScreenHeight / 2) + lightHeight + yPos, 
-          carWidth + (carWidth * 4.5 * rowPercentages[y]), 
-          carHeight + (carHeight * 3.5 * rowPercentages[y]));
+        // topctx.fillStyle = "rgba(" + greyTone + "," + greyTone + "," + greyTone + ",1)";
+        topctx.drawImage(enemyImg,xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes.
+        (ScreenHeight / 2) + lightHeight -lightHeight/3 + yPos, 
+        carWidth + (carWidth * 4.5 * rowPercentages[y]),
+        carHeight + (carHeight * 4.5 * rowPercentages[y]));
+        
+        // topctx.fillRect(
+          // xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
+          // (ScreenHeight / 2) + lightHeight + yPos, 
+          // carWidth + (carWidth * 4.5 * rowPercentages[y]), 
+          // carHeight + (carHeight * 3.5 * rowPercentages[y]));
       }
     }
   }
@@ -781,6 +879,10 @@ function randomizeBool()
     return false;
   
   return true;
+}
+function randomizeNumber(number)
+{
+  return Math.floor(Math.random() * number);
 }
 
 function DrawStreetLights()
@@ -808,17 +910,10 @@ function drawPlayerCar()
 {
   if(player.HasCollided)
   {
-    topctx.fillStyle = "rgba(255,200,0,1)";
-    ctx.fillStyle = "rgba(255,120,0,0.2)";
+    ctx.fillStyle = "rgba(255,120,0,0.3)";
+    ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
   }
-  else
-  {
-    topctx.fillStyle = "black";
-    ctx.fillStyle = "rgba(0,0,0,0.1)";
-  }
-  
-  ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
-  topctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+  topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
 }
 
 // Draw everything.
@@ -911,9 +1006,12 @@ function DrawGame()
     
     topctx.fillStyle = "black";
     
+    var LifeHeight = carWidth * 0.555;
+    
     for (var i = 0; i < player.Lives; i++)
     {
-      topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
+      // topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
+      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 3.5 * i, LifeHeight * 4.5, carWidth * 2.5, LifeHeight * 2.8);
     }
     
     // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
