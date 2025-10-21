@@ -1,5 +1,5 @@
 
-JUST NU: Service workers och caching.
+JUST NU: Det mesta e färdigt här. Gå igenom igen senare, det finns bra mycket mer man kan grotta ner sig i.
 
 Visa anslutna telefoner, och starta mjonklapjärer härifrån o debugga chrome-browsern i telefonen!
   chrome://inspect/#devices
