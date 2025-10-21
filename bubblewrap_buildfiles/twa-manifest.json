@@ -21,8 +21,8 @@
     "path": "D:\\Use\\Programming\\Javascript\\carstorm\\carstormKeystore.jks",
     "alias": "android"
   },
-  "appVersionName": "1",
-  "appVersionCode": 1,
+  "appVersionName": "2",
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://carstorm.madskullcreations.com/app.webmanifest",
@@ -37,16 +37,12 @@
   "fullScopeUrl": "https://carstorm.madskullcreations.com/",
   "minSdkVersion": 21,
   "orientation": "any",
-  "fingerprints": [
-    {
-      "value": "A1:2F:24:81:BE:CE:07:8B:65:0B:1B:90:64:19:60:8C:E8:E1:16:4D:59:64:34:E5:2A:C8:AD:14:82:B4:D2:B1"
-    }
-  ],
+  "fingerprints": [],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "protocolHandlers": [],
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "1"
+  "appVersion": "2"
 }
