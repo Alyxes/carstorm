@@ -1,3 +1,21 @@
+
+Mjaha, eftersom det är ett sånt helvete att debugga och testa service_worker.js på localhost, så har jag lite tips: 
+
+1. Allt sker i Inspect i chrome.
+2. Fliken Application, Service workers. Klicka på knappen Stop bredvid Status.
+3. Klicka i Update on reload OCH Bypass for network. Märker ingen skillnad ändå.
+4. Ctrl + Ladda om knappen. 
+5. Funkar det? Laddar den om till senaste versionen av service_worker.js? 
+6. Nähä. MEN STÄNG DÅ FLIKEN. Alltså localhost-fliken. 
+7. Öppna fliken igen, localhost. Nu  startar service_worker.js om igen. 
+8. Har den uppdaterat till senaste versionen nu då? 
+9. Nähä. Nä, men prova gör om allt en gång till. Starta om browser-helvetet ifall inget annat fungerar. 
+10. Klicka på Storage i vänstra fönstret, klicka på Clear site data.
+11. Nu borde cachen vara tömd, och vissa kodstycken köras eftersom alla filer slängts från cachen. 
+12. Kul va? 
+
+-----gammalt----
+
 1. Upon page load, any changes in this file is detected by browser, which reloads it and run the "install" event below. 
 2. If you close the tab and repones it, both "install" and "activate" events are run. (As there was no active service worker)
 3. Just reloading the page trigger none of these two events. Why? Because there is already an "active" service worker! 

@@ -3,20 +3,66 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "2";
+const ServiceWorkerVersion = "10";
+
+const cacheName = "carstorm-madskullcreations-com";
 
 self.addEventListener("install", event => {
-  // TODO: Delete all cached files! Since this file's Version above has changed, we should assume all files has changed and must be reloaded.
   // TODO: As for easier debugging, try print the value of ServiceWorkerVersion on the start screen of the game.
   
   console.log("Service worker installed. Version: " + ServiceWorkerVersion);
 
-  self.skipWaiting();
+  // Delete all cached files! Since this file's Version above has changed, we should assume all files has changed and must be reloaded.
+  console.log("Deleting cache: " + cacheName);
+  caches.delete(cacheName);
+
+  //self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
   console.log("Service worker activated");
 });
+
+const fetchAndCache = async (request) => {
+  return fetch(request).then(networkResponse => {
+    const responseClone = networkResponse.clone();
+    
+    console.log("opening cache: " + cacheName);
+    caches.open(cacheName).then(cache => {
+      console.log("putting to cache: " + request.url);
+      cache.put(request.url, responseClone);
+    });
+      
+    /*caches.open(request.url).then(cache => {
+      console.log("putting to cache.");
+      cache.put(request, responseClone);
+    });*/
+    
+    console.log(networkResponse);
+    return networkResponse;
+  }).catch(function (reason) {
+    console.error('ServiceWorker fetch failed: ', reason);
+  });
+};
+
+const cacheFirst = async (request) => {
+  const responseFromCache = caches.match(request.url);
+
+  return responseFromCache.then(cachedResponse => {
+    console.log(cachedResponse);
+    
+    if(cachedResponse != null)
+    {
+      console.log("Service worker: fetch " + request.url + ", loading from cache!");
+      return cachedResponse;
+    }
+    else
+    {
+      console.log("Service worker: fetch " + request.url + ", loading fresh!");
+      return fetchAndCache(request);
+    }
+  });
+};
 
 self.addEventListener('fetch', event => {
   console.log(event.request);
@@ -30,37 +76,6 @@ self.addEventListener('fetch', event => {
     return fetch(event.request);
   }
   else {
-    const response = caches.match(event.request.url);
-
-    event.respondWith(
-      response.then(cachedResponse => {
-        console.log(cachedResponse);
-        
-        if(cachedResponse != null)
-        {
-          console.log("Service worker: fetch " + event.request.url + ", loading from cache!");
-          return cachedResponse;
-        }
-        else
-        {
-          console.log("Service worker: fetch " + event.request.url + ", loading fresh!");
-
-          const networkFetch = fetch(event.request).then(networkResponse => {
-            const responseClone = networkResponse.clone();
-            
-            caches.open(event.request.url).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-            
-            console.log(networkResponse);
-            return networkResponse;
-          }).catch(function (reason) {
-            console.error('ServiceWorker fetch failed: ', reason);
-          });
-          
-          return networkFetch;
-        }
-      })
-    );
+    event.respondWith(cacheFirst(event.request));
   }
 });

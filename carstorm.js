@@ -214,10 +214,11 @@ function init()
     }
   });
   
+  // Pilla inte Tim.
   // https://web.dev/learn/pwa/service-workers
-  if ('ServiceWorker' in navigator)
+  if ('serviceWorker' in navigator)
   {
-    navigator.ServiceWorker.register("/service_worker.js");
+    navigator.serviceWorker.register("/service_worker.js");
   }
   
   CreateLevel();
