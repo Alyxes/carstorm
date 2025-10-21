@@ -22,6 +22,8 @@
 var ScreenWidth;
 var ScreenHeight;
 
+var textScale;
+
 // If true, it starts in paused mode, and gets activated by the focus event.
 var screenSaverPaused = false;
 
@@ -97,16 +99,34 @@ var roadStartLeft;
 
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
+
 var PlayerCarImage = new Image();
 PlayerCarImage.src = "graphics/PlayerCar.png";
 var PlayerLifeImage = new Image();
 PlayerLifeImage.src = "graphics/PlayerLife.png";
+
 var EnemyCar1Image = new Image();
 EnemyCar1Image.src = "graphics/EnemyCar1.png";
 var EnemyCar2Image = new Image();
 EnemyCar2Image.src = "graphics/EnemyCar2.png";
 var EnemyCar3Image = new Image();
 EnemyCar3Image.src = "graphics/EnemyCar3.png";
+
+var EnemyCarShadowImage = new Image();
+EnemyCarShadowImage.src = "graphics/EnemyCarShadow.png";
+var PlayerCarShadowImage = new Image();
+PlayerCarShadowImage.src = "graphics/PlayerCarShadow.png";
+
+var Explosion1Image = new Image();
+Explosion1Image.src = "graphics/Explosion1.png";
+var Explosion2Image = new Image();
+Explosion2Image.src = "graphics/Explosion2.png";
+var Explosion3Image = new Image();
+Explosion3Image.src = "graphics/Explosion3.png";
+var Smoke1Image = new Image();
+Smoke1Image.src = "graphics/Smoke1.png";
+var Smoke2Image = new Image();
+Smoke2Image.src = "graphics/Smoke2.png";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -256,12 +276,15 @@ function Resize()
   hiddenCanvas.height = ScreenHeight;
   hiddenCanvas.width = ScreenWidth;
   
+  textScale = ScreenWidth / 3840;
+  textScale = textScale + ((1-textScale)/2);
+  
   screenwidthFifth = ScreenWidth/5;
   
   lightWidth = ScreenWidth/23;
   lightHeight = ScreenHeight/20;
-  orangeLightSize = ScreenHeight/215;
-  yellowLightSize = ScreenHeight/350;
+  orangeLightSize = ScreenWidth/370;
+  yellowLightSize = ScreenWidth/480;
   
   carWidth = ScreenWidth/42;
   carHeight = carWidth * 0.536;
@@ -630,20 +653,21 @@ function GameLoopStartScreen()
     
     DrawSnowstorm();
     
-    var gameTitleFontSize = 6.5;
-    var touchScreenToPlayFontSize = 3;
+    var gameTitleFontSize = 10 * textScale;
+    var touchScreenToPlayFontSize = 4 * textScale;
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
     topctx.fillStyle = "black";
+    topctx.textAlign = "center";
     topctx.font = gameTitleFontSize + "vw Arial";
-    topctx.fillText("CARSTORM", ScreenWidth/2 -ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/5);
+    topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/5);
     
     if (messageTimer == 0)
     {
       topctx.font = touchScreenToPlayFontSize + "vw Arial";
-      topctx.fillText("touch screen to drive", ScreenWidth/2 -ScreenWidth/7.2, ScreenHeight/2- ScreenHeight/18);
+      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/18);
     }
   }
   // Draw the start screen. Look for touch event to start the game.
@@ -655,9 +679,7 @@ function GameLoopPlaying()
     UpdateTimers();
     
     checkMessageTimer();
-    
     checkElapsedCarsTime();
-    
     checkPlayerTimersAndScore();
 
     DrawSnowstorm();
@@ -666,20 +688,18 @@ function GameLoopPlaying()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
    
     // Draws two "street lights"...
-    if (streetLightTimer >= 1000)
+    if (streetLightTimer >= gamespeedMS)
     {
       DrawStreetLights();
     }
     
     // Draws the player car.
-    drawAllCars();
+    DrawAllCars();
     
     if(timeToCreateNewCars)
       timeToCreateNewCars = false;
     
-    drawPlayerCar();
-    
-    topctx.fillStyle = "black";
+    DrawPlayerCar();
     
     var LifeHeight = carWidth * 0.555;
     
@@ -690,20 +710,23 @@ function GameLoopPlaying()
     }
     
     // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-    var scoreFontSize = 3.5;
-    var messageFontSize = 3;
+    var scoreFontSize = 5 * textScale;
+    var messageFontSize = 4 * textScale;
+    
+    topctx.fillStyle = "black";
     
     if (player.Lives > 0)
     {
+      topctx.textAlign = "left";
       topctx.font = scoreFontSize + "vw Arial";
-      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/11);
+      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/9);
     }
     
     if (messageTimer > 0 && messageTimer%600 < 300)
     {
-      topctx.fillStyle = "black";
+      topctx.textAlign = "center";
       topctx.font = messageFontSize + "vw Arial";
-      topctx.fillText(message, ScreenWidth/2 -ScreenWidth/7.4, ScreenHeight/2 - ScreenHeight/7);
+      topctx.fillText(message, ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
   }  
 }
@@ -720,17 +743,29 @@ function GameLoopGameOver()
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
 
+    // The street lights shouldn't stop because it's game over.
+    if (streetLightTimer >= gamespeedMS)
+    {
+      DrawStreetLights();
+    }
+    
+    // Draws the player car.
+    DrawAllCars();
+    
+    DrawPlayerCar();
+    
     // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-    var gameOverFontSize = 6;
-    var finalScoreFontSize = 2.6;
+    var gameOverFontSize = 8 * textScale;
+    var finalScoreFontSize = 3.5 * textScale;
 
     topctx.fillStyle = "darkorange";
+    topctx.textAlign = "center";
     topctx.font = gameOverFontSize + "vw Arial";
-    topctx.fillText("GAME OVER", ScreenWidth/2 -ScreenWidth/5.35, ScreenHeight/2 -ScreenHeight/8);
+    topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/8);
     topctx.fillStyle = "black";
     topctx.font = finalScoreFontSize + "vw Arial";
-    topctx.fillText("Your final score was", ScreenWidth/2 -ScreenWidth/8.5, ScreenHeight/2 -ScreenHeight/25);
-    topctx.fillText(finalScore, ScreenWidth/2 -ScreenWidth/60, ScreenHeight/2 + ScreenHeight/60);
+    topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/25);
+    topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/60);
   }
 }
 
@@ -741,7 +776,7 @@ function GameTickTheCars()
   tickDownAllCarsOneRow();
   if (player.DeadTick == 0)
   {
-    createNewCars();
+    CreateNewCars();
   
     if(checkIfPlayerCollidesWithOtherCars())
     {
@@ -789,20 +824,23 @@ function tickDownAllCarsOneRow()
 
 // This will be moved and/or integrated somehow into the level object.
 var xCount = [0,0,0];
+var emptyRowCount = 0;
 
-function createNewCars()
+function CreateNewCars()
 {
   // The new if-statements and checks is seemingly working to make sure an even spread of cars along the road.
   // It might be messier than it need, and some further tests shall be made to see if we can clean it up a bit.
   var fillAll = false;
   var c = 0;
+  var rand;
+  
   for(var x=0;x<3;x++)
   {
     if (fillAll)
       level[0][x].hasCar = true;
     else if (xCount[x] < -1)
     {
-      console.log("First if-statement: xCount[x] < -1");
+      // console.log("First if-statement: xCount[x] < -1");
       xCount[x] = 0;
       level[0][x].hasCar = true;
       c++;
@@ -810,16 +848,16 @@ function createNewCars()
     }
     else if (xCount[x] > 1)
     {
-      console.log("Second if-statement: xCount[x] > 1");
+      // console.log("Second if-statement: xCount[x] > 1");
       xCount[x] = 0;
       xCount[x]--;
     }
     else if(randomizeBool())
     {
-      console.log("Third if-statement: randomizeBool()");
+      // console.log("Third if-statement: randomizeBool()");
       if (xCount[x] < 2)
       {
-        console.log("Third if-statement: xCount[x] < 2");
+        // console.log("Third if-statement: xCount[x] < 2");
         if (xCount[x] < 0)
             xCount[x] = 0;
             
@@ -832,10 +870,10 @@ function createNewCars()
     }
     else
     {
-      console.log("Fourth if-statement: else");
-      if (xCount[x] > -1)
+      // console.log("Fourth if-statement: else");
+      if (xCount[x] > -2)
       {
-        console.log("Fourth if-statement: xCount[x] > -1");
+        // console.log("Fourth if-statement: xCount[x] > -2");
         if (xCount[x] > 0)
           xCount[x] = 0;
         
@@ -853,33 +891,60 @@ function createNewCars()
   }
   
   if(c == 3)
-  {
-    // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should...
-    var rand = randomizeNumber(3);
-    level[0][rand].hasCar = false;
-    if (xCount[rand] > 0)
-      xCount[rand] = 0;
-    xCount[rand]--;
-  }
+    {
+      console.log("Händer detta ens?");
+      // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should.
+      rand = randomizeNumber(3);
+      level[0][rand].hasCar = false;
+      
+      if (xCount[rand] > 0)
+        xCount[rand] = 0;
+      
+      xCount[rand]--;
+      
+      if (emptyRowCount > 0)
+        emptyRowCount--;
+    }
+    else if (c == 0)
+    {
+      console.log("Eller detta?");
+      if (emptyRowCount >= 2)
+      {
+        emptyRowCount = 0;
+        rand = randomizeNumber(3);
+        level[0][rand].hasCar = true;
+        
+        if (xCount[rand] < 0)
+              xCount[rand] = 0;
+            
+        xCount[rand]++;
+      }
+      else
+      {
+        rand = randomizeNumber(3);
+        xCount[rand] = -2;
+      }
+      emptyRowCount++;
+    }
 }
 function ClearTheStreet()
 {
   for(var x=0;x<3;x++)
   {
+    xCount[x] = 0;
     for(var y=0;y<3;y++)
     {
       level[y][x].hasCar = false;
     }
   }
 }
-function drawAllCars()
+function DrawAllCars()
 {
   // Precise numbers to center the cars and give them perfect space between.
   // Don't touch without saving original numbers!!
   var roadWidthDivide = 2.75;
   var roadWidthMultiply = 2.305;
   
-  // var greyTone = 230;
   var enemyImg;
   
   for(var y=0;y<3;y++)
@@ -890,17 +955,14 @@ function drawAllCars()
     switch (y)
     {
       case 0:
-        // greyTone = 170;
         enemyImg = EnemyCar1Image;
         carHeight = carWidth * 0.536;
         break;
       case 1:
-        // greyTone = 142;
         enemyImg = EnemyCar2Image;
         carHeight = carWidth * 0.545;
         break;
       case 2:
-        // greyTone = 64;
         enemyImg = EnemyCar3Image;
         carHeight = carWidth * 0.545;
         break;
@@ -913,39 +975,45 @@ function drawAllCars()
         switch (x)
         {
           case 0:
-            xPos = roadStartLeft - screenwidthFifth * rowPercentages[y];
+            xPos = roadStartLeft - screenwidthFifth * rowPercentages[y] + carWidth/3;
             break;
           case 1:
             xPos = (roadStartLeft - screenwidthFifth * rowPercentages[y]) - (carWidth * 2.25 * rowPercentages[y]);
             break;
           case 2:
-            xPos = (roadStartLeft - screenwidthFifth * rowPercentages[y]) - (carWidth * 4.5 * rowPercentages[y]);
+            xPos = (roadStartLeft - screenwidthFifth * rowPercentages[y]) - (carWidth * 4.5 * rowPercentages[y]) - carWidth/3;
             break;
         }
 
         if (timeToCreateNewCars && y == 0)
         {
-          ctx.fillStyle = "rgba(0,0,0,0.25)";
-          ctx.fillRect(
+          ctx.drawImage(EnemyCarShadowImage, 
             xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
-            (ScreenHeight / 2) + lightHeight -lightHeight/10  + yPos, 
-            carWidth + (carWidth * 4.5 * rowPercentages[y]), 
-            (carWidth * 0.45) + ((carWidth * 0.45) * rowPercentages[y]));
+            (ScreenHeight / 2) + lightHeight -lightHeight/8 + yPos, 
+            carWidth + (carWidth * 4.2 * rowPercentages[y]), 
+            (carWidth * 0.42) + ((carWidth * 0.42) * rowPercentages[y]));
         }
         
-        // topctx.fillStyle = "rgba(" + greyTone + "," + greyTone + "," + greyTone + ",1)";
-        topctx.drawImage(enemyImg,xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes.
+        topctx.drawImage(enemyImg ,xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes.
         (ScreenHeight / 2) + lightHeight -lightHeight/3 + yPos, 
         carWidth + (carWidth * 4.5 * rowPercentages[y]),
         carHeight + (carHeight * 4.5 * rowPercentages[y]));
-        
-        // topctx.fillRect(
-          // xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
-          // (ScreenHeight / 2) + lightHeight + yPos, 
-          // carWidth + (carWidth * 4.5 * rowPercentages[y]), 
-          // carHeight + (carHeight * 3.5 * rowPercentages[y]));
       }
     }
+    // Testprint
+    // if (player.Lives > 0)
+    // {
+      // var testTextFont = 2.5 * textScale;
+      
+      // topctx.fillStyle = "blue";
+      // topctx.textAlign = "center";
+      // topctx.font = testTextFont + "vw Arial";
+      // topctx.fillText("emptyRowCount: " + emptyRowCount, ScreenWidth/2,  ScreenHeight/2 - ScreenHeight/6);
+      // topctx.font = testTextFont + "vw Arial";
+      // topctx.fillText(xCount[0], ScreenWidth/2 - ScreenWidth/20, ScreenHeight/2 - ScreenHeight/10);
+      // topctx.fillText(xCount[1], ScreenWidth/2,  ScreenHeight/2 - ScreenHeight/10);
+      // topctx.fillText(xCount[2], ScreenWidth/2 + ScreenWidth/20,  ScreenHeight/2 - ScreenHeight/10);
+    // }
   }
 }
 function randomizeBool()
@@ -962,7 +1030,7 @@ function randomizeNumber(number)
 
 function DrawStreetLights()
 {
-  ctx.fillStyle = "orange";
+  ctx.fillStyle = "rgba(255,100,0,1)";
   ctx.beginPath();
   ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
   ctx.fill();
@@ -981,7 +1049,7 @@ function DrawStreetLights()
   streetLightTimer = 0;
 }
 
-function drawPlayerCar()
+function DrawPlayerCar()
 {
   if(player.HasCollided)
   {
@@ -989,6 +1057,9 @@ function drawPlayerCar()
     ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
   }
   topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+  ctx.globalAlpha = 0.24;
+  ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
+  ctx.globalAlpha = 1;
 }
 
 function DrawSnowstorm()
