@@ -3,7 +3,7 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "10";
+const ServiceWorkerVersion = "14";
 
 const cacheName = "carstorm-madskullcreations-com";
 
@@ -15,12 +15,21 @@ self.addEventListener("install", event => {
   // Delete all cached files! Since this file's Version above has changed, we should assume all files has changed and must be reloaded.
   console.log("Deleting cache: " + cacheName);
   caches.delete(cacheName);
-
-  //self.skipWaiting();
+  
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
   console.log("Service worker activated");
+ 
+  // Pretty please with vanilla on top, store my value in the cache.
+  // Nope! Man får inte lagra annat än Response objekt i denna cachen! 
+  // ..jag vill egentligen bara att carstorm.js ska kunna skriva ut vilken version vi kör, ServiceWorkerVersion. Inte superviktigt.
+  // TODO: DU kan kanske skriva ner värdet i en annan sorts cache? 
+  /*caches.open(cacheName).then(cache => {
+    console.log("Writing ServiceWorkerVersion " + ServiceWorkerVersion + " to cache.");
+    cache.put("ServiceWorkerVersion", ServiceWorkerVersion);
+  });*/
 });
 
 const fetchAndCache = async (request) => {
