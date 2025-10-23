@@ -230,6 +230,19 @@ function init()
     navigator.serviceWorker.register("/service_worker.js");
   }
   
+  // Trist, variabler i service_worker.js är inte åtkomliga härifrån. (Är ju i en annan tråd så det är ju iofs. logiskt)
+  /*if(ServiceWorkerVersion != "slork")
+  {
+    console.log("It IS available from here! " + ServiceWorkerVersion);
+  }*/
+  
+  // Trist 2, caches kan inte lagra annat än "Response" objekt, dvs. filer som dras ner från servern o sånt.  
+  /*console.log("Test open cache.");
+  caches.match("ServiceWorkerVersion").then(cache => {
+    console.log("Fint! Gick att öppna cachen. ");
+    console.log(cache);
+  });*/
+  
   CreateLevel();
   CreatePlayer();
     

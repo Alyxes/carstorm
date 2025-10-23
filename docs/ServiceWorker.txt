@@ -14,6 +14,12 @@ Mjaha, eftersom det är ett sånt helvete att debugga och testa service_worker.j
 11. Nu borde cachen vara tömd, och vissa kodstycken köras eftersom alla filer slängts från cachen. 
 12. Kul va? 
 
+Tips: Ctrl+reload kan fixa att browsern trots att min service_worker tycks fungera ändå cachar filer, tex. carstorm.js... 
+  <-TODO: Detta ÄR ett problem, då spelet kör i just chrome-fan, och om jag inte kan bypassa deras cache codewise så har vi problem.
+
+https://carstorm.madskullcreations.com INTE carstorm.madskullcreations.com
+  ...För utan https så LADDAS INTE service_worker.js, eftersom if ('serviceWorker' in navigator) ret. false då navigator inte har en serviceWorker. Logiskt men så jäkla jobbigt innan man vet.
+
 -----gammalt----
 
 1. Upon page load, any changes in this file is detected by browser, which reloads it and run the "install" event below. 

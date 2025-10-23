@@ -1,0 +1,26 @@
+
+Länken e bra, följ Do's and Don'ts, o kolla in .psd templaten de har längst ner.
+https://developer.android.com/distribute/google-play/resources/icon-design-specifications
+
+Här nämner de nya grejer, bla. support för "monokroma" ikoner, du ser i deras exempel att vissa mänskor gillar det.
+https://developer.android.com/develop/ui/views/launch/icon_design_adaptive
+
+Här bögar de loss om hur tufft det är med scrollande tiles och att ha två lager i en tile: (det är inte tufft, det är stenålder)
+https://medium.com/google-design/designing-adaptive-icons-515af294c783
+
+Det ska finnas tre sorters ikoner nu för tiden, se nedan. 
+
+En ikon ska vara 512x512px.
+
+I filen twa-manifest.json finns följande tre rader:
+  "iconUrl": "https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png",
+  "maskableIconUrl": "https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png",
+  "monochromeIconUrl": "https://carstorm.madskullcreations.com/icons/maskable_icon_x512.png",
+
+  <-De har idag allihop samma ikon, men vi borde följa guiderna för att få rätt på dem. 
+    1. iconUrl - det är nog den vi är vana vid att se.
+    2. monochromeIconUrl - Till för att se bra ut ifall användaren kör "monochromatic" layout på sin lur. I princip ska ikonen få en tint av hans tema-färg på sitt "skrivbord". 
+    3. maskableIconUrl - Har ingen aning än!
+  
+https://www.thisispix.com/dp-px-converter
+  ..Välj 512 "px" at "nodpi" så får du upp en lista. 
