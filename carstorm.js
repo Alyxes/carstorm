@@ -50,9 +50,10 @@ var gsStartScreen = "StartScreen";
 var gsPlaying = "Playing";
 var gsPaused = "Paused";
 var gsGameOver = "GameOver";
+var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [gsNothing,gsStartScreen,gsPlaying,gsPaused,gsGameOver];
+var gameStates = [ gsNothing, gsStartScreen, gsPlaying, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -78,12 +79,11 @@ var rowPercentages = [0, 0.21, 0.6, 1.3];
 var carWidth = 0;
 var carHeight = 0;
 
-var message = "";
 var messageTimer = 0;
 var nextLevel = 300;
 var finalScore = 0;
 var clearStreetTimer = 0;
-var gameOverTimer = 2000;
+var WinningScore = 9999;
 
 var roadWidth = 0;
 
@@ -216,8 +216,14 @@ function init()
       }
       else if(gameState == gsGameOver)
       {
-        // Clicking the game over screen return you to the start screen.
-        if (gameOverTimer <= 0)
+        // Clicking the game over screen returns you to the start screen.
+        if (messageTimer <= 0)
+          SetState(gsStartScreen);
+      }
+      else if (gameState == gsWinGame)
+      {
+        // Clicking the winning game screen returns you to the start screen.
+        if (messageTimer <= 0)
           SetState(gsStartScreen);
       }
     }
@@ -407,7 +413,7 @@ function ResetGameVariables()
   gamespeed = 1;
   gamespeedMS = 1000/gamespeed;
   nextLevel = 300;
-  gameOverTimer = 2000;
+  explosionAnimFrameCounter = 0;
 }
 
 function EnterSomeKindOfPause()
@@ -466,6 +472,11 @@ function SetState(newState)
         OnEnterGameOver();
         transitionCool = true;
       }
+      else if(newState == gsWinGame)
+      {
+        OnEnterWinGame();
+        transitionCool = true;
+      }
       break;
     case gsPaused:
       // To keep stuff simple, there is no restart or abort game button in pause mode.
@@ -476,10 +487,18 @@ function SetState(newState)
       }
       break;
     case gsGameOver:
-      // To keep stuff simple, the start screen show up very short after game over.
+      // After a timer, player can click/touch screen to go back to the start screen.
       if(newState == gsStartScreen)
       {
         TransitFromGameOverToStartScreen();
+        transitionCool = true;
+      }
+      break;
+    case gsWinGame:
+    // After a timer, player can click/touch screen to go back to the start screen.
+      if(newState == gsStartScreen)
+      {
+        TransitFromWinGameToStartScreen();
         transitionCool = true;
       }
       break;
@@ -498,12 +517,12 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
-  messageTimer = 2000;
+  messageTimer = 2000; // Used for the message "touch screen to drive".
   // Play a melody!
 }
 function TransitFromStartScreenToPlaying()
 {
-  messageTimer = 0;
+  messageTimer = 0; // Reset to be used for "SPEED INCREASE".
   explosionAnimFrameLength = 333;
 }
 function TransitFromPausedToPlaying()
@@ -513,7 +532,12 @@ function TransitFromPausedToPlaying()
 function TransitFromGameOverToStartScreen()
 {
   ResetGameVariables();
-  messageTimer = 2000;
+  messageTimer = 2000; // Reset for "touch screen to drive" message again.
+}
+function TransitFromWinGameToStartScreen()
+{
+  ResetGameVariables();
+  messageTimer = 2000; // Reset for "touch screen to drive" message again.
 }
 function OnEnterPaused()
 {
@@ -522,6 +546,12 @@ function OnEnterPaused()
 function OnEnterGameOver()
 {
   // Start the game over trudelutt.
+  messageTimer = 2000; // Set for the "touch screen to restart" message.
+}
+function OnEnterWinGame()
+{
+  // Start winning trudelutt.
+  messageTimer = 4000; // Set for the "touch screen to play again" message.
 }
 
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
@@ -595,8 +625,12 @@ function GameLoop()
       // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
       break;
     case gsGameOver:
-      // Draw game as usual, except time has "stopped" and the car is showing a crash-icon.
+      // Draw game as usual, except enemy cars stop coming and player car is smoking and can't be moved.
       GameLoopGameOver();
+      break;
+    case gsWinGame:
+      // Draw game as usual, enemy cars stop coming, player can't control, happy win message printed.
+      GameLoopWinGame();
       break;
   }
     
@@ -628,7 +662,6 @@ function checkMessageTimer()
     if (messageTimer < 0)
     {
       messageTimer = 0;
-      message = "";
     }
   }
 }
@@ -666,12 +699,13 @@ function checkPlayerTimersAndScore()
       
       if (explosionAnimFrameCounter >= 3)
       {
-        currentExplosionFrameIndex = 0;
+        explosionAnimFrameCounter = 0;
+        
         if (gameState != gsGameOver)
         {
+          player.CrashState = "Restarting";
           player.RoadPos = 2;
           player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-          player.CrashState = "Restarting";
         }
         else
         {
@@ -709,9 +743,19 @@ function checkPlayerTimersAndScore()
     else
     {
       // Player didn't die! Check if there were any cars to pass that will grant some score.
-      if (player.Lives > 0)
+      if (gameState == gsPlaying && player.Lives > 0)
       {
         player.Score += 10 * checkAmountOfCarsToGetPoints();
+        
+        if (player.Score >= WinningScore)
+        {
+          player.Score = WinningScore;
+          
+          EndGameVariableResets();
+          
+          SetState(gsWinGame);
+          return;
+        }
         
         if (player.Score >= nextLevel)
         {
@@ -721,7 +765,6 @@ function checkPlayerTimersAndScore()
           nextLevel += 300 * gamespeed;
           // explosionAnimFrameLength must diminish maybe?
           
-          message = "SPEED INCREASE";
           messageTimer = 2000;
         }
       }
@@ -743,7 +786,7 @@ function GameLoopStartScreen()
     
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = "15vw Arial";
+    topctx.font = "14vw Arial";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
     if (messageTimer == 0)
@@ -803,7 +846,7 @@ function GameLoopPlaying()
     {
       topctx.textAlign = "center";
       topctx.font = "6vw Arial";
-      topctx.fillText(message, ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
+      topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
   }  
 }
@@ -811,11 +854,8 @@ function GameLoopGameOver()
 {
   if (ElapsedTime >= fpsInterval)
   {
-    gameOverTimer -= ElapsedTime;
-    if (gameOverTimer < 0)
-      gameOverTimer = 0;
-    
     UpdateTimers();
+    checkMessageTimer();
     checkElapsedCarsTime();
     checkPlayerTimersAndScore();
       
@@ -843,11 +883,71 @@ function GameLoopGameOver()
     topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/32);
     topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/13.5);
     
-    if (gameOverTimer == 0)
+    if (messageTimer == 0)
     {
       topctx.textAlign = "center";
       topctx.font = "6vw Arial";
       topctx.fillText("touch screen to restart", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/5.5);
+    }
+  }
+}
+function GameLoopWinGame()
+{
+  if (ElapsedTime >= fpsInterval)
+  {
+    UpdateTimers();
+    checkMessageTimer();
+    checkElapsedCarsTime();
+    checkPlayerTimersAndScore();
+      
+    DrawSnowstorm();
+
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+
+    // The street lights shouldn't stop because it's game over.
+    if (streetLightTimer >= gamespeedMS)
+    {
+      DrawStreetLights();
+    }
+    
+    DrawAllCars();
+    
+    DrawPlayerCar();
+    
+    topctx.fillStyle = "yellow";
+    topctx.strokeStyle = "black";
+    topctx.lineWidth = 5 * textScale;
+    topctx.textAlign = "left";
+    topctx.font = "9vw Arial";
+    topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
+    topctx.strokeText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
+    
+    topctx.fillStyle = "white";
+    topctx.strokeStyle = "black";
+    topctx.lineWidth = 8 * textScale;
+    topctx.textAlign = "center";
+    topctx.font = "13.5vw Arial";
+    topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
+    topctx.strokeText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
+    
+    if (messageTimer < 2500)
+    {
+      // Should be 1.5 seconds after winning.
+      topctx.fillStyle = "yellow";
+      topctx.strokeStyle = "black";
+      topctx.lineWidth = 4 * textScale;
+      topctx.font = "6.5vw Arial";
+      topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
+      topctx.strokeText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
+    }
+    
+    if (messageTimer == 0)
+    {
+      topctx.fillStyle = "black";
+      topctx.textAlign = "center";
+      topctx.font = "6vw Arial";
+      topctx.fillText("touch screen to play again", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/6);
     }
   }
 }
@@ -879,15 +979,22 @@ function GameTickTheCars()
       if (player.Lives <= 0)
       {
         // Game over! Show and play death animation. Wait for user to click away.
-        messageTimer = 0; // For safety, so that the message won't be perpetuated on the game over screen.
         finalScore = player.Score;
         player.Score = 0;
-        player.DeadTick = -1;
+        
+        EndGameVariableResets();
         
         SetState(gsGameOver);
       }
     }
   }
+}
+function EndGameVariableResets()
+{
+  // Here we reset variables that shouldn't affect things anymore in game over and win game states. But we don't yet want everything to reset.
+  clearStreetTimer = 250; // This one is set twice in case of crashing and becoing game over, but so what...
+  player.DeadTick = -1; // This one makes sure that enemy cars won't hit you anymore.
+  // explosionAnimFrameCounter = 0;
 }
 function checkIfPlayerCollidesWithOtherCars()
 {
