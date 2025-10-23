@@ -653,9 +653,12 @@ function checkPlayerTimersAndScore()
     if (explosionAnimTimer <= 0)
     {
       explosionAnimTimer = explosionAnimFrameLength;
-      explosionAnimFrameCounter++;
+      
+      if (player.CrashState == "Exploding")
+        explosionAnimFrameCounter++;
       
       currentExplosionFrameIndex++;
+      
       if (currentExplosionFrameIndex > 2)
         currentExplosionFrameIndex = 0;
       
@@ -663,18 +666,16 @@ function checkPlayerTimersAndScore()
       
       if (explosionAnimFrameCounter >= 3)
       {
-        explosionAnimFrameCounter = 0;
         if (gameState != gsGameOver)
         {
-          if (player.CrashState != "Restarting")
-          {
-            player.RoadPos = 2;
-            player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-            player.CrashState = "Restarting";
-          }
+          player.RoadPos = 2;
+          player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+          player.CrashState = "Restarting";
         }
         else
+        {
           player.CrashState = "GameOver";
+        }
       }
     }
   }
