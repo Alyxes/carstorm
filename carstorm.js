@@ -83,6 +83,7 @@ var messageTimer = 0;
 var nextLevel = 300;
 var finalScore = 0;
 var clearStreetTimer = 0;
+var gameOverTimer = 2000;
 
 var roadWidth = 0;
 
@@ -96,6 +97,13 @@ var timeToCreateNewCars = false;
 var screenwidthFifth;
 
 var roadStartLeft;
+
+var explosionAnim = [3];
+var currentExplosionFrame;
+var currentExplosionFrameIndex = 0;
+var explosionAnimFrameLength = 0;
+var explosionAnimTimer = 0;
+var explosionAnimFrameCounter = 0;
 
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
@@ -209,7 +217,8 @@ function init()
       else if(gameState == gsGameOver)
       {
         // Clicking the game over screen return you to the start screen.
-        SetState(gsStartScreen);
+        if (gameOverTimer <= 0)
+          SetState(gsStartScreen);
       }
     }
   });
@@ -240,6 +249,12 @@ function init()
   
   // A winterstorm background should be almost white, not green. :)
   c.style.backgroundColor = "#eee";
+  
+  explosionAnim[0] = Explosion1Image;
+  explosionAnim[1] = Explosion2Image;
+  explosionAnim[2] = Explosion3Image;
+  
+  currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
   
   Now = Date.now();
   LastDraw = Now; // Setting this to Now fixed bug that set timers to zero in the beginning of the game.
@@ -344,6 +359,9 @@ function CreatePlayer()
     RoadPos: 2, // Starting on the right side of the road.
     HasCollided: false,
     DeadTick: 0,
+    RestartBlinkTimer: 0,
+    CanMove: true,
+    CrashState: "None",
     Lives: 3,
     Score: 0,
     Xposition: 0,
@@ -376,6 +394,7 @@ function ResetGameVariables()
   gamespeed = 1;
   gamespeedMS = 1000/gamespeed;
   nextLevel = 300;
+  gameOverTimer = 2000;
 }
 
 function EnterSomeKindOfPause()
@@ -472,6 +491,7 @@ function OnEnterStartScreen()
 function TransitFromStartScreenToPlaying()
 {
   messageTimer = 0;
+  explosionAnimFrameLength = 333;
 }
 function TransitFromPausedToPlaying()
 {
@@ -494,6 +514,9 @@ function OnEnterGameOver()
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
 function PlayerMove(direction)
 {
+  if (!player.CanMove)
+    return;
+  
   var HasMoved = false;
 
   //console.log("player.RoadPos: " + player.RoadPos);
@@ -611,6 +634,46 @@ function checkElapsedCarsTime()
 }
 function checkPlayerTimersAndScore()
 {
+  if (explosionAnimTimer > 0)
+  {
+    explosionAnimTimer -= ElapsedTime;
+    if (explosionAnimTimer <= 0)
+    {
+      explosionAnimTimer = explosionAnimFrameLength;
+      explosionAnimFrameCounter++;
+      
+      currentExplosionFrameIndex++;
+      if (currentExplosionFrameIndex > 2)
+        currentExplosionFrameIndex = 0;
+      
+      currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
+      
+      if (explosionAnimFrameCounter >= 3)
+      {
+        explosionAnimFrameCounter = 0;
+        if (gameState != gsGameOver)
+        {
+          if (player.CrashState != "Restarting")
+          {
+            player.RoadPos = 2;
+            player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+            player.CrashState = "Restarting";
+          }
+        }
+        else
+          player.CrashState = "GameOver";
+      }
+    }
+  }
+  if (player.RestartBlinkTimer > 0)
+  {
+    player.RestartBlinkTimer -= ElapsedTime;
+    
+    if (player.RestartBlinkTimer <= 0)
+    {
+      player.RestartBlinkTimer = 0;
+    }
+  }
   if (timeToCreateNewCars)
   {
     if (player.DeadTick > 0)
@@ -620,7 +683,12 @@ function checkPlayerTimersAndScore()
       if(player.DeadTick <= 0)
       {
         player.DeadTick = 0;
+        player.CanMove = true;
+        player.CrashState = "None";
         player.HasCollided = false;
+        player.RestartBlinkTimer = 0;
+        explosionAnimTimer = 0;
+        explosionAnimFrameCounter = 0;
       }
     }
     else
@@ -636,6 +704,7 @@ function checkPlayerTimersAndScore()
           gamespeedMS = 1000/gamespeed;
           
           nextLevel += 300 * gamespeed;
+          // explosionAnimFrameLength must diminish maybe?
           
           message = "SPEED INCREASE";
           messageTimer = 2000;
@@ -644,41 +713,38 @@ function checkPlayerTimersAndScore()
     }
   }
 }
+
 function GameLoopStartScreen()
 {
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    
     checkMessageTimer();
     
     DrawSnowstorm();
-    
-    var gameTitleFontSize = 10 * textScale;
-    var touchScreenToPlayFontSize = 4 * textScale;
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = gameTitleFontSize + "vw Arial";
+    topctx.font = "15vw Arial";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/5);
     
     if (messageTimer == 0)
     {
-      topctx.font = touchScreenToPlayFontSize + "vw Arial";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/18);
+      topctx.font = "6vw Arial";
+      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/25);
     }
   }
   // Draw the start screen. Look for touch event to start the game.
 }
+
 function GameLoopPlaying()
 {
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    
     checkMessageTimer();
     checkElapsedCarsTime();
     checkPlayerTimersAndScore();
@@ -706,27 +772,22 @@ function GameLoopPlaying()
     
     for (var i = 0; i < player.Lives; i++)
     {
-      // topctx.fillRect(carWidth + carWidth * 3.5 * i, carHeight * 6, carWidth * 3, carHeight * 2.3);
-      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 3.5 * i, LifeHeight * 4.5, carWidth * 2.5, LifeHeight * 2.8);
+      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 4 * i, LifeHeight * 4.5, carWidth * 3.5, LifeHeight * 3.92);
     }
-    
-    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-    var scoreFontSize = 5 * textScale;
-    var messageFontSize = 4 * textScale;
     
     topctx.fillStyle = "black";
     
     if (player.Lives > 0)
     {
       topctx.textAlign = "left";
-      topctx.font = scoreFontSize + "vw Arial";
-      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/10, ScreenHeight/9);
+      topctx.font = "8vw Arial";
+      topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
     }
     
     if (messageTimer > 0 && messageTimer%600 < 300)
     {
       topctx.textAlign = "center";
-      topctx.font = messageFontSize + "vw Arial";
+      topctx.font = "6vw Arial";
       topctx.fillText(message, ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
   }  
@@ -735,9 +796,13 @@ function GameLoopGameOver()
 {
   if (ElapsedTime >= fpsInterval)
   {
-    UpdateTimers();
+    gameOverTimer -= ElapsedTime;
+    if (gameOverTimer < 0)
+      gameOverTimer = 0;
     
+    UpdateTimers();
     checkElapsedCarsTime();
+    checkPlayerTimersAndScore();
       
     DrawSnowstorm();
 
@@ -750,26 +815,27 @@ function GameLoopGameOver()
       DrawStreetLights();
     }
     
-    // Draws the player car.
     DrawAllCars();
     
     DrawPlayerCar();
-    
-    // Dessa ska flyttas till toppen sen när vi är klara här. De kanske behöver ändras i Resize() såsmåningom.
-    var gameOverFontSize = 8 * textScale;
-    var finalScoreFontSize = 3.5 * textScale;
 
     topctx.fillStyle = "darkorange";
     topctx.textAlign = "center";
-    topctx.font = gameOverFontSize + "vw Arial";
-    topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/8);
+    topctx.font = "13vw Arial";
+    topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/7);
     topctx.fillStyle = "black";
-    topctx.font = finalScoreFontSize + "vw Arial";
-    topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/25);
-    topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/60);
+    topctx.font = "5vw Arial";
+    topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/32);
+    topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/13.5);
+    
+    if (gameOverTimer == 0)
+    {
+      topctx.textAlign = "center";
+      topctx.font = "6vw Arial";
+      topctx.fillText("touch screen to restart", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/5.5);
+    }
   }
 }
-
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
 // Then move down the existing cars in the array, and create new ones on the top.
 function GameTickTheCars()
@@ -785,6 +851,13 @@ function GameTickTheCars()
       player.HasCollided = true;
       player.Lives--;
       player.DeadTick = 4;
+      player.CanMove = false;
+      player.CrashState = "Exploding";
+      player.RestartBlinkTimer = player.DeadTick * 600;
+      
+      currentExplosionFrameIndex = randomizeNumber(3);
+      currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
+      explosionAnimTimer = explosionAnimFrameLength;
       
       clearStreetTimer = 250;
       
@@ -892,41 +965,39 @@ function CreateNewCars()
   }
   
   if(c == 3)
+  {
+    // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should.
+    rand = randomizeNumber(3);
+    level[0][rand].hasCar = false;
+    
+    if (xCount[rand] > 0)
+      xCount[rand] = 0;
+    
+    xCount[rand]--;
+    
+    if (emptyRowCount > 0)
+      emptyRowCount--;
+  }
+  else if (c == 0)
+  {
+    if (emptyRowCount >= 2)
     {
-      console.log("Händer detta ens?");
-      // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should.
+      emptyRowCount = 0;
       rand = randomizeNumber(3);
-      level[0][rand].hasCar = false;
+      level[0][rand].hasCar = true;
       
-      if (xCount[rand] > 0)
-        xCount[rand] = 0;
-      
-      xCount[rand]--;
-      
-      if (emptyRowCount > 0)
-        emptyRowCount--;
+      if (xCount[rand] < 0)
+            xCount[rand] = 0;
+          
+      xCount[rand]++;
     }
-    else if (c == 0)
+    else
     {
-      console.log("Eller detta?");
-      if (emptyRowCount >= 2)
-      {
-        emptyRowCount = 0;
-        rand = randomizeNumber(3);
-        level[0][rand].hasCar = true;
-        
-        if (xCount[rand] < 0)
-              xCount[rand] = 0;
-            
-        xCount[rand]++;
-      }
-      else
-      {
-        rand = randomizeNumber(3);
-        xCount[rand] = -2;
-      }
-      emptyRowCount++;
+      rand = randomizeNumber(3);
+      xCount[rand] = -2;
     }
+    emptyRowCount++;
+  }
 }
 function ClearTheStreet()
 {
@@ -1049,18 +1120,62 @@ function DrawStreetLights()
   
   streetLightTimer = 0;
 }
+var drawPlayerCrashSmoke = false;
 
 function DrawPlayerCar()
 {
+  var drawCar = true;
+  
+  if (player.CrashState == "Restarting" && player.RestartBlinkTimer > 0)
+  {
+    if (player.RestartBlinkTimer % 600 < 300)
+      drawCar = false;
+  }
+  
+  if (drawCar)
+  {
+    topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+    ctx.globalAlpha = 0.24;
+    ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
+    ctx.globalAlpha = 1;
+  }
+  
   if(player.HasCollided)
   {
-    ctx.fillStyle = "rgba(255,120,0,0.3)";
-    ctx.fillRect(player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+    if (player.CrashState == "Exploding" || player.CrashState == "GameOver")
+    {
+      var smokeImage = Smoke1Image;
+      
+      if (player.CrashState == "Exploding")
+      {
+        if (explosionAnimTimer % explosionAnimFrameLength < explosionAnimFrameLength/2)
+          topctx.drawImage(currentExplosionFrame, player.Xposition - ScreenWidth/30, player.Yposition - ScreenWidth/12.5, player.Xsize * 1.35, player.Ysize * 1.3);
+      }
+      
+      if (drawPlayerCrashSmoke == false && explosionAnimTimer % explosionAnimFrameLength < 25)
+      {
+        drawPlayerCrashSmoke = true;
+        smokeImage = Smoke1Image;
+      }
+      else if (drawPlayerCrashSmoke == false && explosionAnimTimer % (explosionAnimFrameLength/2) < 25)
+      {
+        drawPlayerCrashSmoke = true;
+        smokeImage = Smoke2Image;
+      }
+      if (drawPlayerCrashSmoke)
+      {
+        drawPlayerCrashSmoke = false;
+        
+        var randXpos = 22 + randomizeNumber(8);
+        var randYpos = 15 + randomizeNumber(5);
+        var rendAlfa = 0.35 + randomizeNumber(4)/10;
+        
+        ctx.globalAlpha = rendAlfa;
+        ctx.drawImage(smokeImage, player.Xposition - ScreenWidth/randXpos, player.Yposition - ScreenWidth/randYpos, player.Xsize * 1.32, player.Ysize * 1.3);
+        ctx.globalAlpha = 1;
+      }
+    }
   }
-  topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
-  ctx.globalAlpha = 0.24;
-  ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
-  ctx.globalAlpha = 1;
 }
 
 function DrawSnowstorm()
