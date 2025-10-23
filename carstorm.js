@@ -666,6 +666,7 @@ function checkPlayerTimersAndScore()
       
       if (explosionAnimFrameCounter >= 3)
       {
+        currentExplosionFrameIndex = 0;
         if (gameState != gsGameOver)
         {
           player.RoadPos = 2;
@@ -743,12 +744,12 @@ function GameLoopStartScreen()
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
     topctx.font = "15vw Arial";
-    topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/5);
+    topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
     if (messageTimer == 0)
     {
       topctx.font = "6vw Arial";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/25);
+      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
     }
   }
   // Draw the start screen. Look for touch event to start the game.
@@ -980,7 +981,7 @@ function CreateNewCars()
   
   if(c == 3)
   {
-    // Technically, this fix using randomizer makes it possible that a row is often more empty from cars than it should.
+    // Technically, this fix using randomizer makes it possible that a column is often more empty from cars than it should. But it's never too much.
     rand = randomizeNumber(3);
     level[0][rand].hasCar = false;
     
@@ -994,7 +995,8 @@ function CreateNewCars()
   }
   else if (c == 0)
   {
-    if (emptyRowCount >= 2)
+    emptyRowCount++;
+    if (emptyRowCount > 2)
     {
       emptyRowCount = 0;
       rand = randomizeNumber(3);
@@ -1010,7 +1012,6 @@ function CreateNewCars()
       rand = randomizeNumber(3);
       xCount[rand] = -2;
     }
-    emptyRowCount++;
   }
 }
 function ClearTheStreet()
@@ -1197,7 +1198,7 @@ function DrawSnowstorm()
   var min = 200;
   var max = 255 - min;
   r = min + Math.floor(Math.random() * max);
-  g = b = r; // We want just grayscales. 
+  g = b = r; // We want just grayscales.
   
   // Copy the center rectangle, margins 10 px in from screen border. (meaning the copied picture is 20 px smaller on each side than original)
   var imgData = ctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
@@ -1214,7 +1215,6 @@ function DrawSnowstorm()
   ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
   
   // Now draw some snow particles in the center of the image.
-  //ctx.fillStyle = "#fff";
   ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
   for(var i=0; i<10; i++)
   {
@@ -1233,17 +1233,5 @@ function DrawSnowstorm()
     ctx.beginPath();
     ctx.arc(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
     ctx.fill();
-    
-    // Square snow
-    // var max = 50;
-    // var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
-    // var yRand = max - Math.floor(Math.random() * (max));
-    // xRand -= max / 2;
-    // yRand -= max / 2;
-    
-    // var side = 2 + Math.floor(Math.random() * (10));
-    
-    // ctx.fillRect(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, side, side);
   }  
 }
-
