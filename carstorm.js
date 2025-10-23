@@ -46,6 +46,7 @@ var fpsInterval = 1000 / fps; // milliseconds.
 
 // Let the name and string be the same to avoid confusion. 
 var gsNothing = "Nothing";
+var gsLoadingScreen = "LoadingScreen";
 var gsStartScreen = "StartScreen";
 var gsPlaying = "Playing";
 var gsPaused = "Paused";
@@ -53,7 +54,7 @@ var gsGameOver = "GameOver";
 var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [ gsNothing, gsStartScreen, gsPlaying, gsPaused, gsGameOver, gsWinGame ];
+var gameStates = [ gsNothing, gsLoadingScreen, gsStartScreen, gsPlaying, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -67,6 +68,7 @@ var lightWidth = 0; //Global because we just so happens to use them as the width
 var lightHeight = 0;
 var orangeLightSize = 0;
 var yellowLightSize = 0;
+var touchMessageFontSize = 6;
 
 var player = null;
 
@@ -79,11 +81,12 @@ var rowPercentages = [0, 0.21, 0.6, 1.3];
 var carWidth = 0;
 var carHeight = 0;
 
+var loadScreenTimer = 2000;
 var messageTimer = 0;
 var nextLevel = 300;
 var finalScore = 0;
 var clearStreetTimer = 0;
-var WinningScore = 9999;
+var WinningScore = 99;
 
 var roadWidth = 0;
 
@@ -135,6 +138,11 @@ var Smoke1Image = new Image();
 Smoke1Image.src = "graphics/Smoke1.png";
 var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
+
+var MadSkullLogoImage = new Image();
+MadSkullLogoImage.src = "graphics/MadSkullLogoWhiteMist.png";
+var TitleBGImage = new Image();
+TitleBGImage.src = "graphics/TitleBGImage.png";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -203,6 +211,11 @@ function init()
           // console.log("mousedown right");
           PlayerMove("right");
         }
+      }
+      else if (gameState == gsLoadingScreen)
+      {
+        if (loadScreenTimer <= 0)
+          SetState(gsStartScreen);
       }
       else if(gameState == gsStartScreen)
       {
@@ -281,8 +294,8 @@ function init()
   // Resize the canvas so it fill up the entire screen.
   Resize();
   
-  // We enter the game with the start screen visible.
-  SetState(gsStartScreen);
+  // We enter the game with the loading screen visible.
+  SetState(gsLoadingScreen);
   
   // Start the game loop!
   GameLoop();
@@ -382,6 +395,7 @@ function CreatePlayer()
     CanMove: true,
     CrashState: "None",
     Lives: 3,
+    LivesBlinkTimer: 0,
     Score: 0,
     Xposition: 0,
     Yposition: 0,
@@ -447,12 +461,17 @@ function SetState(newState)
   switch(gameState)
   {
     case gsNothing:
+      if(newState == gsLoadingScreen)
+      {
+        transitionCool = true;
+      }
+      break;
+    case gsLoadingScreen:
       if(newState == gsStartScreen)
       {
         OnEnterStartScreen();
         transitionCool = true;
       }
-      break;
     case gsStartScreen:
       if(newState == gsPlaying)
       {
@@ -523,7 +542,7 @@ function OnEnterStartScreen()
 function TransitFromStartScreenToPlaying()
 {
   messageTimer = 0; // Reset to be used for "SPEED INCREASE".
-  explosionAnimFrameLength = 333;
+  explosionAnimFrameLength = 400;
 }
 function TransitFromPausedToPlaying()
 {
@@ -611,6 +630,9 @@ function GameLoop()
   {
     case gsNothing:
       // This should never happen.
+      break;
+    case gsLoadingScreen:
+      GameLoopLoadingScreen();
       break;
     case gsStartScreen:
       // Draw the start screen! Look for a touch/click meaning user want to start a new game!
@@ -701,6 +723,9 @@ function checkPlayerTimersAndScore()
       {
         explosionAnimFrameCounter = 0;
         
+        player.Lives--;
+        player.LivesBlinkTimer = 0;
+        
         if (gameState != gsGameOver)
         {
           player.CrashState = "Restarting";
@@ -714,14 +739,20 @@ function checkPlayerTimersAndScore()
       }
     }
   }
+  if (player.LivesBlinkTimer > 0)
+  {
+    player.LivesBlinkTimer -= ElapsedTime;
+    
+    // This one keeps going until it's reset somewhere else.
+    if (player.LivesBlinkTimer <= 0)
+      player.LivesBlinkTimer = 600;
+  }
   if (player.RestartBlinkTimer > 0)
   {
     player.RestartBlinkTimer -= ElapsedTime;
     
     if (player.RestartBlinkTimer <= 0)
-    {
       player.RestartBlinkTimer = 0;
-    }
   }
   if (timeToCreateNewCars)
   {
@@ -735,7 +766,6 @@ function checkPlayerTimersAndScore()
         player.CanMove = true;
         player.CrashState = "None";
         player.HasCollided = false;
-        player.RestartBlinkTimer = 0;
         explosionAnimTimer = 0;
         explosionAnimFrameCounter = 0;
       }
@@ -772,6 +802,49 @@ function checkPlayerTimersAndScore()
   }
 }
 
+function GameLoopLoadingScreen()
+{
+  if (ElapsedTime >= fpsInterval)
+  {
+    LastDraw = Now;
+    
+    if (loadScreenTimer > 0)
+    {
+      loadScreenTimer -= ElapsedTime;
+      
+      if (loadScreenTimer <= 0)
+        loadScreenTimer = 0;
+    }
+    
+    DrawSnowstorm(); // We start drawing it in the background already. Because... yeah.
+    
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+    
+    // This will be an image later.
+    topctx.fillStyle = "white";
+    topctx.fillRect(0,0,ScreenWidth,ScreenHeight);
+    
+    var LogoFontSize = 5 * textScale;
+    touchMessageFontSize = 6 * textScale;
+    
+    // Maybe we shouldn't have to draw this image every loop... But do we want ANOTHER ctx for that?
+    // Maybe not draw DrawSnowstorm(), but use regular ctx here for it. Draw it once in a middle function.
+    topctx.drawImage(TitleBGImage, 0, 0, ScreenWidth, ScreenHeight);
+    topctx.drawImage(MadSkullLogoImage, ScreenWidth/2 - ScreenWidth/4.7, ScreenHeight/2 - ScreenHeight/14, carWidth * 2.5, carWidth * 2);
+    
+    topctx.fillStyle = "black";
+    topctx.textAlign = "center";
+    topctx.font = LogoFontSize + "vw Arial";
+    topctx.fillText("MadSkull Creations", ScreenWidth/2, ScreenHeight/2);
+    
+    if (loadScreenTimer <= 0)
+    {
+      topctx.font = touchMessageFontSize + "vw Arial";
+      topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/10);
+    }
+  }
+}
+
 function GameLoopStartScreen()
 {
   if (ElapsedTime >= fpsInterval)
@@ -781,17 +854,20 @@ function GameLoopStartScreen()
     
     DrawSnowstorm();
     
+    var titleFontSize = 14 * textScale;
+    touchMessageFontSize = 6 * textScale;
+    
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = "14vw Arial";
+    topctx.font = titleFontSize + "vw Arial";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
     if (messageTimer == 0)
     {
-      topctx.font = "6vw Arial";
+      topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
     }
   }
@@ -813,10 +889,7 @@ function GameLoopPlaying()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
    
     // Draws two "street lights"...
-    if (streetLightTimer >= gamespeedMS)
-    {
-      DrawStreetLights();
-    }
+    DrawStreetLights();
     
     // Draws the player car.
     DrawAllCars();
@@ -826,26 +899,24 @@ function GameLoopPlaying()
     
     DrawPlayerCar();
     
-    var LifeHeight = carWidth * 0.555;
+    DrawPlayerLives();
     
-    for (var i = 0; i < player.Lives; i++)
-    {
-      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 4 * i, LifeHeight * 4.5, carWidth * 3.5, LifeHeight * 3.92);
-    }
+    var scoreFontSize = 8 * textScale;
+    touchMessageFontSize = 6 * textScale;
     
     topctx.fillStyle = "black";
     
     if (player.Lives > 0)
     {
       topctx.textAlign = "left";
-      topctx.font = "8vw Arial";
+      topctx.font = scoreFontSize + "vw Arial";
       topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
     }
     
     if (messageTimer > 0 && messageTimer%600 < 300)
     {
       topctx.textAlign = "center";
-      topctx.font = "6vw Arial";
+      topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
   }  
@@ -865,28 +936,32 @@ function GameLoopGameOver()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
 
     // The street lights shouldn't stop because it's game over.
-    if (streetLightTimer >= gamespeedMS)
-    {
-      DrawStreetLights();
-    }
+    DrawStreetLights();
     
     DrawAllCars();
     
     DrawPlayerCar();
+    
+    if (player.Lives > 0)
+      DrawPlayerLives();
+    
+    var gameOverFontSize = 13 * textScale;
+    var finalScoreFontSize = 5 * textScale;
+    touchMessageFontSize = 6 * textScale;
 
     topctx.fillStyle = "darkorange";
     topctx.textAlign = "center";
-    topctx.font = "13vw Arial";
+    topctx.font = gameOverFontSize + "vw Arial";
     topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/7);
     topctx.fillStyle = "black";
-    topctx.font = "5vw Arial";
+    topctx.font = finalScoreFontSize + "vw Arial";
     topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/32);
     topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/13.5);
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
-      topctx.font = "6vw Arial";
+      topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("touch screen to restart", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/5.5);
     }
   }
@@ -905,21 +980,25 @@ function GameLoopWinGame()
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
 
-    // The street lights shouldn't stop because it's game over.
-    if (streetLightTimer >= gamespeedMS)
-    {
-      DrawStreetLights();
-    }
+    // The street lights shouldn't stop because you've finished the game.
+    DrawStreetLights();
     
     DrawAllCars();
     
     DrawPlayerCar();
     
+    DrawPlayerLives();
+    
+    var finalScoreFontSize = 9 * textScale;
+    var victoryFontSize = 13.5 * textScale;
+    var superPlayerFontSize = 6.5 * textScale;
+    touchMessageFontSize = 6 * textScale;
+    
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
     topctx.lineWidth = 5 * textScale;
     topctx.textAlign = "left";
-    topctx.font = "9vw Arial";
+    topctx.font = finalScoreFontSize + "vw Arial";
     topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     topctx.strokeText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     
@@ -927,7 +1006,7 @@ function GameLoopWinGame()
     topctx.strokeStyle = "black";
     topctx.lineWidth = 8 * textScale;
     topctx.textAlign = "center";
-    topctx.font = "13.5vw Arial";
+    topctx.font = victoryFontSize + "vw Arial";
     topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     topctx.strokeText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     
@@ -937,7 +1016,7 @@ function GameLoopWinGame()
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
       topctx.lineWidth = 4 * textScale;
-      topctx.font = "6.5vw Arial";
+      topctx.font = superPlayerFontSize + "vw Arial";
       topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
       topctx.strokeText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
     }
@@ -946,7 +1025,7 @@ function GameLoopWinGame()
     {
       topctx.fillStyle = "black";
       topctx.textAlign = "center";
-      topctx.font = "6vw Arial";
+      topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("touch screen to play again", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/6);
     }
   }
@@ -964,11 +1043,11 @@ function GameTickTheCars()
     {
       // Crashing into a car! Draw some explosion, make a sound. 
       player.HasCollided = true;
-      player.Lives--;
+      player.LivesBlinkTimer = 600;
       player.DeadTick = 4;
       player.CanMove = false;
       player.CrashState = "Exploding";
-      player.RestartBlinkTimer = player.DeadTick * 600;
+      player.RestartBlinkTimer = player.DeadTick * 700 + 1000; // The 1600 is for the explosion animation time.
       
       currentExplosionFrameIndex = randomizeNumber(3);
       currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -976,7 +1055,8 @@ function GameTickTheCars()
       
       clearStreetTimer = 250;
       
-      if (player.Lives <= 0)
+      // Since Lives aren't removed in this function (Like it was before), we have to ask about Lives - 1 to get the right result.
+      if (player.Lives - 1 <= 0)
       {
         // Game over! Show and play death animation. Wait for user to click away.
         finalScore = player.Score;
@@ -1224,23 +1304,26 @@ function randomizeNumber(number)
 
 function DrawStreetLights()
 {
-  ctx.fillStyle = "rgba(255,100,0,1)";
-  ctx.beginPath();
-  ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-  ctx.fill();
-  
-  ctx.fillStyle = "yellow";
-  ctx.beginPath();
-  ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-  ctx.fill();
-  
-  streetLightTimer = 0;
+  if (streetLightTimer >= gamespeedMS)
+  {
+    ctx.fillStyle = "rgba(255,100,0,1)";
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    streetLightTimer = 0;
+  }
 }
 var drawPlayerCrashSmoke = false;
 
@@ -1250,7 +1333,7 @@ function DrawPlayerCar()
   
   if (player.CrashState == "Restarting" && player.RestartBlinkTimer > 0)
   {
-    if (player.RestartBlinkTimer % 600 < 300)
+    if (player.RestartBlinkTimer % 700 < 350)
       drawCar = false;
   }
   
@@ -1297,6 +1380,21 @@ function DrawPlayerCar()
         ctx.globalAlpha = 1;
       }
     }
+  }
+}
+function DrawPlayerLives()
+{
+  var LifeHeight = carWidth * 0.555;
+  
+  for (var i = 0; i < player.Lives; i++)
+  {
+    if (i == player.Lives-1 && player.CrashState == "Exploding")
+    {
+      if (player.LivesBlinkTimer % 600 < 300)
+        topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 4 * i, LifeHeight * 2.5, carWidth * 3.5, LifeHeight * 3.92);
+    }
+    else
+      topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 4 * i, LifeHeight * 2.5, carWidth * 3.5, LifeHeight * 3.92);
   }
 }
 
