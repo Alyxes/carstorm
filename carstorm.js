@@ -438,13 +438,27 @@ function EnterSomeKindOfPause()
   // If we are playing it might be nice to return to a paused screen. :-)
   if(gameState == gsPlaying)
   {
+    touchMessageFontSize = 7 * textScale;
+    
+    topctx.fillStyle = "black";
+    topctx.textAlign = "center";
+    topctx.font = touchMessageFontSize + "vw Arial";
+    topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2);
+    
     SetState(gsPaused);
+  }
+  else if(gameState == gsStartScreen)
+  {
+    loadScreenTimer = 2000;
+    SetState(gsLoadingScreen);
   }
 }
 function ResumeFromSomeKindOfPause()
 {
   // Regaining focus, meaning screen saver is back in full screen.
   screenSaverPaused = false;
+  
+  LastDraw = Date.now();
   
   GameLoop();
 }
@@ -476,6 +490,10 @@ function SetState(newState)
       if(newState == gsPlaying)
       {
         TransitFromStartScreenToPlaying();
+        transitionCool = true;
+      }
+      else if (newState == gsLoadingScreen)
+      {
         transitionCool = true;
       }
       break;
@@ -643,7 +661,7 @@ function GameLoop()
       GameLoopPlaying();
       break;
     case gsPaused:
-      // Draw game as usual, except time has "stopped". 
+      // Draw game as usual, except time has "stopped".
       // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
       break;
     case gsGameOver:
@@ -840,7 +858,7 @@ function GameLoopLoadingScreen()
     if (loadScreenTimer <= 0)
     {
       topctx.font = touchMessageFontSize + "vw Arial";
-      topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/10);
+      topctx.fillText("touch screen to start", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/10);
     }
   }
 }
