@@ -86,7 +86,9 @@ var messageTimer = 0;
 var nextLevel = 300;
 var finalScore = 0;
 var clearStreetTimer = 0;
-var WinningScore = 99;
+var lastDriveScore = 0;
+var bestHighScore = 0;
+var WinningScore = 9999;
 
 var roadWidth = 0;
 
@@ -428,6 +430,17 @@ function ResetGameVariables()
   gamespeedMS = 1000/gamespeed;
   nextLevel = 300;
   explosionAnimFrameCounter = 0;
+}
+function SetScoreStatistics()
+{
+  // Right now we only save the last drive score, and the best score yet.
+  lastDriveScore = player.Score;
+  
+  if (lastDriveScore > bestHighScore)
+    bestHighScore = lastDriveScore;
+  
+  // In the future this function can be used to save amount of drives, time between deaths, and so on. Any statistics we want to save, for
+  // the player to view or just for ourselves. :)
 }
 
 function EnterSomeKindOfPause()
@@ -799,6 +812,8 @@ function checkPlayerTimersAndScore()
         {
           player.Score = WinningScore;
           
+          SetScoreStatistics();
+          
           EndGameVariableResets();
           
           SetState(gsWinGame);
@@ -883,8 +898,21 @@ function GameLoopStartScreen()
     topctx.font = titleFontSize + "vw Arial";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
+    if (lastDriveScore > 0)
+    {
+      var highScoreFontSize = 3 * textScale;
+      
+      topctx.textAlign = "left";
+      topctx.font = highScoreFontSize + "vw Arial";
+      
+      topctx.fillText("last drive score: " + lastDriveScore, ScreenWidth - ScreenWidth/4.2, ScreenHeight - ScreenHeight/9.5);
+      topctx.fillText("highscore: " + bestHighScore, ScreenWidth - ScreenWidth/5.36, ScreenHeight - ScreenHeight/18);
+    }
+  
+    
     if (messageTimer == 0)
     {
+      topctx.textAlign = "center";
       topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
     }
@@ -1077,6 +1105,8 @@ function GameTickTheCars()
       if (player.Lives - 1 <= 0)
       {
         // Game over! Show and play death animation. Wait for user to click away.
+        SetScoreStatistics();
+        
         finalScore = player.Score;
         player.Score = 0;
         
