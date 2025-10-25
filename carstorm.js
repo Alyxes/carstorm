@@ -142,7 +142,7 @@ var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
 
 var MadSkullLogoImage = new Image();
-MadSkullLogoImage.src = "graphics/MadSkullLogoWhiteMist.png";
+MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png";
 var TitleBGImage = new Image();
 TitleBGImage.src = "graphics/TitleBGImage.png";
 
@@ -863,15 +863,12 @@ function GameLoopLoadingScreen()
     // Maybe we shouldn't have to draw this image every loop... But do we want ANOTHER ctx for that?
     // Maybe not draw DrawSnowstorm(), but use regular ctx here for it. Draw it once in a middle function.
     topctx.drawImage(TitleBGImage, 0, 0, ScreenWidth, ScreenHeight);
-    topctx.drawImage(MadSkullLogoImage, ScreenWidth/2 - ScreenWidth/4.7, ScreenHeight/2 - ScreenHeight/14, carWidth * 2.5, carWidth * 2);
-    
-    topctx.fillStyle = "black";
-    topctx.textAlign = "center";
-    topctx.font = LogoFontSize + "vw Arial";
-    topctx.fillText("MadSkull Creations", ScreenWidth/2, ScreenHeight/2);
+    topctx.drawImage(MadSkullLogoImage, ScreenWidth/2 - ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/14, ScreenWidth/2.82, carWidth * 2);
     
     if (loadScreenTimer <= 0)
     {
+      topctx.fillStyle = "black";
+      topctx.textAlign = "center";
       topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("touch screen to start", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/10);
     }
@@ -902,11 +899,16 @@ function GameLoopStartScreen()
     {
       var highScoreFontSize = 3 * textScale;
       
-      topctx.textAlign = "left";
+      topctx.textAlign = "right";
       topctx.font = highScoreFontSize + "vw Arial";
       
-      topctx.fillText("last drive score: " + lastDriveScore, ScreenWidth - ScreenWidth/4.2, ScreenHeight - ScreenHeight/9.5);
-      topctx.fillText("highscore: " + bestHighScore, ScreenWidth - ScreenWidth/5.36, ScreenHeight - ScreenHeight/18);
+      topctx.fillText("last drive score: ", ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/9.5);
+      topctx.fillText("highscore: ", ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
+      
+      topctx.textAlign = "left";
+      
+      topctx.fillText(lastDriveScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/9.5);
+      topctx.fillText(bestHighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
     }
   
     
