@@ -110,6 +110,11 @@ var explosionAnimFrameLength = 0;
 var explosionAnimTimer = 0;
 var explosionAnimFrameCounter = 0;
 
+const audioBlip = new Audio("sound/blip.mp3");
+const audioMove = new Audio("sound/move.mp3");
+const audioCrash = new Audio("sound/crash.mp3");
+const audioGameOver = new Audio("sound/gameover.mp3");
+
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
 
@@ -638,6 +643,7 @@ function PlayerMove(direction)
   if(HasMoved)
   {
     player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    audioMove.play();
   }
 }
 
@@ -1112,9 +1118,15 @@ function GameTickTheCars()
         finalScore = player.Score;
         player.Score = 0;
         
+        audioGameOver.play();
+        
         EndGameVariableResets();
         
         SetState(gsGameOver);
+      }
+      else
+      {
+        audioCrash.play();
       }
     }
   }
@@ -1146,6 +1158,8 @@ function tickDownAllCarsOneRow()
   level[2] = level[1];
   level[1] = level[0];
   level[0] = CreateLevelRow(); // and fill up with an empty row at the top.
+  
+  audioBlip.play();
 }
 
 // This will be moved and/or integrated somehow into the level object.
