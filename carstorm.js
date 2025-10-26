@@ -61,6 +61,8 @@ var gameStates = [ gsNothing, gsLoadingScreen, gsStartScreen, gsIntroPlay, gsPla
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
 
+var OnlineStats = null;
+
 // Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
 var gamespeedMS = 1000/gamespeed; // milliseconds.
@@ -110,6 +112,7 @@ var explosionAnimFrameLength = 0;
 var explosionAnimTimer = 0;
 var explosionAnimFrameCounter = 0;
 
+const audioAcceleration = new Audio("sound/acceleration.mp3");
 const audioStart = new Audio("sound/start.mp3");
 const audioBlip = new Audio("sound/blip.mp3");
 const audioMove = new Audio("sound/move.mp3");
@@ -283,7 +286,8 @@ function SetupCallbacks()
           break;
         case gsStartScreen:
           // Clicking the start screen starts a new game.
-          SetState(gsIntroPlay);
+          if (messageTimer <= 0)
+            SetState(gsIntroPlay);
           break;
         case gsPlaying:
           if(e.clientX < ScreenWidth / 2)
@@ -377,13 +381,12 @@ function Resize()
   //console.log();
 }
 
-var OnlineStats = null;
-
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
 async function FetchOnlineStats() 
 {
   try
   {
+    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
     const response = await fetch("version.php");
 
     if (!response.ok) 
@@ -394,6 +397,8 @@ async function FetchOnlineStats()
     
     OnlineStats = await response.json();
     console.log(OnlineStats);
+    
+    // TODO: Save in some storage for offline use! IndexedDB ? Read about it.
   }
   catch (error)
   {
@@ -495,11 +500,6 @@ function EnterSomeKindOfPause()
     
     SetState(gsPaused);
   }
-  else if(gameState == gsStartScreen)
-  {
-    loadScreenTimer = 2000;
-    SetState(gsLoadingScreen);
-  }
 }
 function ResumeFromSomeKindOfPause()
 {
@@ -588,6 +588,7 @@ function SetState(newState)
       if(newState == gsStartScreen)
       {
         TransitFromGameOverToStartScreen();
+        OnEnterStartScreen();
         transitionCool = true;
       }
       break;
@@ -614,8 +615,8 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
-  messageTimer = 2000; // Used for the message "touch screen to drive".
-  // Play a melody!
+  messageTimer = 6000; // Used for the message "touch screen to drive".
+  audioAcceleration.play();
 }
 function TransitFromStartScreenToIntroPlay()
 {
@@ -650,7 +651,6 @@ function TransitFromPausedToPlaying()
 function TransitFromGameOverToStartScreen()
 {
   ResetGameVariables();
-  messageTimer = 2000; // Reset for "touch screen to drive" message again.
 }
 function TransitFromWinGameToStartScreen()
 {
@@ -915,21 +915,26 @@ function GameLoopStartScreen()
       topctx.fillText(bestHighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
     }
   
+
+    var fontSize = 3 * textScale;
+    var oneRow = ScreenHeight / 30;
+    var oneTenth = ScreenWidth / 10;
+    topctx.textAlign = "left";
+    topctx.font = fontSize + "vw Arial";
+
     if(OnlineStats != null)
     {
-      var highScoreFontSize = 3 * textScale;
-      var oneRow = ScreenHeight / 30;
-      var oneTenth = ScreenWidth / 10;
-      topctx.textAlign = "left";
-      topctx.font = highScoreFontSize + "vw Arial";
-      
       switch(OnlineStats.version)
       {
         case 1:
-          topctx.fillText("BANAN Server version: " + OnlineStats.version, oneTenth, oneRow * 28);
+          topctx.fillText("Server version: " + OnlineStats.version, oneTenth, oneRow * 28);
           topctx.fillText("Players online now: " + OnlineStats.players_now, oneTenth, oneRow * 29);
           break;
       }
+    }
+    else
+    {
+      topctx.fillText("Offline", oneTenth, oneRow * 28);
     }
     
     if (messageTimer == 0)
@@ -939,7 +944,6 @@ function GameLoopStartScreen()
       topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
     }
   }
-  // Draw the start screen. Look for touch event to start the game.
 }
 
 function GameLoopIntroPlay()
