@@ -48,6 +48,7 @@ var fpsInterval = 1000 / fps; // milliseconds.
 var gsNothing = "Nothing";
 var gsLoadingScreen = "LoadingScreen";
 var gsStartScreen = "StartScreen";
+var gsIntroPlay = "IntroPlay";
 var gsPlaying = "Playing";
 var gsCrashed = "Crashed";
 var gsPaused = "Paused";
@@ -55,7 +56,7 @@ var gsGameOver = "GameOver";
 var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [ gsNothing, gsLoadingScreen, gsStartScreen, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
+var gameStates = [ gsNothing, gsLoadingScreen, gsStartScreen, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -207,45 +208,42 @@ function init()
       // Eeh, ugly but works. Spreading out game state checks this way is error prone.
       // TODO: Also, mousedown and touch events happens outside of the game loop, meaning it might
       // happen in the middle of things, yes/no? That can break things badly.
-      if(gameState == gsPlaying)
+      switch(gameState)
       {
-        if(e.clientX < ScreenWidth / 2)
-        {
-          // console.log("mousedown left");
-          PlayerMove("left");
-        }
-        else
-        {
-          // console.log("mousedown right");
-          PlayerMove("right");
-        }
-      }
-      else if (gameState == gsLoadingScreen)
-      {
-        if (loadScreenTimer <= 0)
-          SetState(gsStartScreen);
-      }
-      else if(gameState == gsStartScreen)
-      {
-        // Clicking the start screen starts a new game.
-        SetState(gsPlaying);
-      }
-      else if(gameState == gsPaused)
-      {
-        // Clicking the pause screen resumes the game.
-        SetState(gsPlaying);
-      }
-      else if(gameState == gsGameOver)
-      {
-        // Clicking the game over screen returns you to the start screen.
-        if (messageTimer <= 0)
-          SetState(gsStartScreen);
-      }
-      else if (gameState == gsWinGame)
-      {
-        // Clicking the winning game screen returns you to the start screen.
-        if (messageTimer <= 0)
-          SetState(gsStartScreen);
+        case gsLoadingScreen:
+          if (loadScreenTimer <= 0)
+            SetState(gsStartScreen);
+          break;
+        case gsStartScreen:
+          // Clicking the start screen starts a new game.
+          SetState(gsIntroPlay);
+          break;
+        case gsPlaying:
+          if(e.clientX < ScreenWidth / 2)
+          {
+            // console.log("mousedown left");
+            PlayerMove("left");
+          }
+          else
+          {
+            // console.log("mousedown right");
+            PlayerMove("right");
+          }
+          break;
+        case gsPaused:
+          // Clicking the pause screen resumes the game.
+          SetState(gsPlaying);
+          break;
+        case gsGameOver:
+          // Clicking the game over screen returns you to the start screen.
+          if (messageTimer <= 0)
+            SetState(gsStartScreen);
+          break;
+        case gsWinGame:
+          // Clicking the winning game screen returns you to the start screen.
+          if (messageTimer <= 0)
+            SetState(gsStartScreen);
+          break;
       }
     }
   });
@@ -503,28 +501,24 @@ function SetState(newState)
         transitionCool = true;
       }
     case gsStartScreen:
-      if(newState == gsPlaying)
+      if(newState == gsIntroPlay)
       {
-        TransitFromStartScreenToPlaying();
-        transitionCool = true;
-      }
-      else if (newState == gsLoadingScreen)
-      {
+        TransitFromStartScreenToIntroPlay();
         transitionCool = true;
       }
       break;
+    case gsIntroPlay:
+      if(newState == gsPlaying)
+      {
+        TransitFromIntroPlayToPlaying();
+        transitionCool = true;
+      }
     case gsPlaying:
-      // You can pause the game and you can die. The game is full of options.
       if(newState == gsPaused)
       {
         OnEnterPaused();
         transitionCool = true;
       }
-      /*else if(newState == gsGameOver)
-      {
-        OnEnterGameOver();
-        transitionCool = true;
-      }*/
       else if(newState == gsWinGame)
       {
         OnEnterWinGame();
@@ -589,12 +583,15 @@ function OnEnterStartScreen()
   messageTimer = 2000; // Used for the message "touch screen to drive".
   // Play a melody!
 }
-function TransitFromStartScreenToPlaying()
+function TransitFromStartScreenToIntroPlay()
+{
+  TimeToGoBackToPlay = Now + 4000;
+  audioStart.play();
+}
+function TransitFromIntroPlayToPlaying()
 {
   messageTimer = 0; // Reset to be used for "SPEED INCREASE".
   explosionAnimFrameLength = 400;
-  
-  audioStart.play();
 }
 function TransitFromPlayingToCrashed()
 {
@@ -609,7 +606,7 @@ function TransitFromPlayingToCrashed()
   
   clearStreetTimer = 250;
 
-  TimeToGoBackToPlay = Now + 4000;
+  TimeToGoBackToPlay = Now + 3000;
   audioCrash.play();
 }
 function TransitFromPausedToPlaying()
@@ -703,6 +700,9 @@ function GameLoop()
     case gsStartScreen:
       // Draw the start screen! Look for a touch/click meaning user want to start a new game!
       GameLoopStartScreen();
+      break;
+    case gsIntroPlay:
+      GameLoopIntroPlay();
       break;
     case gsPlaying:
       // Draw game as usual.
@@ -890,6 +890,29 @@ function GameLoopStartScreen()
     }
   }
   // Draw the start screen. Look for touch event to start the game.
+}
+
+function GameLoopIntroPlay()
+{
+  if (ElapsedTime >= fpsInterval)
+  {
+    UpdateTimers();
+    checkLivesBlinkTimer();
+        
+    DrawSnowstorm();
+    
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+    DrawStreetLights();
+    DrawAllCars(false);
+    DrawPlayerCar();    
+    DrawPlayerLives();
+    
+    if(Now > TimeToGoBackToPlay)
+    {
+      SetState(gsPlaying);
+    }
+  }
 }
 
 function GameLoopCrashed()
