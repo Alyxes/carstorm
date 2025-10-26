@@ -85,6 +85,7 @@ var carHeight = 0;
 
 var loadScreenTimer = 2000;
 var messageTimer = 0;
+var TimeToGoBackToPlay = 0;
 var nextLevel = 300;
 var finalScore = 0;
 var clearStreetTimer = 0;
@@ -101,8 +102,6 @@ var hiddenCtx = hiddenCanvas.getContext("2d");
 var screenwidthFifth;
 
 var roadStartLeft;
-
-var TimeToGoBackToPlay = 0;
 
 var explosionAnim = [3];
 var currentExplosionFrame;
@@ -629,12 +628,12 @@ function OnEnterPaused()
 }
 function OnEnterGameOver()
 {
-  // Start the game over trudelutt.
-  messageTimer = 2000; // Set for the "touch screen to restart" message.
+  audioGameOver.play();
+  messageTimer = 5000; // Set for the "touch screen to restart" message.
 }
 function OnEnterWinGame()
 {
-  // Start winning trudelutt.
+  // Start the wingame trudelutt.
   messageTimer = 4000; // Set for the "touch screen to play again" message.
 }
 
@@ -966,8 +965,6 @@ function GameLoopCrashed()
         
         finalScore = player.Score;
         player.Score = 0;
-        
-        audioGameOver.play();
         
         EndGameVariableResets();
         
