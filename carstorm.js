@@ -156,96 +156,9 @@ TitleBGImage.src = "graphics/TitleBGImage.png";
 // The init() function is the only function you need to have to make the screen saver work.
 function init()
 {
-  // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
-  // screen saver app gets minimized and maximized.
-  window.onresize = function() {
-    Resize();
-  };
-  document.addEventListener("visibilitychange", function() {
-    // This happen when browser gets minimized.
-    if(document.hidden)
-    {
-      EnterSomeKindOfPause();
-    }
-    else
-    {
-      ResumeFromSomeKindOfPause();
-    }
-  }, false);
-  window.addEventListener('blur', function(){
-    EnterSomeKindOfPause();
-  }, false);
-  window.addEventListener('focus', function(){
-    ResumeFromSomeKindOfPause();
-  }, false);
-  document.addEventListener("keydown", (e) => {
-    e = e || window.event;
-    
-    // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
-    if(gameState == gsPlaying)
-    {
-      if (e.keyCode === 37)
-      {
-        // left arrow pressed.
-        // console.log("button left");
-        PlayerMove("left");
-      }
-      else if (e.keyCode === 39)
-      {
-        // right arrow pressed.
-        // console.log("button right");
-        PlayerMove("right");
-      }
-    }
-  });
-  document.addEventListener("mousedown", (e) => {
-    e = e || window.event;
-    if(e.button == 0) // Most of the time the left button
-    {
-      // console.log("mousedown: " + e.button);
-      
-      // Eeh, ugly but works. Spreading out game state checks this way is error prone.
-      // TODO: Also, mousedown and touch events happens outside of the game loop, meaning it might
-      // happen in the middle of things, yes/no? That can break things badly.
-      switch(gameState)
-      {
-        case gsLoadingScreen:
-          if (loadScreenTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-        case gsStartScreen:
-          // Clicking the start screen starts a new game.
-          SetState(gsIntroPlay);
-          break;
-        case gsPlaying:
-          if(e.clientX < ScreenWidth / 2)
-          {
-            // console.log("mousedown left");
-            PlayerMove("left");
-          }
-          else
-          {
-            // console.log("mousedown right");
-            PlayerMove("right");
-          }
-          break;
-        case gsPaused:
-          // Clicking the pause screen resumes the game.
-          SetState(gsPlaying);
-          break;
-        case gsGameOver:
-          // Clicking the game over screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-        case gsWinGame:
-          // Clicking the winning game screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-      }
-    }
-  });
+  SetupCallbacks();
+
+  FetchOnlineStats();
   
   // Pilla inte Tim.
   // https://web.dev/learn/pwa/service-workers
@@ -253,7 +166,7 @@ function init()
   {
     navigator.serviceWorker.register("/service_worker.js");
   }
-  
+    
   // Trist, variabler i service_worker.js är inte åtkomliga härifrån. (Är ju i en annan tråd så det är ju iofs. logiskt)
   /*if(ServiceWorkerVersion != "slork")
   {
@@ -304,6 +217,103 @@ function init()
   
   // Start the game loop!
   GameLoop();
+}
+
+function SetupCallbacks()
+{
+  // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
+  // screen saver app gets minimized and maximized.
+  window.onresize = function() {
+    Resize();
+  };
+  
+  document.addEventListener("visibilitychange", function() {
+    // This happen when browser gets minimized.
+    if(document.hidden)
+    {
+      EnterSomeKindOfPause();
+    }
+    else
+    {
+      ResumeFromSomeKindOfPause();
+    }
+  }, false);
+  
+  window.addEventListener('blur', function(){
+    EnterSomeKindOfPause();
+  }, false);
+  
+  window.addEventListener('focus', function(){
+    ResumeFromSomeKindOfPause();
+  }, false);
+  
+  document.addEventListener("keydown", (e) => {
+    e = e || window.event;
+    
+    // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
+    if(gameState == gsPlaying)
+    {
+      if (e.keyCode === 37)
+      {
+        // left arrow pressed.
+        // console.log("button left");
+        PlayerMove("left");
+      }
+      else if (e.keyCode === 39)
+      {
+        // right arrow pressed.
+        // console.log("button right");
+        PlayerMove("right");
+      }
+    }
+  });
+  
+  document.addEventListener("mousedown", (e) => {
+    e = e || window.event;
+    if(e.button == 0) // Most of the time the left button
+    {
+      // console.log("mousedown: " + e.button);
+      
+      // Eeh, ugly but works. Spreading out game state checks this way is error prone.
+      switch(gameState)
+      {
+        case gsLoadingScreen:
+          if (loadScreenTimer <= 0)
+            SetState(gsStartScreen);
+          break;
+        case gsStartScreen:
+          // Clicking the start screen starts a new game.
+          SetState(gsIntroPlay);
+          break;
+        case gsPlaying:
+          if(e.clientX < ScreenWidth / 2)
+          {
+            // console.log("mousedown left");
+            PlayerMove("left");
+          }
+          else
+          {
+            // console.log("mousedown right");
+            PlayerMove("right");
+          }
+          break;
+        case gsPaused:
+          // Clicking the pause screen resumes the game.
+          SetState(gsPlaying);
+          break;
+        case gsGameOver:
+          // Clicking the game over screen returns you to the start screen.
+          if (messageTimer <= 0)
+            SetState(gsStartScreen);
+          break;
+        case gsWinGame:
+          // Clicking the winning game screen returns you to the start screen.
+          if (messageTimer <= 0)
+            SetState(gsStartScreen);
+          break;
+      }
+    }
+  });
 }
 
 function Resize()
@@ -365,6 +375,31 @@ function Resize()
   // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
   //console.log();
+}
+
+var OnlineStats = null;
+
+// async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
+async function FetchOnlineStats() 
+{
+  try
+  {
+    const response = await fetch("version.php");
+
+    if (!response.ok) 
+    {
+      // We just ignore if we don't get any response, since the game very well might be offline and that should be ok.
+      return;
+    }
+    
+    OnlineStats = await response.json();
+    console.log(OnlineStats);
+  }
+  catch (error)
+  {
+    // For the same reason, any exception is just ignored.
+    console.error(error.message);
+  }
 }
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
@@ -880,6 +915,22 @@ function GameLoopStartScreen()
       topctx.fillText(bestHighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
     }
   
+    if(OnlineStats != null)
+    {
+      var highScoreFontSize = 3 * textScale;
+      var oneRow = ScreenHeight / 30;
+      var oneTenth = ScreenWidth / 10;
+      topctx.textAlign = "left";
+      topctx.font = highScoreFontSize + "vw Arial";
+      
+      switch(OnlineStats.version)
+      {
+        case 1:
+          topctx.fillText("BANAN Server version: " + OnlineStats.version, oneTenth, oneRow * 28);
+          topctx.fillText("Players online now: " + OnlineStats.players_now, oneTenth, oneRow * 29);
+          break;
+      }
+    }
     
     if (messageTimer == 0)
     {

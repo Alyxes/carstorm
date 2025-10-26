@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html>
-<body>
- 
 <?php
-echo "6";
+$arr = array('version' => 1, 'players_now' => 12);
+echo json_encode($arr);
 ?>
-
-</body>
-</html>
