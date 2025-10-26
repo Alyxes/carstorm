@@ -1,0 +1,30 @@
+
+1. Ladda upp alla filerna på carstorm.madskullcreations.com. Var säker på att version.php och service_worker.js noga speglar dina ändringar.
+  * Katalogerna graphics och icons ska laddas upp i sin helhet, samtliga filer.
+  * I rotkatalogen carstorm ska följande filer _inte_ laddas upp på servern:
+    a. .gitignore
+    b. carstormKeystore.jks !!
+    c. chrome.exe - Shortcut
+2. Sparka igång dosprompten, gå till carstorm/bubblewrap_buildfiles -katalogen.
+3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
+  a. Följ stegen 7 och 8 i den filen jävligt noga.
+4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
+5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
+6. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
+7. Publicera. Nu ska en ny version strax finnas uppe för nedladdning.
+8. Klicka på fliken Testers. Klicka Copy link. Ge den här länken till alla i testgruppen. 
+
+--------------------
+
+ATT TESTA EN RELEASE PÅ TELEFONEN
+
+1. Eftersom chrome används för att köra pwa-appar, så är det också chrome-cachen vi har att bråka med.
+2. Om appen inte vill ladda senaste filerna, öppna då carstorm.madskullcreations.com i browsern. 
+3. Som du ser visar den gamla versioner. 
+  a. Klicka på reload, eller:
+  b. Klicka på det lilla i'et bredvid reload-knappen.
+  c. Klicka på Cookies and site data.
+  d. Klicka på soptunnan.
+  e. Klicka på reload igen!
+4. Nu ska browsern ha laddat de senaste filerna. 
+5. Då ska appen göra det med! Annars får du installera om den jävelen igen.
