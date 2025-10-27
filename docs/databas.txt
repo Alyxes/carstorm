@@ -1,0 +1,4 @@
+
+  $username = "madskull_carstorm";
+  $password = "Raggelkrok_carstorm_mjonk";
+  $dbname = "madskull_carstorm";
