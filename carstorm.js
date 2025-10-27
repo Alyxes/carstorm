@@ -93,7 +93,7 @@ var finalScore = 0;
 var clearStreetTimer = 0;
 var lastDriveScore = 0;
 var bestHighScore = 0;
-var WinningScore = 99;
+var WinningScore = 999; // 9999 :)
 
 var roadWidth = 0;
 
