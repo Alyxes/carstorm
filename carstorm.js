@@ -615,12 +615,12 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
-  messageTimer = 6000; // Used for the message "touch screen to drive".
+  messageTimer = 3500; // Used for the message "touch screen to drive".
   audioAcceleration.play();
 }
 function TransitFromStartScreenToIntroPlay()
 {
-  TimeToGoBackToPlay = Now + 4000;
+  TimeToGoBackToPlay = Now + 2500;
   audioStart.play();
 }
 function TransitFromIntroPlayToPlaying()
