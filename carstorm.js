@@ -640,7 +640,7 @@ function OnEnterStartScreen()
 }
 function TransitFromStartScreenToIntroPlay()
 {
-  TimeToGoBackToPlay = Now + 4000;
+  TimeToGoBackToPlay = Now + 2500;
   audioAcceleration.pause();
   audioAcceleration.currentTime = 0;
   audioStart.play();
