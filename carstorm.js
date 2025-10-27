@@ -93,7 +93,7 @@ var finalScore = 0;
 var clearStreetTimer = 0;
 var lastDriveScore = 0;
 var bestHighScore = 0;
-var WinningScore = 9999;
+var WinningScore = 99;
 
 var roadWidth = 0;
 
@@ -286,7 +286,6 @@ function SetupCallbacks()
           break;
         case gsStartScreen:
           // Clicking the start screen starts a new game.
-          if (messageTimer <= 0)
             SetState(gsIntroPlay);
           break;
         case gsPlaying:
@@ -438,6 +437,7 @@ function CreatePlayer()
     CrashState: "None",
     Lives: 3,
     LivesBlinkTimer: 0,
+    RestartBlinkTimer: 0,
     Score: 0,
     Xposition: 0,
     Yposition: 0,
@@ -488,16 +488,22 @@ function EnterSomeKindOfPause()
   // Loosing focus or getting hidden, meaning screen saver should pause.
   screenSaverPaused = true;
   
+  // if (audioAcceleration.currentTime > 0 && !audioAcceleration.paused)
+  // {
+    // audioAcceleration.pause();
+  // }
+  // if (audioStart.currentTime > 0 && !audioStart.paused)
+  // {
+    // audioStart.pause();
+  // }
+  // if (audioGameOver.currentTime > 0 && !audioGameOver.paused)
+  // {
+    // audioGameOver.pause();
+  // }
+  
   // If we are playing it might be nice to return to a paused screen. :-)
   if(gameState == gsPlaying)
   {
-    touchMessageFontSize = 7 * textScale;
-    
-    topctx.fillStyle = "black";
-    topctx.textAlign = "center";
-    topctx.font = touchMessageFontSize + "vw Arial";
-    topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2);
-    
     SetState(gsPaused);
   }
 }
@@ -507,6 +513,19 @@ function ResumeFromSomeKindOfPause()
   screenSaverPaused = false;
   
   LastDraw = Date.now();
+
+  // if (audioAcceleration.currentTime > 0 && audioAcceleration.paused)
+  // {
+    // audioAcceleration.play();
+  // }
+  // if (audioStart.currentTime > 0 && audioStart.paused)
+  // {
+    // audioStart.play();
+  // }
+  // if (audioGameOver.currentTime > 0 && audioGameOver.paused)
+  // {
+    // audioGameOver.play();
+  // }
   
   GameLoop();
 }
@@ -597,6 +616,7 @@ function SetState(newState)
       if(newState == gsStartScreen)
       {
         TransitFromWinGameToStartScreen();
+        OnEnterStartScreen();
         transitionCool = true;
       }
       break;
@@ -615,12 +635,14 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
-  messageTimer = 6000; // Used for the message "touch screen to drive".
+  messageTimer = 3000; // Used for the message "touch screen to drive".
   audioAcceleration.play();
 }
 function TransitFromStartScreenToIntroPlay()
 {
   TimeToGoBackToPlay = Now + 4000;
+  audioAcceleration.pause();
+  audioAcceleration.currentTime = 0;
   audioStart.play();
 }
 function TransitFromIntroPlayToPlaying()
@@ -634,6 +656,7 @@ function TransitFromPlayingToCrashed()
   player.HasCollided = true;
   player.LivesBlinkTimer = 600;
   player.CrashState = "Exploding";
+  player.RestartBlinkTimer = 3800;
   
   currentExplosionFrameIndex = randomizeNumber(3);
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -641,7 +664,7 @@ function TransitFromPlayingToCrashed()
   
   clearStreetTimer = 250;
 
-  TimeToGoBackToPlay = Now + 3000;
+  TimeToGoBackToPlay = Now + 3900;
   audioCrash.play();
 }
 function TransitFromPausedToPlaying()
@@ -655,7 +678,6 @@ function TransitFromGameOverToStartScreen()
 function TransitFromWinGameToStartScreen()
 {
   ResetGameVariables();
-  messageTimer = 2000; // Reset for "touch screen to drive" message again.
 }
 function OnEnterPaused()
 {
@@ -703,6 +725,7 @@ function PlayerMove(direction)
   if(HasMoved)
   {
     player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    audioMove.currentTime = 0;
     audioMove.play();
   }
 }
@@ -747,6 +770,7 @@ function GameLoop()
       break;
     case gsPaused:
       // Draw game as usual, except time has "stopped".
+      GameLoopPaused();
       // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
       break;
     case gsGameOver:
@@ -779,7 +803,7 @@ function UpdateTimers()
     }
   }
 }
-function checkMessageTimer()
+function CheckMessageTimer()
 {
   if (messageTimer > 0)
   {
@@ -790,44 +814,41 @@ function checkMessageTimer()
     }
   }
 }
-function checkElapsedCarsTime()
+function CheckElapsedCarsTime(isPlaying)
 {
   if (ElapsedCarsTime >= gamespeedMS)
   {
     // Enough time has passed for all cars to update their positions.
     ElapsedCarsTime = 0;
         
-    GameTickTheCars();
+    GameTickTheCars(isPlaying);
     
     DrawAllCars(true);
   }
 }
 function ScorePassedCars()
 {
-  player.Score += 10 * checkAmountOfCarsToGetPoints();
+  player.Score += 10 * CheckAmountOfCarsToGetPoints();
   
   if (player.Score >= WinningScore)
   {
     player.Score = WinningScore;
     
     SetScoreStatistics();
-    
-    EndGameVariableResets();
-    
-    SetState(gsWinGame);
+    return;
   }
-  else if (player.Score >= nextLevel)
+  
+  if (player.Score >= nextLevel)
   {
     gamespeed += 0.1;
     gamespeedMS = 1000/gamespeed;
     
     nextLevel += 300 * gamespeed;
-    // explosionAnimFrameLength must diminish maybe?
     
     messageTimer = 2000;
   }
 }
-function checkLivesBlinkTimer()
+function CheckLivesBlinkTimer()
 {
   if (player.LivesBlinkTimer > 0)
   {
@@ -836,6 +857,28 @@ function checkLivesBlinkTimer()
     // This one keeps going until it's reset somewhere else.
     if (player.LivesBlinkTimer <= 0)
       player.LivesBlinkTimer = 600;
+  }
+}
+function CheckExplosionAnimTimer()
+{
+  if (explosionAnimTimer > 0)
+  {
+    explosionAnimTimer -= ElapsedTime;
+    
+    if (explosionAnimTimer <= 0)
+    {
+      explosionAnimTimer = explosionAnimFrameLength;
+      
+      if (player.CrashState == "Exploding")
+        explosionAnimFrameCounter++;
+      
+      currentExplosionFrameIndex++;
+      
+      if (currentExplosionFrameIndex > 2)
+        currentExplosionFrameIndex = 0;
+      
+      currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
+    }
   }
 }
 
@@ -884,7 +927,7 @@ function GameLoopStartScreen()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkMessageTimer();
+    CheckMessageTimer();
     
     DrawSnowstorm();
     
@@ -951,7 +994,6 @@ function GameLoopIntroPlay()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkLivesBlinkTimer();
         
     DrawSnowstorm();
     
@@ -959,8 +1001,9 @@ function GameLoopIntroPlay()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
     DrawAllCars(false);
-    DrawPlayerCar();    
+    DrawPlayerCar(true);    
     DrawPlayerLives();
+    DrawPlayerScore();
     
     if(Now > TimeToGoBackToPlay)
     {
@@ -974,29 +1017,34 @@ function GameLoopCrashed()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkLivesBlinkTimer();
+    CheckLivesBlinkTimer();
     
-    if (explosionAnimTimer > 0)
+    if (player.RestartBlinkTimer > 0)
     {
-      explosionAnimTimer -= ElapsedTime;
-      if (explosionAnimTimer <= 0)
+      player.RestartBlinkTimer -= ElapsedTime;
+      
+      if (player.RestartBlinkTimer <= 0)
+        player.RestartBlinkTimer = 0;
+    }
+    
+    CheckExplosionAnimTimer();
+    
+    if (explosionAnimFrameCounter >= 3)
+    {
+      explosionAnimFrameCounter = 0;
+      
+      player.Lives--;
+      player.LivesBlinkTimer = 0;
+      
+      if (player.Lives <= 0)
       {
-        explosionAnimTimer = explosionAnimFrameLength;
-        
-        if (player.CrashState == "Exploding")
-          explosionAnimFrameCounter++;
-        
-        currentExplosionFrameIndex++;
-        
-        if (currentExplosionFrameIndex > 2)
-          currentExplosionFrameIndex = 0;
-        
-        currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
-        
-        if (explosionAnimFrameCounter >= 3)
-        {
-          explosionAnimFrameCounter = 0;
-        }
+        TimeToGoBackToPlay = 0;
+      }
+      else
+      {
+        player.CrashState = "Restarting";
+        player.RoadPos = 2;
+        player.Xposition = screenwidthFifth * (player.RoadPos + 1);
       }
     }
     
@@ -1006,13 +1054,12 @@ function GameLoopCrashed()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
     DrawAllCars(false);
-    DrawPlayerCar();    
+    DrawPlayerCar(true);    
     DrawPlayerLives();
+    DrawPlayerScore();
     
-    if(Now > TimeToGoBackToPlay)
-    {
-      player.Lives--;
-      
+    if (Now > TimeToGoBackToPlay)
+    {      
       if (player.Lives <= 0)
       {
         // Game over! Show and play death animation. Wait for user to click away.
@@ -1020,6 +1067,7 @@ function GameLoopCrashed()
         
         finalScore = player.Score;
         player.Score = 0;
+        player.CrashState = "GameOver";
         
         EndGameVariableResets();
         
@@ -1027,30 +1075,23 @@ function GameLoopCrashed()
       }
       else
       {
-        player.LivesBlinkTimer = 0;
-        
-        player.RoadPos = 2;
-        player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-        
         player.CrashState = "None";
         player.HasCollided = false;
         explosionAnimTimer = 0;
-        explosionAnimFrameCounter = 0;
         
         SetState(gsPlaying);
       }
     }
   }
 }
-
 function GameLoopPlaying()
 {
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkMessageTimer();
-    checkElapsedCarsTime();
-    checkLivesBlinkTimer();
+    CheckMessageTimer();
+    CheckElapsedCarsTime(true);
+    CheckLivesBlinkTimer();
 
     DrawSnowstorm();
 
@@ -1058,16 +1099,11 @@ function GameLoopPlaying()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
     DrawAllCars(false);
-    DrawPlayerCar();
+    DrawPlayerCar(true);
     DrawPlayerLives();
+    DrawPlayerScore();
     
-    var scoreFontSize = 8 * textScale;
     touchMessageFontSize = 6 * textScale;
-    
-    topctx.fillStyle = "black";
-    topctx.textAlign = "left";
-    topctx.font = scoreFontSize + "vw Arial";
-    topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
     
     if (messageTimer > 0 && messageTimer%600 < 300)
     {
@@ -1075,15 +1111,44 @@ function GameLoopPlaying()
       topctx.font = touchMessageFontSize + "vw Arial";
       topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
+    
+    if (player.Score == WinningScore)
+    {
+      player.Score = WinningScore;
+      
+      SetScoreStatistics();
+      EndGameVariableResets();
+      
+      SetState(gsWinGame);
+    }
   }  
+}
+function GameLoopPaused()
+{
+  if (ElapsedTime >= fpsInterval)
+  {
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+    DrawAllCars(false);
+    DrawPlayerCar(false);
+    DrawPlayerLives();
+    DrawPlayerScore();
+    
+    touchMessageFontSize = 7 * textScale;
+    
+    topctx.fillStyle = "black";
+    topctx.textAlign = "center";
+    topctx.font = touchMessageFontSize + "vw Arial";
+    topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2);
+  }
 }
 function GameLoopGameOver()
 {
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkMessageTimer();
-    checkLivesBlinkTimer();
+    CheckMessageTimer();
+    CheckLivesBlinkTimer();
+    CheckExplosionAnimTimer();
 
     DrawSnowstorm();
 
@@ -1091,7 +1156,7 @@ function GameLoopGameOver()
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
     DrawAllCars(false);
-    DrawPlayerCar();
+    DrawPlayerCar(true);
         
     var gameOverFontSize = 13 * textScale;
     var finalScoreFontSize = 5 * textScale;
@@ -1119,9 +1184,9 @@ function GameLoopWinGame()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
-    checkMessageTimer();
-    checkElapsedCarsTime();
-    checkLivesBlinkTimer();
+    CheckMessageTimer();
+    CheckElapsedCarsTime(false);
+    CheckLivesBlinkTimer();
       
     DrawSnowstorm();
 
@@ -1133,8 +1198,7 @@ function GameLoopWinGame()
     
     DrawAllCars(false);
     
-    DrawPlayerCar();
-    
+    DrawPlayerCar(true);
     DrawPlayerLives();
     
     var finalScoreFontSize = 9 * textScale;
@@ -1180,18 +1244,23 @@ function GameLoopWinGame()
 }
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
 // Then move down the existing cars in the array, and create new ones on the top.
-function GameTickTheCars()
+function GameTickTheCars(isPlaying)
 {
   TickDownAllCarsOneRow();
-  CreateNewCars();
+  if (isPlaying)
+  {
+    audioBlip.play();
+    
+    CreateNewCars();
 
-  if(checkIfPlayerCollidesWithOtherCars())
-  {
-    SetState(gsCrashed);
-  }
-  else
-  {
-    ScorePassedCars();
+    if(CheckIfPlayerCollidesWithOtherCars())
+    {
+      SetState(gsCrashed);
+    }
+    else
+    {
+      ScorePassedCars();
+    }
   }
 }
 function EndGameVariableResets()
@@ -1200,11 +1269,11 @@ function EndGameVariableResets()
   clearStreetTimer = 250; // This one is set twice in case of crashing and becoing game over, but so what...
   // explosionAnimFrameCounter = 0;
 }
-function checkIfPlayerCollidesWithOtherCars()
+function CheckIfPlayerCollidesWithOtherCars()
 {
   return level[3][player.RoadPos].hasCar;
 }
-function checkAmountOfCarsToGetPoints()
+function CheckAmountOfCarsToGetPoints()
 {
   var amount = 0;
   for (var i = 0; i < 3; i++)
@@ -1220,8 +1289,6 @@ function TickDownAllCarsOneRow()
   level[2] = level[1];
   level[1] = level[0];
   level[0] = CreateLevelRow(); // and fill up with an empty row at the top.
-  
-  audioBlip.play();
 }
 
 // This will be moved and/or integrated somehow into the level object.
@@ -1455,16 +1522,30 @@ function DrawStreetLights()
 }
 var drawPlayerCrashSmoke = false;
 
-function DrawPlayerCar()
+function DrawPlayerCar(isNotPaused)
 {
-  topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
-  ctx.globalAlpha = 0.24;
-  ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
-  ctx.globalAlpha = 1;
+  var drawCar = true;
   
-  if(player.HasCollided)
+  if (player.CrashState == "Restarting" && player.RestartBlinkTimer > 0)
   {
-    if (player.CrashState == "Exploding")
+    if (player.RestartBlinkTimer % 700 < 350)
+      drawCar = false;
+  }
+  
+  if (drawCar)
+  {
+    topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
+    if (isNotPaused)
+    {
+      ctx.globalAlpha = 0.24;
+      ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
+      ctx.globalAlpha = 1;
+    }
+  }
+  
+  if (player.HasCollided)
+  {
+    if (player.CrashState == "Exploding" || player.CrashState == "GameOver")
     {
       var smokeImage = Smoke1Image;
       
@@ -1492,6 +1573,7 @@ function DrawPlayerCar()
         var randYpos = 15 + randomizeNumber(5);
         var rendAlfa = 0.35 + randomizeNumber(4)/10;
         
+        // if (isNotPaused)
         ctx.globalAlpha = rendAlfa;
         ctx.drawImage(smokeImage, player.Xposition - ScreenWidth/randXpos, player.Yposition - ScreenWidth/randYpos, player.Xsize * 1.32, player.Ysize * 1.3);
         ctx.globalAlpha = 1;
@@ -1513,6 +1595,15 @@ function DrawPlayerLives()
     else
       topctx.drawImage(PlayerLifeImage, carWidth * 1.5 + carWidth * 4 * i, LifeHeight * 2.5, carWidth * 3.5, LifeHeight * 3.92);
   }
+}
+function DrawPlayerScore()
+{
+  var scoreFontSize = 8 * textScale;
+  
+  topctx.fillStyle = "black";
+  topctx.textAlign = "left";
+  topctx.font = scoreFontSize + "vw Arial";
+  topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
 }
 
 function DrawSnowstorm()
