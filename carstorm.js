@@ -46,7 +46,6 @@ var fpsInterval = 1000 / fps; // milliseconds.
 
 // Let the name and string be the same to avoid confusion. 
 var gsNothing = "Nothing";
-var gsLoadingScreen = "LoadingScreen";
 var gsStartScreen = "StartScreen";
 var gsIntroPlay = "IntroPlay";
 var gsPlaying = "Playing";
@@ -56,7 +55,7 @@ var gsGameOver = "GameOver";
 var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [ gsNothing, gsLoadingScreen, gsStartScreen, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
+var gameStates = [ gsNothing, gsStartScreen, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -85,7 +84,6 @@ var rowPercentages = [0, 0.21, 0.6, 1.3];
 var carWidth = 0;
 var carHeight = 0;
 
-var loadScreenTimer = 2000;
 var messageTimer = 0;
 var TimeToGoBackToPlay = 0;
 var nextLevel = 300;
@@ -216,7 +214,7 @@ function init()
   Resize();
   
   // We enter the game with the loading screen visible.
-  SetState(gsLoadingScreen);
+  SetState(gsStartScreen);
   
   // Start the game loop!
   GameLoop();
@@ -280,10 +278,6 @@ function SetupCallbacks()
       // Eeh, ugly but works. Spreading out game state checks this way is error prone.
       switch(gameState)
       {
-        case gsLoadingScreen:
-          if (loadScreenTimer <= 0)
-            SetState(gsStartScreen);
-          break;
         case gsStartScreen:
           // Clicking the start screen starts a new game.
             SetState(gsIntroPlay);
@@ -542,12 +536,6 @@ function SetState(newState)
   switch(gameState)
   {
     case gsNothing:
-      if(newState == gsLoadingScreen)
-      {
-        transitionCool = true;
-      }
-      break;
-    case gsLoadingScreen:
       if(newState == gsStartScreen)
       {
         OnEnterStartScreen();
@@ -751,9 +739,6 @@ function GameLoop()
     case gsNothing:
       // This should never happen.
       break;
-    case gsLoadingScreen:
-      GameLoopLoadingScreen();
-      break;
     case gsStartScreen:
       // Draw the start screen! Look for a touch/click meaning user want to start a new game!
       GameLoopStartScreen();
@@ -882,46 +867,6 @@ function CheckExplosionAnimTimer()
   }
 }
 
-function GameLoopLoadingScreen()
-{
-  if (ElapsedTime >= fpsInterval)
-  {
-    LastDraw = Now;
-    
-    if (loadScreenTimer > 0)
-    {
-      loadScreenTimer -= ElapsedTime;
-      
-      if (loadScreenTimer <= 0)
-        loadScreenTimer = 0;
-    }
-    
-    DrawSnowstorm(); // We start drawing it in the background already. Because... yeah.
-    
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    
-    // This will be an image later.
-    topctx.fillStyle = "white";
-    topctx.fillRect(0,0,ScreenWidth,ScreenHeight);
-    
-    var LogoFontSize = 5 * textScale;
-    touchMessageFontSize = 6 * textScale;
-    
-    // Maybe we shouldn't have to draw this image every loop... But do we want ANOTHER ctx for that?
-    // Maybe not draw DrawSnowstorm(), but use regular ctx here for it. Draw it once in a middle function.
-    topctx.drawImage(TitleBGImage, 0, 0, ScreenWidth, ScreenHeight);
-    topctx.drawImage(MadSkullLogoImage, ScreenWidth/2 - ScreenWidth/5.5, ScreenHeight/2 - ScreenHeight/14, ScreenWidth/2.82, carWidth * 2);
-    
-    if (loadScreenTimer <= 0)
-    {
-      topctx.fillStyle = "black";
-      topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "vw Arial";
-      topctx.fillText("touch screen to start", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/10);
-    }
-  }
-}
-
 function GameLoopStartScreen()
 {
   if (ElapsedTime >= fpsInterval)
@@ -937,6 +882,8 @@ function GameLoopStartScreen()
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
+    topctx.drawImage(MadSkullLogoImage, 0 + ScreenWidth * 0.015, 0 + ScreenHeight * 0.03, ScreenWidth/4, carWidth * 1.4);
+    
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
     topctx.font = titleFontSize + "vw Arial";
@@ -944,7 +891,7 @@ function GameLoopStartScreen()
     
     if (lastDriveScore > 0)
     {
-      var highScoreFontSize = 3 * textScale;
+      var highScoreFontSize = 4 * textScale;
       
       topctx.textAlign = "right";
       topctx.font = highScoreFontSize + "vw Arial";
