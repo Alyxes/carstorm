@@ -119,6 +119,8 @@ const audioGameOver = new Audio("sound/gameover.mp3");
 
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
+var MadSkullLogoImage = new Image();
+MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png";
 
 var PlayerCarImage = new Image();
 PlayerCarImage.src = "graphics/PlayerCar.png";
@@ -147,11 +149,6 @@ var Smoke1Image = new Image();
 Smoke1Image.src = "graphics/Smoke1.png";
 var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
-
-var MadSkullLogoImage = new Image();
-MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png";
-var TitleBGImage = new Image();
-TitleBGImage.src = "graphics/TitleBGImage.png";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
