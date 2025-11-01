@@ -1,4 +1,10 @@
 
+https://github.com/tornseglare/terriblethingsmonogame
+  php_server innehåller allt du behöver för detta!
+
+  try catch finally
+    <-I finally stänger du dbn.
+
   $username = "madskull_carstorm";
   $password = "Raggelkrok_carstorm_mjonk";
   $dbname = "madskull_carstorm";
