@@ -2,6 +2,9 @@
 https://github.com/tornseglare/terriblethingsmonogame
   php_server innehåller allt du behöver för detta!
 
+Dude, här är allt din fungerande kod:
+  D:\Use\Programming\CSharp\terriblethingsmonogame\php_server
+
   try catch finally
     <-I finally stänger du dbn.
 

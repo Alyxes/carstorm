@@ -1,0 +1,31 @@
+
+// Database is named madskull_carstorm.
+
+Min lokala mysql-installation:
+  user   root
+  pass   admen
+  port   3307  (3306 var upptagen)
+
+// remote_addr is 46 characters at most, according to these guys:
+// https://stackoverflow.com/questions/166132/maximum-length-of-the-textual-representation-of-an-ipv6-address
+// Should be the visitor's ip address.
+
+// http_user_agent is set to 256, since it looks like it can be as long as it want to. Apache limit it to 8k! :-D
+
+// The utf8mb3 character set is deprecated. So use utf8mb4
+// INT(10) är bullshit uråldrigt "hjälp editorn se bra ut", dvs. den talar om att vidden på kolumnen borde vara 10 tecken. Men en INT är alltid en INT. Så ta bort.
+
+CREATE TABLE user_stats (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    server_version INT UNSIGNED NOT NULL,
+    game_version INT UNSIGNED NOT NULL,
+    win_count INT UNSIGNED NOT NULL,
+    high_score INT UNSIGNED NOT NULL,
+    play_count INT UNSIGNED NOT NULL,
+    remote_addr VARCHAR(46) NOT NULL COLLATE 'utf8mb4_unicode_ci',
+    http_user_agent VARCHAR(256) NULL COLLATE 'utf8mb4_unicode_ci',
+    created DATETIME NOT NULL
+)
+COLLATE='utf8mb4_unicode_ci'
+ENGINE=InnoDB
+ROW_FORMAT=COMPACT;

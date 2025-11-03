@@ -73,6 +73,29 @@ Mer specifikt här:
   %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHP_FCGI_MAX_REQUESTS',value='10000']"
   %windir%\system32\inetsrv\appcmd.exe set config -section:system.webServer/fastCgi /+"[fullPath='%phppath%\php-cgi.exe'].environmentVariables.[name='PHPRC',value='%phppath%\php.ini']"
   
+-----Få php att läsa in php.ini--------
+
+1. Skapa php.ini i C:\\PHP eller där du nu har din php installerad. 
+  Det finns några med annat namn, så kopiera o döp om. 
+2. Eftersom det inte hjälper att klicka på "Restart" i iis manager, för varför skulle det? 
+  Så måste du starta powershell i adminläge, och skriva iisreset.
+3. Fantastiskt. Nu har även php startats om och förhoppningsvis läst in dina ändringar du gjort i php.ini. Inte alls tröttsamt att göra om och om igen. 
+
+Andra saker som e fina att ha i php.ini:
+
+display_errors = On
+log_errors = On
+error_log = syslog
+syslog.ident = php
+  <-De tre sista raderna slänger in felen i Event Viewer också! De hamnar i Windows Logs/Application som en Warning och det är jäkla nyttigt eftersom det kan ge mer än vad bara display_errors ger. 
+  
+
+extension_dir='c:\php\ext'
+extension=php_mysqli.dll
+    <-Jaha, detta hittar man inte i klartext någonstans så klart. 
+      Det gör vadå? Jo, drar igång mysql så klart. 
+      Inte ens php.net har en ordentlig guide längre, någonstans har någon börjat hata microsoft och deras gamla skrot så mycket att ingen skriver guider längre.
+
 -----app.webmanifest------
 
 Eftersom du kan ladda app.json utan problem, men inte .webmanifest filer, så beror det på iis, igen:

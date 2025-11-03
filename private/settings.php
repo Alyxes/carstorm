@@ -6,8 +6,11 @@ class DBSettings
   public static $password = "Raggelkrok_carstorm_mjonk";
   public static $database = "madskull_carstorm";
   public static $encoding = "utf8";
+
+  // Append 'debug' entry to any json_encode()d result array returned to calle.
+  // TODO: Turn off! 
+  public static $debug = true;
   
-  // OBS! Den här tar troligen sönder en hel massa grejer, tex. all anropande kod som förväntar sig ett json-svar! 
-  public static $debug = false;
+  // Write errors to servers debug log in folder logs/. 
   public static $debugLogOnly = true;
 }
