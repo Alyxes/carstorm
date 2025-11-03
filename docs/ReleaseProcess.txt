@@ -1,0 +1,60 @@
+
+play.google.com
+Dashboard
+"Set up your app"
+  -Börja här! De har miljoners småsteg.
+  
+  Steg 1:
+    https://app.madskullcreations.com/doku.php?id=text_to_speech
+    https://app.madskullcreations.com/doku.php?id=text_to_speech_privacy_policy
+    
+    <-DONE: Gör samma för carstorm!
+      https://madskullcreations.com/doku.php?id=carstorm
+      
+      TODO: Den ska återspegla det vi faktiskt spelar in på servern!
+      https://madskullcreations.com/doku.php?id=carstorm_privacy_policy
+  Steg 2:
+    Håller på att stega igenom deras steg!
+    
+  Läs mer om privacy här!
+    https://support.google.com/googleplay/android-developer/answer/9859455?hl=en-GB#privacy_policy
+    
+    For apps that target children: You must link to a privacy policy on your app's store listing page and within your app, regardless of your app's access to sensitive permissions or data. Make sure that your privacy policy is available on an active URL, applies to your app and specifically covers user privacy. Note that even apps that do not access any personal or sensitive user data must still submit a privacy policy.
+      <-TODO: Red ut vad du vill spela in och koda det i php-filen! Se till att det funkar först, sedan kan du beskriva vad du spar.
+    
+--------------
+Saker som vi faktiskt spelar in:
+  https://support.google.com/googleplay/android-developer/answer/10787469?hl=en-GB#types&zippy=%2Cdata-types
+    
+App interactions
+  Information about how a user interacts with the app. For example, the number of times that they visit a page or sections they tap on.    
+    <-Jag klickade i denna!
+    
+Other actions
+  Any other user activity or actions in-app not listed here such as gameplay, likes and dialogue options.
+    <-Men inte denna.
+    
+Diagnostics
+  Information about the performance of your app. For example battery life, loading time, latency, framerate or any technical diagnostics.
+    <-Jag klickade i denna!
+    
+Other app performance data
+  Any other app performance data not listed here.
+    <-Jag klickade i denna!
+    
+Device or other IDs
+  Identifiers that relate to an individual device, browser or app. For example, an IMEI number, MAC address, Widevine device ID, Firebase installation ID or advertising identifier.    
+    <-TODO: Jag behöver kanske ett sätt att identifiera en användare? 
+      Klickade inte i denna.
+    
+--------------
+
+Sånt här kan man göra ifall servern blir plågad av bots o annat skrot.
+
+play.google.com
+  Test and release->App integrity, Play Integrity API
+  -Kort o gott frågar man googles fina servrar om spelaren som försöker prata med min server faktiskt är just spelet ifråga. 
+  (antar att spelet i sin tur pratar med deras servrar, genom nåt android-lager som är tänkt att vara säkert)
+
+https://www.youtube.com/watch?v=dqUTX6hR9Mk
+https://developer.android.com/google/play/integrity/overview

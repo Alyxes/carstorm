@@ -8,3 +8,10 @@ https://github.com/tornseglare/terriblethingsmonogame
   $username = "madskull_carstorm";
   $password = "Raggelkrok_carstorm_mjonk";
   $dbname = "madskull_carstorm";
+  
+  
+  <-Jo, men så här är det:
+    Katalogen /private är ej tillgänglig "utifrån" servern, så andra php-filer på servern kan nå filerna, men ingen utifrån. Enkel säkerhet som gör att ifall php-servern dör så kan ingen nå filerna i klartext ändå utifrån. (en död php-server låter användaren se index.php i klartext)
+    
+    Sen i någon phpfil i roten:
+      include "private/settings.php";
