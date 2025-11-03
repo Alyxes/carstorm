@@ -371,13 +371,26 @@ function Resize()
   //console.log();
 }
 
+// TODO: These should be read from storage.
+var GameVersion = 1;
+var WinCount = 0;
+var HighScore = 0;
+var PlayCount = 0;
+
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
 async function FetchOnlineStats() 
 {
   try
   {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    const response = await fetch("version.php");
+    var url = "version.php?";
+    url += "game_version="+GameVersion+"&";
+    url += "win_count="+WinCount+"&";
+    url += "high_score="+HighScore+"&";
+    url += "play_count="+PlayCount+"&"; 
+    url += "cache_killer="+Math.random();// Last param omit the &.
+    
+    const response = await fetch(url);
 
     if (!response.ok) 
     {

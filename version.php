@@ -4,14 +4,20 @@ include "private/handlers.php";
 // Increase version when server expect the given data to have a new format.
 $serverVersion = 1;
 
-$REMOTE_ADDR = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
-$HTTP_USER_AGENT = HandlerHelper::FetchString($_SERVER, 'HTTP_USER_AGENT');
-$gameVersion = HandlerHelper::FetchString($_POST, 'game_version');
-$winCount = HandlerHelper::FetchString($_POST, 'win_count');
-$highScore = HandlerHelper::FetchString($_POST, 'high_score');
-$playCount = HandlerHelper::FetchString($_POST, 'play_count');
+$remoteAddr = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
+$httpUserAgent = HandlerHelper::FetchString($_SERVER, 'HTTP_USER_AGENT');
+$gameVersion = intval(HandlerHelper::FetchString($_GET, 'game_version'));
+$winCount = intval(HandlerHelper::FetchString($_GET, 'win_count'));
+$highScore = intval(HandlerHelper::FetchString($_GET, 'high_score'));
+$playCount = intval(HandlerHelper::FetchString($_GET, 'play_count'));
 
 $ush = new UserStatsHandler();
+
+//HandlerHelper::Debug($_SERVER['QUERY_STRING']);
+//HandlerHelper::Debug($_REQUEST);
+//HandlerHelper::Debug($_GET);
+//HandlerHelper::Debug($_POST);
+
 
 $playersNow = $ush->CountOnlineUsers();
 
@@ -27,9 +33,12 @@ if($playersNow == 0)
   }
 }
 
+$id = $ush->AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $remoteAddr, $httpUserAgent);
+
 $arr = array(
   'version' => $serverVersion, 
-  'players_now' => $playersNow + 1 // Including yourself. 
+  'players_now' => $playersNow + 1, // Including yourself. 
+  'row_id' => $id
   );
 
 HandlerHelper::AppendDebug($arr);

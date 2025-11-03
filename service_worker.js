@@ -3,7 +3,7 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "18";
+const ServiceWorkerVersion = "20";
 
 const cacheName = "carstorm-madskullcreations-com";
 

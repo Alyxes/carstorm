@@ -274,16 +274,17 @@ class UserStatsHandler
       return -1;
     }
     
-    // TODO: Kolla in $remoteAddr och $httpUserAgent
+    // TODO: Kolla in $remoteAddr och $httpUserAgent? speciellt user agent kan väl vara farlig? 
+    // TODO: Maxlängden!
     
     $now = date("Y-m-d H:i:s");
     
     $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, remote_addr, http_user_agent, created)".
-             " values (".$serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",".$remoteAddr.",".$httpUserAgent.",'".$now."');";
+             " values (".$serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",'".$remoteAddr."','".$httpUserAgent."','".$now."');";
     HandlerHelper::Debug($query);
 
     $rowId = MySqlConnection::Insert($query);
-    
+        
     return $rowId;
   }
   

@@ -1,4 +1,13 @@
 
+Wow. Browsers alltså. Cache o sånt. Här är den slutliga fixen:
+  Eftersom carstorm.js skickar upp data till och får tillbaka data från version.php, så tycker browsern att om det är samma url som "förra gången" så tar den det cachade returvärdet och skippar helt att ladda ner version.php!
+  ...Fixen var helt enkelt att jag la in cache_killer=rand i urlen! Nu tycker chrome att den måste anropa version.php varje gång även om url-strängen är identisk med en cachad version.
+    (Detta gjorde jag redan på intereducations sidor för vi hade ett sånt helvete med cachen)
+
+  En sak till: Om man har en flik öppen i chrome på sin telefon med carstorm.madskullcreations.com, så kan den "hålla liv i" sidan! Så även om du dödar appen för att starta om den, så kan den där fliken cacha upp alltsammans på lite oklara sätt. Stäng fliken för säkerhets skull.
+
+-----------------
+
 Mjaha, eftersom det är ett sånt helvete att debugga och testa service_worker.js på localhost, så har jag lite tips: 
 
 1. Allt sker i Inspect i chrome.
