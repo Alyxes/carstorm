@@ -291,11 +291,9 @@ class UserStatsHandler
   public function CountOnlineUsers()
   {
     $anHourAgo = date("Y-m-d H:i:s", time() - 3600);
+        
+    $query = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."';";
     
-    // TODO: Count rows with created newer than an hour.
-    // group by ? 
-    
-    $query = "select count(remote_addr) as HappyCount from user_stats;";
     $res = MySqlConnection::Select($query);
     $row = $res->fetch_object();
     HandlerHelper::Debug($query);
@@ -306,8 +304,17 @@ class UserStatsHandler
   
   public function PurgeOld()
   {
-    // TODO: Purge rows older than a week.
-    $the_past = time() - 3600 * 24 * 7; // A week ago.
+    // Purge rows older than a week.
+    $thePast = date("Y-m-d H:i:s", time() - 3600 * 24 * 7); // A week ago.
+    
+    $query = "DELETE FROM user_stats AS US WHERE US.created < '".$thePast."';";
+    
+    // Test to delete a specific row.
+    //$query = "DELETE FROM user_stats AS US WHERE US.created < '2025-11-03 21:16:08';";
+    
+    $count = MySqlConnection::DeleteFrom($query);
+    
+    HandlerHelper::Debug("Purge count: ".$count);    
   }
 }
 

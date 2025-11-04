@@ -41,6 +41,14 @@ $arr = array(
   'row_id' => $id
   );
 
+// Purge could be done after result is echoed, but as we want the Debug() to be added to the result right now we keep this here.
+// Don't purge on every call, just every now and then, when the sun shines.
+if(rand(0,30) == 0)
+{
+  $ush->PurgeOld();
+}
+
+// NOTE: Should not be here on sharp server after release!
 HandlerHelper::AppendDebug($arr);
 
 echo json_encode($arr);
@@ -48,11 +56,7 @@ echo json_encode($arr);
 // TODO: If slow, here is a good place to release the user and continue script execution.
 // https://stackoverflow.com/questions/15273570/how-can-i-continue-processing-php-after-sending-a-response
 
-// Don't purge on every call, just every now and then, when the sun shines.
-if(rand(0,30) == 0)
-{
-  $ush->PurgeOld();
-}
+// TODO: Purge call should be here.
 
 // Måste alltid koppla ner från databasen sist.
 MySqlConnection::Disconnect();

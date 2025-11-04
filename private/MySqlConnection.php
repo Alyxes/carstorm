@@ -85,7 +85,21 @@ class MySqlConnection
 		if(self::$mysqli->error != "")
 		{
 			exit("MySQL update query failed: ".self::$mysqli->error);
-		}		
+		}
 	}
-	
+  
+  public static function DeleteFrom($query)
+  {
+		self::$mysqli->query($query);
+
+		if(self::$mysqli->error != "")
+		{
+			exit("MySQL DELETE query failed: ".self::$mysqli->error);
+		}
+    
+    // Return number of deleted rows.
+    $res = MySqlConnection::Select("SELECT ROW_COUNT() as DelRowCount;");
+    $row = $res->fetch_object();
+    return $row->DelRowCount;
+  }
 }
