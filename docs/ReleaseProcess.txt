@@ -14,7 +14,12 @@ Dashboard
       TODO: Den ska återspegla det vi faktiskt spelar in på servern!
       https://madskullcreations.com/doku.php?id=carstorm_privacy_policy
   Steg 2:
-    Håller på att stega igenom deras steg!
+    DONE: Håller på att stega igenom deras steg!
+  Steg 3:
+    DONE: Gör en första release 5/11. Avvaktar deras review som garanterat kommer innehålla tonvis med grejer.
+
+  Detaljerad beskrivning av varje punkt under "Default store listing":  
+    https://support.google.com/googleplay/android-developer/answer/9866151#zippy=%2Capp-icon%2Cshort-description
     
   Läs mer om privacy här!
     https://support.google.com/googleplay/android-developer/answer/9859455?hl=en-GB#privacy_policy

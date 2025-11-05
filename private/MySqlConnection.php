@@ -102,4 +102,16 @@ class MySqlConnection
     $row = $res->fetch_object();
     return $row->DelRowCount;
   }
+  
+  public static function MakeStringMySqlSafe($str)
+  {
+    $str = self::$mysqli->real_escape_string($str);
+    
+    // Also remove % and _ characters.
+    $str = str_replace('%', '', $str);
+    $str = str_replace('_', '', $str);
+        
+    return $str;
+  }
+
 }

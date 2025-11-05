@@ -61,7 +61,7 @@ class HandlerHelper
     //  log_3.11.2025_19.00.txt
     file_put_contents('./logs/log_'.date("j.n.Y_H.00").'.txt', $log, FILE_APPEND);
   }
-  
+    
   public static function StringIsSafe($str)
   {
     if(HandlerHelper::StringIsMySqlSafe($str) == false || HandlerHelper::StringIsHtmlSafe($str) == false)
@@ -274,8 +274,20 @@ class UserStatsHandler
       return -1;
     }
     
-    // TODO: Kolla in $remoteAddr och $httpUserAgent? speciellt user agent kan väl vara farlig? 
-    // TODO: Maxlängden!
+    // $remoteAddr är kontrollerad av apache, så innehåller endast säkra värden.
+    // $httpUserAgent däremot är sänt från klienten, så en hacker kan trolla den. Måste vi kontrollera.
+    
+    // Maxlängden.
+    $remoteAddr = substr($remoteAddr, 0, 46);
+    $httpUserAgent = substr($httpUserAgent, 0, 256);
+    
+    // $httpUserAgent kan ha detta format, men standard verkar saknas: (Kort sagt, ej pålitliga värden! https://en.wikipedia.org/wiki/User-Agent_header)
+    // Mozilla/[version] ([system and browser information]) [platform] ([platform details]) [extensions]
+    // Exempelvis:
+    // Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405
+    // <-Så jag klipper inte upp och försöker göra nåt vettigt av det, för vem bryr sig? 
+    // 
+    $httpUserAgent = MySqlConnection::MakeStringMySqlSafe($httpUserAgent);
     
     $now = date("Y-m-d H:i:s");
     
