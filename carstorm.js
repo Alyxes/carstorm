@@ -887,6 +887,7 @@ function GameLoopStartScreen()
     DrawSnowstorm();
     
     var titleFontSize = 14 * textScale;
+    var highScoreFontSize = 4 * textScale;
     touchMessageFontSize = 6 * textScale;
     
     // The cars and text are drawn here so they don't get smeared.
@@ -901,8 +902,6 @@ function GameLoopStartScreen()
     
     if (lastDriveScore > 0)
     {
-      var highScoreFontSize = 4 * textScale;
-      
       topctx.textAlign = "right";
       topctx.font = highScoreFontSize + "vw Arial";
       
@@ -915,12 +914,15 @@ function GameLoopStartScreen()
       topctx.fillText(bestHighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
     }
   
-
     var fontSize = 3 * textScale;
     var oneRow = ScreenHeight / 30;
     var oneTenth = ScreenWidth / 10;
     topctx.textAlign = "left";
     topctx.font = fontSize + "vw Arial";
+    
+    // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
+    topctx.fillText(ScreenWidth, ScreenWidth / 30, oneRow * 26.5);
+    topctx.fillText(ScreenHeight, ScreenWidth / 30, oneRow * 28);
 
     if(OnlineStats != null)
     {
