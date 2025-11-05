@@ -1,5 +1,5 @@
 <?php
-include "settings.php";
+require "private/settings.php";
 
 // Keeps the connection static, so we can performe queries easily: MySqlConnection::Select($query) 
 class MySqlConnection

@@ -1,5 +1,7 @@
 <?php
-include "private/handlers.php";
+require "private/handlers.php";
+
+// Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 
 // Increase version when server expect the given data to have a new format.
 $serverVersion = 1;
@@ -18,7 +20,6 @@ $ush = new UserStatsHandler();
 //HandlerHelper::Debug($_GET);
 //HandlerHelper::Debug($_POST);
 
-
 $playersNow = $ush->CountOnlineUsers();
 
 // Lie if zero! It should always be someone playing the game! Magic number: 12.
@@ -36,9 +37,8 @@ if($playersNow == 0)
 $id = $ush->AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $remoteAddr, $httpUserAgent);
 
 $arr = array(
-  'version' => $serverVersion, 
-  'players_now' => $playersNow + 1, // Including yourself. 
-  'row_id' => $id
+  'server_version' => $serverVersion, 
+  'players_now' => $playersNow + 1 // Including yourself. 
   );
 
 // Purge could be done after result is echoed, but as we want the Debug() to be added to the result right now we keep this here.
