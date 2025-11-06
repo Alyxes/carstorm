@@ -104,6 +104,7 @@ var screenwidthFifth;
 var roadStartLeft;
 
 var explosionAnim = [3];
+var snowImages = [5];
 var currentExplosionFrame;
 var currentExplosionFrameIndex = 0;
 var explosionAnimFrameLength = 0;
@@ -121,6 +122,17 @@ var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
 var MadSkullLogoImage = new Image();
 MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png";
+
+var SnowPuffImage1 = new Image();
+SnowPuffImage1.src = "graphics/SnowPuff1.png";
+var SnowPuffImage2 = new Image();
+SnowPuffImage2.src = "graphics/SnowPuff2.png";
+var SnowPuffImage3 = new Image();
+SnowPuffImage3.src = "graphics/SnowPuff3.png";
+var SnowPuffImage4 = new Image();
+SnowPuffImage4.src = "graphics/SnowPuff4.png";
+var SnowPuffImage5 = new Image();
+SnowPuffImage5.src = "graphics/SnowPuff5.png";
 
 var PlayerCarImage = new Image();
 PlayerCarImage.src = "graphics/PlayerCar.png";
@@ -201,6 +213,12 @@ function init()
   explosionAnim[0] = Explosion1Image;
   explosionAnim[1] = Explosion2Image;
   explosionAnim[2] = Explosion3Image;
+  
+  snowImages[0] = SnowPuffImage1;
+  snowImages[1] = SnowPuffImage2;
+  snowImages[2] = SnowPuffImage3;
+  snowImages[3] = SnowPuffImage4;
+  snowImages[4] = SnowPuffImage5;
   
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
   
@@ -1567,10 +1585,15 @@ function DrawPlayerScore()
 
 function DrawSnowstorm()
 {
-  var min = 200;
-  var max = 255 - min;
-  r = min + Math.floor(Math.random() * max);
-  g = b = r; // We want just grayscales.
+  //var min = 200;
+  //var max = 255 - min;
+  // var min;
+  var max;
+  
+  var snowImage;
+  
+  // r = min + Math.floor(Math.random() * max);
+  // g = b = r; // We want just grayscales.
   
   // Copy the center rectangle, margins 10 px in from screen border. (meaning the copied picture is 20 px smaller on each side than original)
   var imgData = ctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
@@ -1587,23 +1610,48 @@ function DrawSnowstorm()
   ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
   
   // Now draw some snow particles in the center of the image.
-  ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
-  for(var i=0; i<10; i++)
-  {
+  // ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
+  // for(var i=0; i<10; i++)
+  // {
     // Round snow
-    var max = ScreenHeight/10;
-    var minSize = ScreenHeight/400;
-    var maxSize = ScreenHeight/80;
+    // max = ScreenHeight/10;
+    // var minSize = ScreenHeight/400;
+    // var maxSize = ScreenHeight/80;
+    
+    // var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
+    // var yRand = max - Math.floor(Math.random() * (max));
+    // xRand -= max / 2;
+    // yRand -= max / 2;
+    
+    // var size = minSize + Math.floor(Math.random() * (maxSize));
+    
+    // ctx.beginPath();
+    // ctx.arc(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
+    // ctx.fill();
+  //}
+  ctx.globalAlpha = 0.64;
+  // snow images
+  for(var i=0; i<2; i++)
+  {
+    snowImage = snowImages[randomizeNumber(5)];
+    var imageHalf;
+    
+    max = ScreenHeight/10;
+    var minSize = ScreenHeight/30;
+    var maxSize = ScreenHeight/22;
     
     var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
     var yRand = max - Math.floor(Math.random() * (max));
     xRand -= max / 2;
     yRand -= max / 2;
     
-    var size = minSize + Math.floor(Math.random() * (maxSize));
+    var size = minSize + Math.floor(Math.random() * maxSize);
+    var xPos = ScreenWidth / 2 - 1 - xRand;
+    var yPos = ScreenHeight / 2 - 1 - yRand;
+    imageHalf = size/2;
     
-    ctx.beginPath();
-    ctx.arc(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
-    ctx.fill();
-  }  
+    ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
+  }
+  
+  ctx.globalAlpha = 1;
 }
