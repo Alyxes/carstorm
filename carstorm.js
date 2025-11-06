@@ -242,71 +242,96 @@ function SetupCallbacks()
   window.addEventListener('focus', function(){
     ResumeFromSomeKindOfPause();
   }, false);
-  
-  document.addEventListener("keydown", (e) => {
-    e = e || window.event;
     
-    // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
-    if(gameState == gsPlaying)
-    {
-      if (e.keyCode === 37)
+  // Since the ontouchstart event is ONLY defined in browsers connected to a touch screen,
+  // we can kind of trust this approach! 
+  // https://stackoverflow.com/questions/2915833/how-to-check-browser-for-touchstart-support-using-js-jquery
+  if ('ontouchstart' in document.documentElement)
+  {
+    // Yeah! Touch events are here!
+    // Much cooler feeling when the car moves when you put your finger on the screen!
+    // (Instead of when you lift your finger from the screen.)
+    document.addEventListener("touchstart", (e) => {
+      var x = e.touches[0].clientX;
+
+      // Multitouch you know. :)
+      TouchClickEvent(e.touches[0].clientX, e.touches[0].clientY);
+    });
+  }
+  else
+  {
+    // Buhöö, no touch events, go by mouse events. 
+    document.addEventListener("mousedown", (e) => {
+      e = e || window.event;
+      
+      if(e.button == 0) // Most of the time the left button
       {
-        // left arrow pressed.
-        // console.log("button left");
+        // console.log("mousedown: " + e.button);
+        TouchClickEvent(e.clientX, e.clientY);
+      }
+    });
+    
+    // And keep the keydown events for old times sake.
+    document.addEventListener("keydown", (e) => {
+      e = e || window.event;
+      
+      // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
+      if(gameState == gsPlaying)
+      {
+        if (e.keyCode === 37)
+        {
+          // left arrow pressed.
+          // console.log("button left");
+          PlayerMove("left");
+        }
+        else if (e.keyCode === 39)
+        {
+          // right arrow pressed.
+          // console.log("button right");
+          PlayerMove("right");
+        }
+      }
+    });
+  }
+}
+
+// Touch or click event happened. 
+function TouchClickEvent(xPos, yPos)
+{
+  // Eeh, ugly but works. Spreading out game state checks this way is error prone.
+  switch(gameState)
+  {
+    case gsStartScreen:
+      // Clicking the start screen starts a new game.
+        SetState(gsIntroPlay);
+      break;
+    case gsPlaying:
+      if(xPos < ScreenWidth / 2)
+      {
+        // console.log("mousedown left");
         PlayerMove("left");
       }
-      else if (e.keyCode === 39)
+      else
       {
-        // right arrow pressed.
-        // console.log("button right");
+        // console.log("mousedown right");
         PlayerMove("right");
       }
-    }
-  });
-  
-  document.addEventListener("mousedown", (e) => {
-    e = e || window.event;
-    
-    // if(e.button == 0) // Most of the time the left button
-    {
-      // console.log("mousedown: " + e.button);
-      
-      // Eeh, ugly but works. Spreading out game state checks this way is error prone.
-      switch(gameState)
-      {
-        case gsStartScreen:
-          // Clicking the start screen starts a new game.
-            SetState(gsIntroPlay);
-          break;
-        case gsPlaying:
-          if(e.clientX < ScreenWidth / 2)
-          {
-            // console.log("mousedown left");
-            PlayerMove("left");
-          }
-          else
-          {
-            // console.log("mousedown right");
-            PlayerMove("right");
-          }
-          break;
-        case gsPaused:
-          // Clicking the pause screen resumes the game.
-          SetState(gsPlaying);
-          break;
-        case gsGameOver:
-          // Clicking the game over screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-        case gsWinGame:
-          // Clicking the winning game screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-      }
-    }
-  });
+      break;
+    case gsPaused:
+      // Clicking the pause screen resumes the game.
+      SetState(gsPlaying);
+      break;
+    case gsGameOver:
+      // Clicking the game over screen returns you to the start screen.
+      if (messageTimer <= 0)
+        SetState(gsStartScreen);
+      break;
+    case gsWinGame:
+      // Clicking the winning game screen returns you to the start screen.
+      if (messageTimer <= 0)
+        SetState(gsStartScreen);
+      break;
+  }  
 }
 
 function Resize()
