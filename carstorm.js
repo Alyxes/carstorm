@@ -28,8 +28,9 @@ var textScale;
 var screenSaverPaused = false;
 
 // Canvas 2d surface, for drawing on.
-var ctx = null;
-var topctx = null;
+var ctx = null;       // The rotating sliding towards the screen snowstorm.
+var streetctx = null; // The street and car shadows, also sliding along but not rotating.
+var topctx = null;    // Score, cars and stuff.
 
 var r=0;
 var g=0;
@@ -193,21 +194,24 @@ function init()
     
   // Fetch the html element with the id 'canvas'. This is where we will do all drawing.
   var c = document.getElementById("canvas");
-  var c2 = document.getElementById("top_canvas");
-  
-  // Setting willReadFrequently to true might increase speed as we are reading the entire image and redrawing it every frame.
-  // https://stackoverflow.com/questions/74101155/chrome-warning-willreadfrequently-attribute-set-to-true
-  ctx = c.getContext("2d", { willReadFrequently: true });
-  topctx = c2.getContext("2d", { willReadFrequently: true });
+  var sc = document.getElementById("street_canvas");
+  var tc = document.getElementById("top_canvas");
   
   // Not sure it makes a difference right here, but scaling up gets pixelated, not softened. 
   c.style.imageRendering = "pixelated";
-  c2.style.imageRendering = "pixelated";
+  sc.style.imageRendering = "pixelated";
+  tc.style.imageRendering = "pixelated";
   hiddenCanvas.style.imageRendering = "pixelated";
   
   // A winterstorm background should be almost white, not green. :)
   c.style.backgroundColor = "#eee";
   
+  // Setting willReadFrequently to true might increase speed as we are reading the entire image and redrawing it every frame.
+  // https://stackoverflow.com/questions/74101155/chrome-warning-willreadfrequently-attribute-set-to-true
+  ctx = c.getContext("2d", { willReadFrequently: true });
+  streetctx = sc.getContext("2d", { willReadFrequently: true });
+  topctx = tc.getContext("2d", { willReadFrequently: true });
+    
   explosionAnim[0] = Explosion1Image;
   explosionAnim[1] = Explosion2Image;
   explosionAnim[2] = Explosion3Image;
@@ -367,6 +371,10 @@ function Resize()
   var cs = document.getElementById('canvas');
   cs.height = ScreenHeight;
   cs.width = ScreenWidth;
+
+  var streetcs = document.getElementById('street_canvas');
+  streetcs.height = ScreenHeight;
+  streetcs.width = ScreenWidth;
   
   var topcs = document.getElementById('top_canvas');
   topcs.height = ScreenHeight;
@@ -1023,6 +1031,7 @@ function GameLoopIntroPlay()
     UpdateTimers();
         
     DrawSnowstorm();
+    DrawStreetLayer();
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1076,6 +1085,7 @@ function GameLoopCrashed()
     }
     
     DrawSnowstorm();
+    DrawStreetLayer();
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1120,16 +1130,17 @@ function GameLoopPlaying()
     CheckElapsedCarsTime(true);
     CheckLivesBlinkTimer();
 
-    DrawSnowstorm();
-
-    // The cars and text are drawn here so they don't get smeared.
+    // The cars and text are drawn at streetctx or topctx so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
     DrawAllCars(false);
     DrawPlayerCar(true);
     DrawPlayerLives();
     DrawPlayerScore();
-    
+
+    DrawSnowstorm();
+    DrawStreetLayer();
+
     touchMessageFontSize = 6 * textScale;
     
     if (messageTimer > 0 && messageTimer%600 < 300)
@@ -1178,7 +1189,8 @@ function GameLoopGameOver()
     CheckExplosionAnimTimer();
 
     DrawSnowstorm();
-
+    DrawStreetLayer();
+    
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     DrawStreetLights();
@@ -1216,6 +1228,7 @@ function GameLoopWinGame()
     CheckLivesBlinkTimer();
       
     DrawSnowstorm();
+    DrawStreetLayer();
 
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1481,7 +1494,7 @@ function DrawAllCars(onlyTheShadows)
 
         if (onlyTheShadows == true && yPos == 0)
         {
-          ctx.drawImage(EnemyCarShadowImage, 
+          streetctx.drawImage(EnemyCarShadowImage, 
             xPos + x * ((roadWidth / roadWidthDivide) + (roadWidth * roadWidthMultiply) * rowPercentages[y]), // as in 3 lanes. 
             (ScreenHeight / 2) + lightHeight -lightHeight/8 + yPos, 
             carWidth + (carWidth * 4.2 * rowPercentages[y]), 
@@ -1528,21 +1541,21 @@ function DrawStreetLights()
 {
   if (streetLightTimer >= gamespeedMS)
   {
-    ctx.fillStyle = "rgba(255,100,0,1)";
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
-    ctx.fill();
+    streetctx.fillStyle = "rgba(255,100,0,1)";
+    streetctx.beginPath();
+    streetctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    streetctx.fill();
+    streetctx.beginPath();
+    streetctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    streetctx.fill();
     
-    ctx.fillStyle = "yellow";
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
-    ctx.fill();
+    streetctx.fillStyle = "yellow";
+    streetctx.beginPath();
+    streetctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    streetctx.fill();
+    streetctx.beginPath();
+    streetctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    streetctx.fill();
     
     streetLightTimer = 0;
   }
@@ -1564,9 +1577,9 @@ function DrawPlayerCar(isNotPaused)
     topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
     if (isNotPaused)
     {
-      ctx.globalAlpha = 0.24;
-      ctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
-      ctx.globalAlpha = 1;
+      streetctx.globalAlpha = 0.24;
+      streetctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
+      streetctx.globalAlpha = 1;
     }
   }
   
@@ -1601,9 +1614,9 @@ function DrawPlayerCar(isNotPaused)
         var rendAlfa = 0.35 + randomizeNumber(4)/10;
         
         // if (isNotPaused)
-        ctx.globalAlpha = rendAlfa;
-        ctx.drawImage(smokeImage, player.Xposition - ScreenWidth/randXpos, player.Yposition - ScreenWidth/randYpos, player.Xsize * 1.32, player.Ysize * 1.3);
-        ctx.globalAlpha = 1;
+        streetctx.globalAlpha = rendAlfa;
+        streetctx.drawImage(smokeImage, player.Xposition - ScreenWidth/randXpos, player.Yposition - ScreenWidth/randYpos, player.Xsize * 1.32, player.Ysize * 1.3);
+        streetctx.globalAlpha = 1;
       }
     }
   }
@@ -1633,7 +1646,7 @@ function DrawPlayerScore()
   topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
 }
 
-var rotationSpeed = 0.5;
+var rotationSpeed = 0.6;
 
 function DrawSnowstorm()
 {
@@ -1658,9 +1671,9 @@ function DrawSnowstorm()
   
   // Rotating the storm eliminates the 8 artifact rays coming from the zoom in.
   // However, the lights and car shadows will rotate too... So we need ANOTHER canvas AND another hidden canvas (I assume) to let those scale normally.
-  // ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
-  // ctx.rotate(rotationSpeed * Math.PI / 180);
-  // ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
+  ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+  ctx.rotate(rotationSpeed * Math.PI / 180);
+  ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
   
   // Stretch out the copied (smaller) image over the entire canvas.
   // Note! We are drawing the _canvas_ object, not its 2d context. 
@@ -1711,4 +1724,33 @@ function DrawSnowstorm()
   }
   
   ctx.globalAlpha = 1;
+}
+
+function DrawStreetLayer()
+{
+  // Copy the entire ctx image.
+  var imgData = streetctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
+  
+  // Draw it here meanwhile.
+  hiddenCtx.putImageData(imgData, 0, 0);
+  
+  // Empty! We don't want any smearing, just the zooming.
+  streetctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+  streetctx.save();
+  {
+    var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
+    var xSide = ScreenWidth * speed;
+    var ySide = ScreenHeight * speed;
+      
+    // Copy a somewhat smaller rectangle from the center of the image,
+    // draw it stretched to fill the entire ctx.
+    // (This is all the zoom-magic)
+    // Note! We are drawing the _canvas_ object, not its 2d context. 
+    streetctx.drawImage(
+      hiddenCanvas, 
+      xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 
+      0, 0, ScreenWidth, ScreenHeight);
+  }
+  streetctx.restore();
 }

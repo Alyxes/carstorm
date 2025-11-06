@@ -18,13 +18,7 @@
       
     touch-action: pan-x pan-y;
   }
-  #canvas
-  {
-    position:absolute;
-    top:0px;
-    left:0px;
-  }
-  #top_canvas
+  #canvas, #street_canvas, #top_canvas
   {
     position:absolute;
     top:0px;
@@ -32,9 +26,8 @@
   }
 </style>
 <body onLoad="init();">
-	<canvas id="canvas">
-	</canvas>
-  <canvas id="top_canvas">
-	</canvas>
+	<canvas id="canvas"></canvas>
+  <canvas id="street_canvas"></canvas>
+  <canvas id="top_canvas"></canvas>
 </body>
 </html>
