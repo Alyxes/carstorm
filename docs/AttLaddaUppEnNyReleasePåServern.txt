@@ -1,0 +1,25 @@
+
+Hur man gör en release av en ny version på servern!
+
+1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
+2. Checka in alla ändringar på github.
+3. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
+4. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
+
+Är du det minsta osäker, ta steg 4 istället för steg 3, så jäkla mycket filer rör det sig inte om. 
+
+OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
+
+----------
+
+Följer du principerna ovan så har du minimerat lidandet. Men, tänk på dessa fakta:
+
+1. Spelet startar inte om av sig själv. Spelet kan ligga minimerat i veckor eller månader på någons telefon, och laddas alltså inte om. 
+2. Punkt 1 betyder helt enkelt att åtskilliga spelare kommer att ha en gammal version körandes på sin telefon! Oavsett vad du gör och med vilka vimplar och flaggor du står på ett ben och vinkar med.
+3. Så, servern kan öka sin version i version.php, men den ENDA effekten du får av det, är att nuvarande version av spelet helt skippar att uppdatera sina data, då den för säkerhets skull låtsas att servern inte va online. 
+
+...Slutsats, och några resonemang:
+1. Fixa så spelet laddar om sina filer. Börja om från början i deras artiklar om pwa och appar på android. 
+2. Se till att service_worker.js laddas om också. Det ska den väl i princip göra så fort spelet börjar vilja ladda några filer. 
+3. En liten grej som kanske löser 2an vore att med jämna mellanrum anropa FetchOnlineStats() som ju just laddar version.php, och då borde trigga en omladdning av service_worker.js, varpå den i sin tur borde inse att den är ny och tömma fil-cachen. 
+4. ..steg 3 tar däremot inte i beaktande att spelet är just minimerat, och därmed inte startar om javascriptet eller laddar om några filer alls. Så, se till att steg 1 fungerar!

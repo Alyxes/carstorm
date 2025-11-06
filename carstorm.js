@@ -86,11 +86,16 @@ var carHeight = 0;
 var messageTimer = 0;
 var TimeToGoBackToPlay = 0;
 var nextLevel = 300;
-var finalScore = 0;
 var clearStreetTimer = 0;
-var lastDriveScore = 0;
-var bestHighScore = 0;
-var WinningScore = 999; // 9999 :)
+var finalScore = 0;         // After finishing current game, this is your final score.
+var LastDriveScore = 0;     // Last game's final score.
+var HighScore = 0;          // Gamers highest score of all times.
+var WinCount = 0;           // How many times the gamer has won the game.
+var PlayCount = 0;          // How many times the gamer has started a new round.
+var WinningScore = 999;     // Game ends when you reach this score. Should be 9999 :)
+
+var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
+var TimeToFetchOnlineStats = 0;
 
 var roadWidth = 0;
 
@@ -426,14 +431,17 @@ var GotResponseFromServer = false;
 // TODO: These should be read from storage.
 var ServerVersion = 1;
 var GameVersion = 1;
-var PlayersNow = 0;
-var WinCount = 0;
-var HighScore = 0;
-var PlayCount = 0;
 
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
+// Fetch, and push your stats to server.
 async function FetchOnlineStats() 
 {
+  if(TimeToFetchOnlineStats > Now)
+    return;
+  
+  // TEMP: Every 30 seconds, but you must still play one round and come back to start screen.
+  TimeToFetchOnlineStats = Now + 1000 * 30;// * 3600; // Update every hour.
+  
   GotResponseFromServer = false;
   
   try
@@ -468,7 +476,7 @@ async function FetchOnlineStats()
       case 1:
         // First version has these variables: server_version and players_now
         ServerVersion = OnlineStats.server_version;
-        PlayersNow = OnlineStats.players_now;
+        PlayersPlayingNow = OnlineStats.players_now;
         break;
       default:
         console.log("We seem to be running an old version of the game!");
@@ -557,10 +565,10 @@ function ResetGameVariables()
 function SetScoreStatistics()
 {
   // Right now we only save the last drive score, and the best score yet.
-  lastDriveScore = player.Score;
+  LastDriveScore = player.Score;
   
-  if (lastDriveScore > bestHighScore)
-    bestHighScore = lastDriveScore;
+  if (LastDriveScore > HighScore)
+    HighScore = LastDriveScore;
   
   // In the future this function can be used to save amount of drives, time between deaths, and so on. Any statistics we want to save, for
   // the player to view or just for ourselves. :)
@@ -716,6 +724,8 @@ function OnEnterStartScreen()
 {
   messageTimer = 3000; // Used for the message "touch screen to drive".
   audioAcceleration.play();
+  
+  FetchOnlineStats();
 }
 function TransitFromStartScreenToIntroPlay()
 {
@@ -766,11 +776,23 @@ function OnEnterGameOver()
 {
   audioGameOver.play();
   messageTimer = 5000; // Set for the "touch screen to restart" message.
+  
+  PlayCount++;
+  
+  SetScoreStatistics();
+  EndGameVariableResets();
 }
 function OnEnterWinGame()
 {
   // Start the wingame trudelutt.
   messageTimer = 4000; // Set for the "touch screen to play again" message.
+  
+  player.Score = WinningScore;
+  WinCount++;
+  PlayCount++;
+  
+  SetScoreStatistics();
+  EndGameVariableResets();
 }
 
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
@@ -908,13 +930,9 @@ function ScorePassedCars()
   
   if (player.Score >= WinningScore)
   {
-    player.Score = WinningScore;
-    
-    SetScoreStatistics();
-    return;
+    player.Score = WinningScore; // Just clamp score to max. This fact also ends the game.
   }
-  
-  if (player.Score >= nextLevel)
+  else if (player.Score >= nextLevel)
   {
     gamespeed += 0.1;
     gamespeedMS = 1000/gamespeed;
@@ -981,7 +999,7 @@ function GameLoopStartScreen()
     topctx.font = titleFontSize + "vw Arial";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
-    if (lastDriveScore > 0)
+    if (LastDriveScore > 0)
     {
       topctx.textAlign = "right";
       topctx.font = highScoreFontSize + "vw Arial";
@@ -991,8 +1009,8 @@ function GameLoopStartScreen()
       
       topctx.textAlign = "left";
       
-      topctx.fillText(lastDriveScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/9.5);
-      topctx.fillText(bestHighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
+      topctx.fillText(LastDriveScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/9.5);
+      topctx.fillText(HighScore, ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
     }
   
     var fontSize = 3 * textScale;
@@ -1008,7 +1026,7 @@ function GameLoopStartScreen()
     if(GotResponseFromServer)
     {
       topctx.fillText("Server version: " + ServerVersion, oneTenth, oneRow * 28);
-      topctx.fillText("Players online now: " + PlayersNow, oneTenth, oneRow * 29);
+      topctx.fillText("Players online now: " + PlayersPlayingNow, oneTenth, oneRow * 29);
     }
     else
     {
@@ -1099,16 +1117,12 @@ function GameLoopCrashed()
     {      
       if (player.Lives <= 0)
       {
-        // Game over! Show and play death animation. Wait for user to click away.
-        SetScoreStatistics();
-        
+        // Game over! 
+        SetState(gsGameOver);
+
         finalScore = player.Score;
         player.Score = 0;
         player.CrashState = "GameOver";
-        
-        EndGameVariableResets();
-        
-        SetState(gsGameOver);
       }
       else
       {
@@ -1150,13 +1164,8 @@ function GameLoopPlaying()
       topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
     }
     
-    if (player.Score == WinningScore)
-    {
-      player.Score = WinningScore;
-      
-      SetScoreStatistics();
-      EndGameVariableResets();
-      
+    if (player.Score >= WinningScore)
+    {      
       SetState(gsWinGame);
     }
   }  
