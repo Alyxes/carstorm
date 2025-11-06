@@ -1692,7 +1692,6 @@ function DrawSnowstorm()
   for(var i=0; i<2; i++)
   {
     snowImage = snowImages[randomizeNumber(5)];
-    var imageHalf;
     
     max = ScreenHeight/10;
     var minSize = ScreenHeight/30;
@@ -1706,7 +1705,7 @@ function DrawSnowstorm()
     var size = minSize + Math.floor(Math.random() * maxSize);
     var xPos = ScreenWidth / 2 - 1 - xRand;
     var yPos = ScreenHeight / 2 - 1 - yRand;
-    imageHalf = size/2;
+    var imageHalf = size/2;
     
     ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
   }
