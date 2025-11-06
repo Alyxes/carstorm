@@ -3,7 +3,7 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "31";
+const ServiceWorkerVersion = "33";
 
 const PleaseLitterWithConsoleLogs = true;
 const cacheName = "carstorm-madskullcreations-com";
@@ -41,11 +41,17 @@ self.addEventListener("activate", event => {
 
 const fetchAndCache = async (request) => {
   return fetch(request).then(networkResponse => {
+    Log(networkResponse);
+    Log("opening cache: " + cacheName + " to put to cache: " + request.url);
+    
     const responseClone = networkResponse.clone();
     
-    Log("opening cache: " + cacheName);
     caches.open(cacheName).then(cache => {
-      Log("putting to cache: " + request.url);
+      // TODO: This error happens when a file is partially downloaded. 
+      //   <-Solution: "Look at the outgoing request for a Range header." ..
+      // https://stackoverflow.com/questions/15787380/what-does-the-http-206-partial-content-status-message-mean-and-how-do-i-fully-lo
+      // 
+      // Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Partial response (status code 206) is unsupported
       cache.put(request.url, responseClone);
     });
       
@@ -54,7 +60,6 @@ const fetchAndCache = async (request) => {
       cache.put(request, responseClone);
     });*/
     
-    Log(networkResponse);
     return networkResponse;
   }).catch(function (reason) {
     console.error('ServiceWorker fetch failed: ', reason);
@@ -83,7 +88,7 @@ const cacheFirst = async (request) => {
 self.addEventListener('fetch', event => {
   Log(event.request);
 
-  if (event.request.url.endsWith(".php")) {
+  if (event.request.url.includes(".php")) {
     // Never cache .php files.
     // (There is some browser magic going on here. After coming here once, it does not consult service_worker again as long as it remain unchanged. It automatically keep on reloading the .php files.)
     // 

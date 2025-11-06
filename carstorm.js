@@ -83,10 +83,11 @@ var rowPercentages = [0, 0.21, 0.6, 1.3];
 var carWidth = 0;
 var carHeight = 0;
 
-var messageTimer = 0;
-var TimeToGoBackToPlay = 0;
-var nextLevel = 300;
-var clearStreetTimer = 0;
+var messageTimer = 0;       // Just a general timer used in several places.
+var TimeToGoBackToPlay = 0; // dito
+var clearStreetTimer = 0;   // Timer until the street gets cleared from other cars.
+
+var nextLevel = 300;        // Reaching this score increase speed and "level".
 var finalScore = 0;         // After finishing current game, this is your final score.
 var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
@@ -96,6 +97,7 @@ var WinningScore = 999;     // Game ends when you reach this score. Should be 99
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
+var ReloadCount = 0;        // Stored in storage so we don't reload page more than twice! 
 
 var roadWidth = 0;
 
@@ -171,8 +173,6 @@ Smoke2Image.src = "graphics/Smoke2.png";
 function init()
 {
   SetupCallbacks();
-
-  FetchOnlineStats();
   
   // Pilla inte Tim.
   // https://web.dev/learn/pwa/service-workers
@@ -469,28 +469,70 @@ async function FetchOnlineStats()
     
     // TODO: Save in some storage for offline use! IndexedDB ? Read about it.
     
+    // True if game's ServerVersion equals the server version.
+    var RunningSameAsServer = (ServerVersion == OnlineStats.server_version);
+    var GotUpdated = false;
+    var FromVersion = ServerVersion;
+    
     // Idea: If this is an old version of carstorm.js, it does not know about
     // any other versions than stated below. It should keep working!
-    switch(OnlineStats.server_version)
+    if(OnlineStats.server_version >= 2)
     {
-      case 1:
-        // First version has these variables: server_version and players_now
-        ServerVersion = OnlineStats.server_version;
-        PlayersPlayingNow = OnlineStats.players_now;
-        break;
-      default:
-        console.log("We seem to be running an old version of the game!");
-        
-        // Note that we fail nicely here to keep an old game version working. 
-        
-        // TODO: Enforce a reload of the game files from server.
-        break;
+      if(ServerVersion < 2 && OnlineStats.server_version == 2)
+      {
+        // Cool, we have the latest code, but the data storage seem to be outdated. Update.
+        GotUpdated = true;
+      }
+      
+      // Server version 2 don't change anything, but show us this important fact:
+      // Next if-statement will also run. 
+      // Why? Because newer versions MUST NOT break old game versions!
+      // This just means an old game version should keep working, but not be aware of
+      // the new stuff a newer game knows about. 
+    }
+    if(OnlineStats.server_version >= 1)
+    {
+      if(ServerVersion < 1 && OnlineStats.server_version == 1)
+      {
+        GotUpdated = true;
+      }
+
+      // First version has these variables: server_version and players_now
+      ServerVersion = OnlineStats.server_version;
+      PlayersPlayingNow = OnlineStats.players_now;
     }
     
+    if(!RunningSameAsServer && !GotUpdated)
+    {
+      // Looks like server has a newer version that our code know nothing about. 
+      console.log("We seem to be running an old version of the game!");
+            
+      ReloadCount++;
+      
+      // TODO: Store the ReloadCount.
+      
+      if(ReloadCount <= 2)
+      {
+        // Enforce a reload of the game files from server.
+        console.log("Reloading!");
+        
+        window.location.reload();
+      }
+      else
+      {
+        // Note that we fail nicely here to keep the game working. 
+
+        // Not good, the game has reloaded the page a few times, but still this switch 
+        // is not happy.
+        console.log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion);
+      }
+    }
+    
+    console.log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
   }
   catch (error)
   {
-    // For the same reason, any exception is just ignored.
+    // Any exception is just ignored, we want the game to keep on working regardless of server.
     console.error(error.message);
     
     GotResponseFromServer = false;

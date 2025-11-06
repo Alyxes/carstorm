@@ -4,7 +4,7 @@ require "private/handlers.php";
 // Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 
 // Increase version when server expect the given data to have a new format.
-$serverVersion = 1;
+$serverVersion = 2;
 
 $remoteAddr = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
 $httpUserAgent = HandlerHelper::FetchString($_SERVER, 'HTTP_USER_AGENT');
