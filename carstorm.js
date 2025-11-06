@@ -1633,11 +1633,10 @@ function DrawPlayerScore()
   topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
 }
 
+var rotationSpeed = 0.5;
+
 function DrawSnowstorm()
 {
-  //var min = 200;
-  //var max = 255 - min;
-  // var min;
   var max;
   
   var snowImage;
@@ -1651,14 +1650,23 @@ function DrawSnowstorm()
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
   
+  ctx.save();
+  
   var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
   var xSide = ScreenWidth * speed;
   var ySide = ScreenHeight * speed;
+  
+  // Rotating the storm eliminates the 8 artifact rays coming from the zoom in.
+  // However, the lights and car shadows will rotate too... So we need ANOTHER canvas AND another hidden canvas (I assume) to let those scale normally.
+  // ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+  // ctx.rotate(rotationSpeed * Math.PI / 180);
+  // ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
   
   // Stretch out the copied (smaller) image over the entire canvas.
   // Note! We are drawing the _canvas_ object, not its 2d context. 
   ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
   
+  ctx.restore();
   // Now draw some snow particles in the center of the image.
   // ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
   // for(var i=0; i<10; i++)
