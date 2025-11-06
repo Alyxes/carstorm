@@ -60,8 +60,6 @@ var gameStates = [ gsNothing, gsStartScreen, gsIntroPlay, gsPlaying, gsCrashed, 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
 
-var OnlineStats = null;
-
 // Cars framerate and updating is slow like the old game.
 var gamespeed = 1;
 var gamespeedMS = 1000/gamespeed; // milliseconds.
@@ -262,70 +260,96 @@ function SetupCallbacks()
   window.addEventListener('focus', function(){
     ResumeFromSomeKindOfPause();
   }, false);
-  
-  document.addEventListener("keydown", (e) => {
-    e = e || window.event;
     
-    // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
-    if(gameState == gsPlaying)
-    {
-      if (e.keyCode === 37)
+  // Since the ontouchstart event is ONLY defined in browsers connected to a touch screen,
+  // we can kind of trust this approach! 
+  // https://stackoverflow.com/questions/2915833/how-to-check-browser-for-touchstart-support-using-js-jquery
+  if ('ontouchstart' in document.documentElement)
+  {
+    // Yeah! Touch events are here!
+    // Much cooler feeling when the car moves when you put your finger on the screen!
+    // (Instead of when you lift your finger from the screen.)
+    document.addEventListener("touchstart", (e) => {
+      var x = e.touches[0].clientX;
+
+      // Multitouch you know. :)
+      TouchClickEvent(e.touches[0].clientX, e.touches[0].clientY);
+    });
+  }
+  else
+  {
+    // Buhöö, no touch events, go by mouse events. 
+    document.addEventListener("mousedown", (e) => {
+      e = e || window.event;
+      
+      if(e.button == 0) // Most of the time the left button
       {
-        // left arrow pressed.
-        // console.log("button left");
+        // console.log("mousedown: " + e.button);
+        TouchClickEvent(e.clientX, e.clientY);
+      }
+    });
+    
+    // And keep the keydown events for old times sake.
+    document.addEventListener("keydown", (e) => {
+      e = e || window.event;
+      
+      // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
+      if(gameState == gsPlaying)
+      {
+        if (e.keyCode === 37)
+        {
+          // left arrow pressed.
+          // console.log("button left");
+          PlayerMove("left");
+        }
+        else if (e.keyCode === 39)
+        {
+          // right arrow pressed.
+          // console.log("button right");
+          PlayerMove("right");
+        }
+      }
+    });
+  }
+}
+
+// Touch or click event happened. 
+function TouchClickEvent(xPos, yPos)
+{
+  // Eeh, ugly but works. Spreading out game state checks this way is error prone.
+  switch(gameState)
+  {
+    case gsStartScreen:
+      // Clicking the start screen starts a new game.
+        SetState(gsIntroPlay);
+      break;
+    case gsPlaying:
+      if(xPos < ScreenWidth / 2)
+      {
+        // console.log("mousedown left");
         PlayerMove("left");
       }
-      else if (e.keyCode === 39)
+      else
       {
-        // right arrow pressed.
-        // console.log("button right");
+        // console.log("mousedown right");
         PlayerMove("right");
       }
-    }
-  });
-  
-  document.addEventListener("mousedown", (e) => {
-    e = e || window.event;
-    if(e.button == 0) // Most of the time the left button
-    {
-      // console.log("mousedown: " + e.button);
-      
-      // Eeh, ugly but works. Spreading out game state checks this way is error prone.
-      switch(gameState)
-      {
-        case gsStartScreen:
-          // Clicking the start screen starts a new game.
-            SetState(gsIntroPlay);
-          break;
-        case gsPlaying:
-          if(e.clientX < ScreenWidth / 2)
-          {
-            // console.log("mousedown left");
-            PlayerMove("left");
-          }
-          else
-          {
-            // console.log("mousedown right");
-            PlayerMove("right");
-          }
-          break;
-        case gsPaused:
-          // Clicking the pause screen resumes the game.
-          SetState(gsPlaying);
-          break;
-        case gsGameOver:
-          // Clicking the game over screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-        case gsWinGame:
-          // Clicking the winning game screen returns you to the start screen.
-          if (messageTimer <= 0)
-            SetState(gsStartScreen);
-          break;
-      }
-    }
-  });
+      break;
+    case gsPaused:
+      // Clicking the pause screen resumes the game.
+      SetState(gsPlaying);
+      break;
+    case gsGameOver:
+      // Clicking the game over screen returns you to the start screen.
+      if (messageTimer <= 0)
+        SetState(gsStartScreen);
+      break;
+    case gsWinGame:
+      // Clicking the winning game screen returns you to the start screen.
+      if (messageTimer <= 0)
+        SetState(gsStartScreen);
+      break;
+  }  
 }
 
 function Resize()
@@ -389,8 +413,12 @@ function Resize()
   //console.log();
 }
 
+var GotResponseFromServer = false;
+
 // TODO: These should be read from storage.
+var ServerVersion = 1;
 var GameVersion = 1;
+var PlayersNow = 0;
 var WinCount = 0;
 var HighScore = 0;
 var PlayCount = 0;
@@ -398,6 +426,8 @@ var PlayCount = 0;
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
 async function FetchOnlineStats() 
 {
+  GotResponseFromServer = false;
+  
   try
   {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
@@ -416,15 +446,38 @@ async function FetchOnlineStats()
       return;
     }
     
-    OnlineStats = await response.json();
+    var OnlineStats = await response.json();
     console.log(OnlineStats);
     
+    GotResponseFromServer = true;
+    
     // TODO: Save in some storage for offline use! IndexedDB ? Read about it.
+    
+    // Idea: If this is an old version of carstorm.js, it does not know about
+    // any other versions than stated below. It should keep working!
+    switch(OnlineStats.server_version)
+    {
+      case 1:
+        // First version has these variables: server_version and players_now
+        ServerVersion = OnlineStats.server_version;
+        PlayersNow = OnlineStats.players_now;
+        break;
+      default:
+        console.log("We seem to be running an old version of the game!");
+        
+        // Note that we fail nicely here to keep an old game version working. 
+        
+        // TODO: Enforce a reload of the game files from server.
+        break;
+    }
+    
   }
   catch (error)
   {
     // For the same reason, any exception is just ignored.
     console.error(error.message);
+    
+    GotResponseFromServer = false;
   }
 }
 
@@ -569,6 +622,7 @@ function SetState(newState)
         OnEnterStartScreen();
         transitionCool = true;
       }
+      break;
     case gsStartScreen:
       if(newState == gsIntroPlay)
       {
@@ -582,6 +636,7 @@ function SetState(newState)
         TransitFromIntroPlayToPlaying();
         transitionCool = true;
       }
+      break;
     case gsPlaying:
       if(newState == gsPaused)
       {
@@ -942,15 +997,10 @@ function GameLoopStartScreen()
     topctx.fillText(ScreenWidth, ScreenWidth / 30, oneRow * 26.5);
     topctx.fillText(ScreenHeight, ScreenWidth / 30, oneRow * 28);
 
-    if(OnlineStats != null)
+    if(GotResponseFromServer)
     {
-      switch(OnlineStats.version)
-      {
-        case 1:
-          topctx.fillText("Server version: " + OnlineStats.version, oneTenth, oneRow * 28);
-          topctx.fillText("Players online now: " + OnlineStats.players_now, oneTenth, oneRow * 29);
-          break;
-      }
+      topctx.fillText("Server version: " + ServerVersion, oneTenth, oneRow * 28);
+      topctx.fillText("Players online now: " + PlayersNow, oneTenth, oneRow * 29);
     }
     else
     {

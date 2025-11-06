@@ -4,7 +4,7 @@
   "start_url":"/",   
   "icons": [
      {
-        "src": "icons/maskable_icon_x512.png",
+        "src": "graphics/AppIcon.png",
         "type": "image/png",
         "sizes": "512x512"
      }
