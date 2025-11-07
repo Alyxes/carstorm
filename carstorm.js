@@ -369,6 +369,10 @@ function TouchClickEvent(xPos, yPos)
   }  
 }
 
+var ScreenScale;
+var realScreenWidth;
+var realScreenHeight;
+
 function Resize()
 {
   // If we are playing and the screen is resizing, it usually means player rotate the 
@@ -378,6 +382,13 @@ function Resize()
     SetState(gsPaused);
   }
   
+  ScreenScale = window.devicePixelRatio;
+  // window.visualViewport.scale
+  // We should read this article. I don't have time tonight...
+  // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+  
+  realScreenWidth = Math.floor(window.innerWidth * ScreenScale);
+  realScreenHeight = Math.floor(window.innerHeight * ScreenScale);
   ScreenWidth = window.innerWidth;
   ScreenHeight = window.innerHeight;
     
@@ -657,6 +668,8 @@ function ResizePlayer()
 }
 function ResetGameVariables()
 {
+  // Clearing it here makes sure that everything drawn on it dissappears when going back to the start screen.
+  streetctx.clearRect(0,0,ScreenWidth,ScreenHeight);
   // player
   CreatePlayer();
   
@@ -1094,7 +1107,7 @@ function GameLoopStartScreen()
     
     var titleFontSize = 14 * textScale;
     var highScoreFontSize = 4 * textScale;
-    touchMessageFontSize = 6 * textScale;
+    touchMessageFontSize = 4 * textScale;
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1103,7 +1116,8 @@ function GameLoopStartScreen()
     
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = titleFontSize + "vw Arial";
+    topctx.font = "bold " + titleFontSize + "vw Arial";
+    //topctx.fontWeight = "bold";
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
     if (LastDriveScore > 0)
@@ -1129,7 +1143,8 @@ function GameLoopStartScreen()
     // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
     topctx.fillText(ScreenWidth, ScreenWidth / 30, oneRow * 26.5);
     topctx.fillText(ScreenHeight, ScreenWidth / 30, oneRow * 28);
-
+    topctx.fillText("Scale: " + ScreenScale, ScreenWidth / 30, oneRow * 29.5);
+    
     if(GotResponseFromServer)
     {
       topctx.fillText("Server version: " + ServerVersion, oneTenth, oneRow * 28);
@@ -1143,7 +1158,7 @@ function GameLoopStartScreen()
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "vw Arial";
+      topctx.font = touchMessageFontSize + "vw CarStormFont1";
       topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
     }
   }
@@ -1319,7 +1334,7 @@ function GameLoopGameOver()
 
     topctx.fillStyle = "darkorange";
     topctx.textAlign = "center";
-    topctx.font = gameOverFontSize + "vw Arial";
+    topctx.font = "bold " + gameOverFontSize + "vw Arial";
     topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/7);
     topctx.fillStyle = "black";
     topctx.font = finalScoreFontSize + "vw Arial";
@@ -1366,7 +1381,7 @@ function GameLoopWinGame()
     topctx.strokeStyle = "black";
     topctx.lineWidth = 5 * textScale;
     topctx.textAlign = "left";
-    topctx.font = finalScoreFontSize + "vw Arial";
+    topctx.font = finalScoreFontSize + "vw CarStormFont2";
     topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     topctx.strokeText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     
@@ -1374,7 +1389,7 @@ function GameLoopWinGame()
     topctx.strokeStyle = "black";
     topctx.lineWidth = 8 * textScale;
     topctx.textAlign = "center";
-    topctx.font = victoryFontSize + "vw Arial";
+    topctx.font = "bold " + victoryFontSize + "vw Arial";
     topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     topctx.strokeText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     
@@ -1652,6 +1667,10 @@ function randomizeNumber(number)
 {
   return Math.floor(Math.random() * number);
 }
+function randomizeFloatNumber(number)
+{
+  return Math.random() * number;
+}
 
 function DrawStreetLights()
 {
@@ -1758,14 +1777,31 @@ function DrawPlayerScore()
   
   topctx.fillStyle = "black";
   topctx.textAlign = "left";
-  topctx.font = scoreFontSize + "vw Arial";
+  topctx.font = scoreFontSize + "vw CarStormFont2";
   topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
 }
 
-var rotationSpeed = 0.6;
+var stormRotationDegrees = 0;
+var stormRotationSpeed = 0.01;
+var stormRotationMax = 0.5;
 
 function DrawSnowstorm()
 {
+  stormRotationDegrees += stormRotationSpeed;
+  
+  if (stormRotationDegrees > stormRotationMax)
+  {
+    // stormRotationDegrees = stormRotationMax;
+    stormRotationSpeed = -stormRotationSpeed;
+    stormRotationMax = 0.2 + randomizeFloatNumber(0.6);
+  }
+  else if (stormRotationDegrees < -stormRotationMax)
+  {
+    // stormRotationDegrees = -stormRotationMax;
+    stormRotationSpeed = -stormRotationSpeed;
+    stormRotationMax = 0.2 + randomizeFloatNumber(0.6);
+  }
+  
   var max;
   
   var snowImage;
@@ -1780,21 +1816,21 @@ function DrawSnowstorm()
   hiddenCtx.putImageData(imgData, 0, 0);
   
   ctx.save();
-  
-  var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
-  var xSide = ScreenWidth * speed;
-  var ySide = ScreenHeight * speed;
-  
-  // Rotating the storm eliminates the 8 artifact rays coming from the zoom in.
-  // However, the lights and car shadows will rotate too... So we need ANOTHER canvas AND another hidden canvas (I assume) to let those scale normally.
-  ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
-  ctx.rotate(rotationSpeed * Math.PI / 180);
-  ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
-  
-  // Stretch out the copied (smaller) image over the entire canvas.
-  // Note! We are drawing the _canvas_ object, not its 2d context. 
-  ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
-  
+  {
+    var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
+    var xSide = ScreenWidth * speed;
+    var ySide = ScreenHeight * speed;
+    
+    // Rotating the storm eliminates the 8 artifact rays coming from the zoom in.
+    // However, the lights and car shadows will rotate too... So we need ANOTHER canvas AND another hidden canvas (I assume) to let those scale normally.
+    ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+    ctx.rotate(stormRotationDegrees * Math.PI / 180);
+    ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
+    
+    // Stretch out the copied (smaller) image over the entire canvas.
+    // Note! We are drawing the _canvas_ object, not its 2d context. 
+    ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
+  }
   ctx.restore();
   // Now draw some snow particles in the center of the image.
   // ctx.fillStyle = "rgba(" + r + ", " + g + ", " + b + ", 1)";
@@ -1836,7 +1872,17 @@ function DrawSnowstorm()
     var yPos = ScreenHeight / 2 - 1 - yRand;
     var imageHalf = size/2;
     
-    ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
+    var snowImageRotation = randomizeNumber(360);
+    
+    ctx.save();
+    {
+      ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+      ctx.rotate(snowImageRotation * Math.PI / 180);
+      ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
+      
+      ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
+    }
+    ctx.restore();
   }
   
   ctx.globalAlpha = 1;
