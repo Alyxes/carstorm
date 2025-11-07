@@ -6,6 +6,9 @@ require "private/handlers.php";
 // Increase version when server expect the given data to have a new format.
 $serverVersion = 2;
 
+//TEST: Funkar! Den laddar om sidan i all oändlighet.
+//$serverVersion = 3;
+
 $remoteAddr = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
 $httpUserAgent = HandlerHelper::FetchString($_SERVER, 'HTTP_USER_AGENT');
 $gameVersion = intval(HandlerHelper::FetchString($_GET, 'game_version'));

@@ -1,15 +1,27 @@
 
 Hur man gör en release av en ny version på servern!
+  -Ingen har sagt att det är enkelt!!
+  
+Steg 1:
+  1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
+  2. Checka in alla ändringar på github.
+  3. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
+  4. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
 
-1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
-2. Checka in alla ändringar på github.
-3. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
-4. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
+  Är du det minsta osäker, ta steg 4 istället för steg 3, så jäkla mycket filer rör det sig inte om. 
 
-Är du det minsta osäker, ta steg 4 istället för steg 3, så jäkla mycket filer rör det sig inte om. 
+  OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 
-OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
-
+Steg 2:
+  1. Om du ökar $serverVersion i version.php av någon anledning, så MÅSTE du sätta samma version i ServerVersion i carstorm.js!
+  2. Om du inte följer steg 1 kommer spelet att laddas om i all jävla oändlighet och alla blir skitförbannade.
+  3. Lägg också in ny kod i FetchOnlineStats() som hanterar en transition från nuvarande version till nya.
+  
+Steg 3:
+  1. Om du ändrar kod i _spelet_, dvs. javascripten, så ska du öka GameVersion i carstorm.js med ett! 
+  2. Om du inte gör som i steg 1, så missar vi fin statistik om vilken version spelarna kör på sina lurar. Inte så allvarligt alltså, men trist. 
+  3. Att göra detta kan också hjälpa mig att reda ut skumliga buggar i framtiden. 
+  
 ----------
 
 Följer du principerna ovan så har du minimerat lidandet. Men, tänk på dessa fakta:

@@ -87,6 +87,11 @@ var messageTimer = 0;       // Just a general timer used in several places.
 var TimeToGoBackToPlay = 0; // dito
 var clearStreetTimer = 0;   // Timer until the street gets cleared from other cars.
 
+var GotResponseFromServer = false;
+var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
+var GameVersion = 1;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+
+
 var nextLevel = 300;        // Reaching this score increase speed and "level".
 var finalScore = 0;         // After finishing current game, this is your final score.
 var LastDriveScore = 0;     // Last game's final score.
@@ -234,10 +239,13 @@ function init()
   
   // Resize the canvas so it fill up the entire screen.
   Resize();
+
+  // Read back any data from localstorage.
+  ReadStuff();
   
   // We enter the game with the loading screen visible.
   SetState(gsStartScreen);
-  
+      
   // Start the game loop!
   GameLoop();
 }
@@ -426,11 +434,51 @@ function Resize()
   //console.log();
 }
 
-var GotResponseFromServer = false;
+function StoreStuff()
+{
+  localStorage.setItem("GameVersion", GameVersion);
+  localStorage.setItem("ServerVersion", ServerVersion);
+  localStorage.setItem("LastDriveScore", LastDriveScore);
+  localStorage.setItem("HighScore", HighScore);
+  localStorage.setItem("WinCount", WinCount);
+  localStorage.setItem("PlayCount", PlayCount);
+  localStorage.setItem("ReloadCount", ReloadCount);
+}
 
-// TODO: These should be read from storage.
-var ServerVersion = 1;
-var GameVersion = 1;
+function ReadStuff()
+{
+  var pleaseLetThereBeAGameVersionAtAllHere = parseInt(localStorage.getItem("GameVersion"));
+  
+  if(!pleaseLetThereBeAGameVersionAtAllHere)
+  {
+    // There is no local storage at all at the moment.
+    return;
+  }
+  
+  GameVersion = pleaseLetThereBeAGameVersionAtAllHere;
+  
+  if(GameVersion >= 1)
+  {
+    // Just means that GameVersion == 1 OR BIGGER expects these variables to exist.
+    ServerVersion = parseInt(localStorage.getItem("ServerVersion"));
+    LastDriveScore = parseInt(localStorage.getItem("LastDriveScore"));
+    HighScore = parseInt(localStorage.getItem("HighScore"));
+    WinCount = parseInt(localStorage.getItem("WinCount"));
+    PlayCount = parseInt(localStorage.getItem("PlayCount"));
+    ReloadCount = parseInt(localStorage.getItem("ReloadCount"));
+  }
+  if(GameVersion >= 31)
+  {
+    // Never happens yet. The number 31 instead of expected 2 just means
+    // that the localStorage structure has not changed at all in the 
+    // previous 30 versions. But in version 31 we decided to add the fancy
+    // Smurf-field. And since we just read in GameVersion and it says 
+    // the version of the localStorage is 31 or greater, the Smurf-field
+    // should exist.
+    // 
+    // Smurf = parseInt(localStorage.getItem("Smurf"));
+  }
+}
 
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
 // Fetch, and push your stats to server.
@@ -509,7 +557,22 @@ async function FetchOnlineStats()
             
       ReloadCount++;
       
-      // TODO: Store the ReloadCount.
+      // Store the reload count.
+      StoreStuff();
+      
+      // DONE: Store the ReloadCount.
+      // DONE: Store the ServerVersion!
+      //   <-Det här är ännu viktigare. Så här måste det vara:
+      // 
+      //   1. DONE: ServerVersion är alltid satt till 1 högst upp i denna fil.
+      //   2. DONE: Först laddas cachen/cookien/IndexedDB you name it.
+      //   3. DONE: ServerVersion sätts till det som finns i cachen.
+      //   4. DONE: Först nu anropas FetchOnlineStats().
+      //   5. TODO: Om ServerVersion NU skiljer sig från serverns, betyder det att
+      //      spelarens cache behöver uppdateras.
+      //   6. Uppdatera cachen. Uppdatera ServerVersion.
+      //   7. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
+      //      som serverns.
       
       if(ReloadCount <= 2)
       {
@@ -805,10 +868,12 @@ function TransitFromPausedToPlaying()
 function TransitFromGameOverToStartScreen()
 {
   ResetGameVariables();
+  StoreStuff();
 }
 function TransitFromWinGameToStartScreen()
 {
   ResetGameVariables();
+  StoreStuff();
 }
 function OnEnterPaused()
 {
