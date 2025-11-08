@@ -791,6 +791,7 @@ function SetState(newState)
     case gsCrashed:
       if(newState == gsPlaying)
       {
+        TransitFromCrashedToPlaying();
         transitionCool = true;
       }
       else if(newState == gsGameOver)
@@ -848,6 +849,8 @@ function OnEnterStartScreen()
 function TransitFromStartScreenToIntroPlay()
 {
   TimeToGoBackToPlay = Now + 2500;
+  player.CrashState = "Restarting";
+  player.RestartBlinkTimer = 0;
   audioAcceleration.pause();
   audioAcceleration.currentTime = 0;
   audioStart.play();
@@ -855,7 +858,9 @@ function TransitFromStartScreenToIntroPlay()
 function TransitFromIntroPlayToPlaying()
 {
   messageTimer = 0; // Reset to be used for "SPEED INCREASE".
+  player.CrashState = "None";
   explosionAnimFrameLength = 400;
+  player.RestartBlinkTimer = 0;
 }
 function TransitFromPlayingToCrashed()
 {
@@ -863,7 +868,7 @@ function TransitFromPlayingToCrashed()
   player.HasCollided = true;
   player.LivesBlinkTimer = 600;
   player.CrashState = "Exploding";
-  player.RestartBlinkTimer = 3800;
+  // player.RestartBlinkTimer = 3800;
   
   currentExplosionFrameIndex = randomizeNumber(3);
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -873,6 +878,10 @@ function TransitFromPlayingToCrashed()
 
   TimeToGoBackToPlay = Now + 3900;
   audioCrash.play();
+}
+function TransitFromCrashedToPlaying()
+{
+  player.RestartBlinkTimer = 0;
 }
 function TransitFromPausedToPlaying()
 {
@@ -1169,6 +1178,7 @@ function GameLoopIntroPlay()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
+    player.RestartBlinkTimer += ElapsedTime;
         
     DrawSnowstorm();
     DrawStreetLayer();
@@ -1195,12 +1205,9 @@ function GameLoopCrashed()
     UpdateTimers();
     CheckLivesBlinkTimer();
     
-    if (player.RestartBlinkTimer > 0)
+    if (player.CrashState == "Restarting")
     {
-      player.RestartBlinkTimer -= ElapsedTime;
-      
-      if (player.RestartBlinkTimer <= 0)
-        player.RestartBlinkTimer = 0;
+      player.RestartBlinkTimer += ElapsedTime;
     }
     
     CheckExplosionAnimTimer();
@@ -1701,7 +1708,7 @@ function DrawPlayerCar(isNotPaused)
 {
   var drawCar = true;
   
-  if (player.CrashState == "Restarting" && player.RestartBlinkTimer > 0)
+  if (player.CrashState == "Restarting")
   {
     if (player.RestartBlinkTimer % 700 < 350)
       drawCar = false;
