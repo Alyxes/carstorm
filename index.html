@@ -40,10 +40,25 @@
     top:0px;
     left:0px;
   }
+  #offline_message
+  {
+    color: white;
+    font-size: 32px;
+    display: none;
+  }
 </style>
 <body onLoad="init();">
+  <p id="offline_message">If nothing shows up, please make sure you are online the first time you start the game!</p>
 	<canvas id="canvas"></canvas>
   <canvas id="street_canvas"></canvas>
   <canvas id="top_canvas"></canvas>
+  
+  <script>
+    setTimeout(() => {
+      // Nothing has been loaded for some time, are we offline?
+      var om = document.getElementById("offline_message");
+      om.style.display = "initial";
+    }, 5000);
+  </script>
 </body>
 </html>
