@@ -16,7 +16,7 @@
  * 
  */
  
- // TODO: Ta in pauskod från nyare skärmsläckare.
+ // TODO: Ta in pauskod frÃ¥n nyare skÃ¤rmslÃ¤ckare.
   
 // See Resize().
 var ScreenWidth;
@@ -77,7 +77,7 @@ var player = null;
 // The level is just a 3x3 double-array.
 var level = [];
 
-// Rad 4 är spelarens rad, och ska vara 1.0. Rad 0 är högst upp och ska vara 0. Rad 1 och 2 är de magiska feel-good siffrorna.
+// Rad 4 Ã¤r spelarens rad, och ska vara 1.0. Rad 0 Ã¤r hÃ¶gst upp och ska vara 0. Rad 1 och 2 Ã¤r de magiska feel-good siffrorna.
 var rowPercentages = [0, 0.21, 0.6, 1.3];
 
 var carWidth = 0;
@@ -189,16 +189,16 @@ function init()
     navigator.serviceWorker.register("/service_worker.js");
   }
     
-  // Trist, variabler i service_worker.js är inte åtkomliga härifrån. (Är ju i en annan tråd så det är ju iofs. logiskt)
+  // Trist, variabler i service_worker.js Ã¤r inte Ã¥tkomliga hÃ¤rifrÃ¥n. (Ã„r ju i en annan trÃ¥d sÃ¥ det Ã¤r ju iofs. logiskt)
   /*if(ServiceWorkerVersion != "slork")
   {
     console.log("It IS available from here! " + ServiceWorkerVersion);
   }*/
   
-  // Trist 2, caches kan inte lagra annat än "Response" objekt, dvs. filer som dras ner från servern o sånt.  
+  // Trist 2, caches kan inte lagra annat Ã¤n "Response" objekt, dvs. filer som dras ner frÃ¥n servern o sÃ¥nt.  
   /*console.log("Test open cache.");
   caches.match("ServiceWorkerVersion").then(cache => {
-    console.log("Fint! Gick att öppna cachen. ");
+    console.log("Fint! Gick att Ã¶ppna cachen. ");
     console.log(cache);
   });*/
   
@@ -298,7 +298,7 @@ function SetupCallbacks()
   }
   else
   {
-    // Buhöö, no touch events, go by mouse events. 
+    // BuhÃ¶Ã¶, no touch events, go by mouse events. 
     document.addEventListener("mousedown", (e) => {
       e = e || window.event;
       
@@ -432,18 +432,18 @@ function Resize()
   
   ctx.drawImage(StartBGImage, 0, 0, ScreenWidth, ScreenHeight);
   
-  // Eftersom perspektiv är skumt, så konstaterar vi följande:
+  // Eftersom perspektiv Ã¤r skumt, sÃ¥ konstaterar vi fÃ¶ljande:
   // 
   //    /-| <- roadStartLeft
   //   /  |
   //  /   |
   // /----| <- screenwidthFifth
   //      ^
-  //      Mitten av skärmen.
+  //      Mitten av skÃ¤rmen.
   // 
-  // Så vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
+  // SÃ¥ vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
   // 
-  // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
+  // Sen fÃ¶r att placera bilarna pÃ¥ rÃ¤tt x-pos pÃ¥ respektive rad, sÃ¥ multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
   
   //console.log();
 }
@@ -576,16 +576,16 @@ async function FetchOnlineStats()
       
       // DONE: Store the ReloadCount.
       // DONE: Store the ServerVersion!
-      //   <-Det här är ännu viktigare. Så här måste det vara:
+      //   <-Det hÃ¤r Ã¤r Ã¤nnu viktigare. SÃ¥ hÃ¤r mÃ¥ste det vara:
       // 
-      //   1. DONE: ServerVersion är alltid satt till 1 högst upp i denna fil.
-      //   2. DONE: Först laddas cachen/cookien/IndexedDB you name it.
-      //   3. DONE: ServerVersion sätts till det som finns i cachen.
-      //   4. DONE: Först nu anropas FetchOnlineStats().
-      //   5. TODO: Om ServerVersion NU skiljer sig från serverns, betyder det att
-      //      spelarens cache behöver uppdateras.
+      //   1. DONE: ServerVersion Ã¤r alltid satt till 1 hÃ¶gst upp i denna fil.
+      //   2. DONE: FÃ¶rst laddas cachen/cookien/IndexedDB you name it.
+      //   3. DONE: ServerVersion sÃ¤tts till det som finns i cachen.
+      //   4. DONE: FÃ¶rst nu anropas FetchOnlineStats().
+      //   5. TODO: Om ServerVersion NU skiljer sig frÃ¥n serverns, betyder det att
+      //      spelarens cache behÃ¶ver uppdateras.
       //   6. Uppdatera cachen. Uppdatera ServerVersion.
-      //   7. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
+      //   7. NÃ¤sta gÃ¥ng steg 1 till 4 kÃ¶rs sÃ¥ ska ServerVersion vara samma
       //      som serverns.
       
       if(ReloadCount <= 2)
