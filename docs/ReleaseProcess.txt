@@ -1,4 +1,26 @@
 
+Lättast går man hit i sin browser på datorn: 
+  https://play.google.com/store/apps
+    <-Sen söker man på carstorm. 
+      OCH MAN HITTAR INTE SPELET. Just nu, eftersom man inte är inloggad och därmed inte är "testare". ;-)
+
+Här hittar du Babbler. :-)
+  https://play.google.com/store/apps/details?id=com.mask.texttospeech
+  
+----------------
+
+Gillar inte ett spår att de fucking kräver att min hem-adress står bredvid varje jävla app vi släpper...
+https://support.google.com/googleplay/android-developer/answer/139626?hl=en&sjid=8391415463213560471-EU#zippy=%2Cdeveloper-information-shown-to-users-on-google-play
+  <-Det borde verkligen räcka med support-email och hemsida! 
+    Adress och hemtelefon är INTE OK.
+
+----------------
+
+playacademy verkar vara nåt utöver play.google.com, som används EFTER att man releasat appen, så läs mer:
+https://playacademy.exceedlms.com/uploads/resource_courses/targets/1473723/original/index.html?_courseId=7037#/page/64953c780f9af40e65649932
+
+----------------
+
 play.google.com
 Dashboard
 "Set up your app"
