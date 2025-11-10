@@ -162,6 +162,9 @@ EnemyCarShadowImage.src = "graphics/EnemyCarShadow.png";
 var PlayerCarShadowImage = new Image();
 PlayerCarShadowImage.src = "graphics/PlayerCarShadow.png";
 
+var SpeedIncreaseImage = new Image();
+SpeedIncreaseImage.src = "graphics/SpeedIncreaseMessage.png";
+
 var Explosion1Image = new Image();
 Explosion1Image.src = "graphics/Explosion1.png";
 var Explosion2Image = new Image();
@@ -791,6 +794,7 @@ function SetState(newState)
     case gsCrashed:
       if(newState == gsPlaying)
       {
+        TransitFromCrashedToPlaying();
         transitionCool = true;
       }
       else if(newState == gsGameOver)
@@ -848,6 +852,8 @@ function OnEnterStartScreen()
 function TransitFromStartScreenToIntroPlay()
 {
   TimeToGoBackToPlay = Now + 2500;
+  player.CrashState = "Restarting";
+  player.RestartBlinkTimer = 0;
   audioAcceleration.pause();
   audioAcceleration.currentTime = 0;
   audioStart.play();
@@ -855,7 +861,9 @@ function TransitFromStartScreenToIntroPlay()
 function TransitFromIntroPlayToPlaying()
 {
   messageTimer = 0; // Reset to be used for "SPEED INCREASE".
+  player.CrashState = "None";
   explosionAnimFrameLength = 400;
+  player.RestartBlinkTimer = 0;
 }
 function TransitFromPlayingToCrashed()
 {
@@ -863,7 +871,7 @@ function TransitFromPlayingToCrashed()
   player.HasCollided = true;
   player.LivesBlinkTimer = 600;
   player.CrashState = "Exploding";
-  player.RestartBlinkTimer = 3800;
+  // player.RestartBlinkTimer = 3800;
   
   currentExplosionFrameIndex = randomizeNumber(3);
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -873,6 +881,10 @@ function TransitFromPlayingToCrashed()
 
   TimeToGoBackToPlay = Now + 3900;
   audioCrash.play();
+}
+function TransitFromCrashedToPlaying()
+{
+  player.RestartBlinkTimer = 0;
 }
 function TransitFromPausedToPlaying()
 {
@@ -1059,7 +1071,7 @@ function ScorePassedCars()
     
     nextLevel += 300 * gamespeed;
     
-    messageTimer = 2000;
+    messageTimer = 3000;
   }
 }
 function CheckLivesBlinkTimer()
@@ -1106,8 +1118,8 @@ function GameLoopStartScreen()
     DrawSnowstorm();
     
     var titleFontSize = 14 * textScale;
-    var highScoreFontSize = 4 * textScale;
-    touchMessageFontSize = 4 * textScale;
+    var highScoreFontSize = 3.5 * textScale;
+    touchMessageFontSize = 3.8 * textScale;
     
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1123,7 +1135,7 @@ function GameLoopStartScreen()
     if (LastDriveScore > 0)
     {
       topctx.textAlign = "right";
-      topctx.font = highScoreFontSize + "vw Arial";
+      topctx.font = highScoreFontSize + "vw CarStormFont2";
       
       topctx.fillText("last drive score: ", ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/9.5);
       topctx.fillText("highscore: ", ScreenWidth - ScreenWidth/10, ScreenHeight - ScreenHeight/18);
@@ -1169,6 +1181,7 @@ function GameLoopIntroPlay()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
+    player.RestartBlinkTimer += ElapsedTime;
         
     DrawSnowstorm();
     DrawStreetLayer();
@@ -1193,14 +1206,12 @@ function GameLoopCrashed()
   if (ElapsedTime >= fpsInterval)
   {
     UpdateTimers();
+    CheckMessageTimer();
     CheckLivesBlinkTimer();
     
-    if (player.RestartBlinkTimer > 0)
+    if (player.CrashState == "Restarting")
     {
-      player.RestartBlinkTimer -= ElapsedTime;
-      
-      if (player.RestartBlinkTimer <= 0)
-        player.RestartBlinkTimer = 0;
+      player.RestartBlinkTimer += ElapsedTime;
     }
     
     CheckExplosionAnimTimer();
@@ -1235,6 +1246,8 @@ function GameLoopCrashed()
     DrawPlayerLives();
     DrawPlayerScore();
     
+    DrawSpeedIncreaseMessage();
+    
     if (Now > TimeToGoBackToPlay)
     {      
       if (player.Lives <= 0)
@@ -1265,6 +1278,9 @@ function GameLoopPlaying()
     CheckMessageTimer();
     CheckElapsedCarsTime(true);
     CheckLivesBlinkTimer();
+    
+    DrawSnowstorm();
+    DrawStreetLayer();
 
     // The cars and text are drawn at streetctx or topctx so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
@@ -1273,21 +1289,11 @@ function GameLoopPlaying()
     DrawPlayerCar(true);
     DrawPlayerLives();
     DrawPlayerScore();
-
-    DrawSnowstorm();
-    DrawStreetLayer();
-
-    touchMessageFontSize = 6 * textScale;
     
-    if (messageTimer > 0 && messageTimer%600 < 300)
-    {
-      topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "vw Arial";
-      topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
-    }
-    
+    DrawSpeedIncreaseMessage();
+
     if (player.Score >= WinningScore)
-    {      
+    {
       SetState(gsWinGame);
     }
   }  
@@ -1302,11 +1308,11 @@ function GameLoopPaused()
     DrawPlayerLives();
     DrawPlayerScore();
     
-    touchMessageFontSize = 7 * textScale;
+    touchMessageFontSize = 5.5 * textScale;
     
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = touchMessageFontSize + "vw Arial";
+    topctx.font = touchMessageFontSize + "vw CarStormFont1";
     topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2);
   }
 }
@@ -1330,21 +1336,21 @@ function GameLoopGameOver()
         
     var gameOverFontSize = 13 * textScale;
     var finalScoreFontSize = 5 * textScale;
-    touchMessageFontSize = 6 * textScale;
+    touchMessageFontSize = 3.8 * textScale;
 
     topctx.fillStyle = "darkorange";
     topctx.textAlign = "center";
     topctx.font = "bold " + gameOverFontSize + "vw Arial";
     topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/7);
     topctx.fillStyle = "black";
-    topctx.font = finalScoreFontSize + "vw Arial";
+    topctx.font = finalScoreFontSize + "vw CarStormFont2";
     topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/32);
     topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/13.5);
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "vw Arial";
+      topctx.font = touchMessageFontSize + "vw CarStormFont1";
       topctx.fillText("touch screen to restart", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/5.5);
     }
   }
@@ -1374,8 +1380,8 @@ function GameLoopWinGame()
     
     var finalScoreFontSize = 9 * textScale;
     var victoryFontSize = 13.5 * textScale;
-    var superPlayerFontSize = 6.5 * textScale;
-    touchMessageFontSize = 6 * textScale;
+    var superPlayerFontSize = 5.5 * textScale;
+    touchMessageFontSize = 3.8 * textScale;
     
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
@@ -1399,7 +1405,7 @@ function GameLoopWinGame()
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
       topctx.lineWidth = 4 * textScale;
-      topctx.font = superPlayerFontSize + "vw Arial";
+      topctx.font = superPlayerFontSize + "vw CarStormFont2";
       topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
       topctx.strokeText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
     }
@@ -1408,7 +1414,7 @@ function GameLoopWinGame()
     {
       topctx.fillStyle = "black";
       topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "vw Arial";
+      topctx.font = touchMessageFontSize + "vw CarStormFont1";
       topctx.fillText("touch screen to play again", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/6);
     }
   }
@@ -1701,7 +1707,7 @@ function DrawPlayerCar(isNotPaused)
 {
   var drawCar = true;
   
-  if (player.CrashState == "Restarting" && player.RestartBlinkTimer > 0)
+  if (player.CrashState == "Restarting")
   {
     if (player.RestartBlinkTimer % 700 < 350)
       drawCar = false;
@@ -1779,6 +1785,28 @@ function DrawPlayerScore()
   topctx.textAlign = "left";
   topctx.font = scoreFontSize + "vw CarStormFont2";
   topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
+}
+function DrawSpeedIncreaseMessage()
+{
+  if (messageTimer != 0 && messageTimer%600 > 300)
+  {
+    // touchMessageFontSize = 3.8 * textScale;
+    
+    var SIimageWidth = ScreenWidth/2;
+    topctx.drawImage(SpeedIncreaseImage, ScreenWidth/2 - SIimageWidth/2, ScreenHeight/2 - ScreenHeight/7, SIimageWidth, SIimageWidth * 0.076);
+    
+    // Try to create the red and blue effect with text only. Possible, but not as good looking. Can't make only intersecting colors turn black...
+    // topctx.textAlign = "center";
+    // topctx.font = touchMessageFontSize + "vw CarStormFont1";
+    // // topctx.globalAlpha = 0.5;
+    // topctx.fillStyle = "rgba(236,72,50,0.7)";
+    // topctx.fillText("SPEED INCREASE", ScreenWidth/2 - carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
+    // topctx.fillStyle = "rgba(0,154,255,0.7)";
+    // topctx.fillText("SPEED INCREASE", ScreenWidth/2 + carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
+    // // topctx.globalAlpha = 1;
+    // topctx.fillStyle = "black";
+    // topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
+  }
 }
 
 var stormRotationDegrees = 0;
