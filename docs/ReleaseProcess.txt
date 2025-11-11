@@ -6,6 +6,32 @@ Lättast går man hit i sin browser på datorn:
 
 Här hittar du Babbler. :-)
   https://play.google.com/store/apps/details?id=com.mask.texttospeech
+
+Funkar så där: (Detta är DEN ENDA som fungerar efter en hel kväll av meckande)
+  uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
+  <-Däremot minimerar den inte variabelnamn eller sånt. 
+  https://www.npmjs.com/package/uglify-js
+  1. Installera (om) nodejs: https://nodejs.org/en/download
+  2. Skriv node i dos, se att det finns.
+  3. npm install uglify-js -g
+      <-npm kommer av node om jag förstår det rätt.
+  4. skriv uglifyjs i dos, funkar nu? 
+  5. Kör uglifyjs för alla js-filer, se till att de hamnar i minified/.
+  6. Ladda upp till servern, men ta istället js-filerna ifrån minified!!!
+
+Otroligt, funkar inte heller:
+  https://medium.com/geekculture/minifiying-js-files-861cdd7b214c
+    <-Då tycker den "The included UglifyJS only understands ES5 or earlier syntax."
+      Så typ för gammal, men de nöjer sig med att skriva det.
+
+Googles uglifier, men det är ju java, och det är så klart ett helvete att få att fungera:
+https://developers.google.com/closure/compiler/  
+
+D:\Use\Programming\Javascript\carstorm\closure-compiler>java -jar closure-compiler-v20250820.jar --js_output_file tiny.js
+  <-Det blir en exception eftersom 
+    com/google/javascript/jscomp/CommandLineRunner has been compiled by a more recent version of the Java Runtime (class file version 65.0), this version of the Java Runtime only recognizes class file versions up to 52.0
+    <-Och det är ju fucked eftersom jag har senaste versionen.
+    <-Och PATH och Path?
   
 ----------------
 
