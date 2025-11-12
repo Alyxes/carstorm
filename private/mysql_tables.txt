@@ -22,6 +22,7 @@ CREATE TABLE user_stats (
     win_count INT UNSIGNED NOT NULL,
     high_score INT UNSIGNED NOT NULL,
     play_count INT UNSIGNED NOT NULL,
+    reload_count INT UNSIGNED NOT NULL,
     remote_addr VARCHAR(46) NOT NULL COLLATE 'utf8mb4_unicode_ci',
     http_user_agent VARCHAR(256) NULL COLLATE 'utf8mb4_unicode_ci',
     created DATETIME NOT NULL

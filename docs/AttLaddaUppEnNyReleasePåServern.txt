@@ -5,6 +5,7 @@ Hur man gör en release av en ny version på servern!
 Steg 1:
   1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
   2. Checka in alla ändringar på github.
+  3. Sätt PleaseLitterWithConsoleLogs till false i carstorm.js och service_worker.js. (Checka inte in det, onödigt.)
   3. Kör uglifyjs på alla .js-filer så de hamnar i katalogen minified.
       Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
       (carstorm/minified/*.js, inte carstorm/*.js)
@@ -16,25 +17,38 @@ Steg 1:
   OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 
 Steg 2:
-  1. Om du ökar $serverVersion i version.php av någon anledning, så MÅSTE du sätta samma version i ServerVersion i carstorm.js!
-  2. Om du inte följer steg 1 kommer spelet att laddas om i all jävla oändlighet och alla blir skitförbannade.
-  3. Lägg också in ny kod i FetchOnlineStats() som hanterar en transition från nuvarande version till nya.
+  1. Om du ökar $serverVersion i version.php av någon anledning, så MÅSTE du lägga in kod i FetchOnlineStats() som hanterar det !!
+  2. Om du inte följer steg 1 kommer spelet att laddas om ett par gånger och sedan hamna i ett sur-läge där det inte bryr sig om att uppdatera på länge. Inte hyperallvarligt alltså, men skitdumt.
   
 Steg 3:
   1. Om du ändrar kod i _spelet_, dvs. javascripten, så ska du öka GameVersion i carstorm.js med ett! 
   2. Om du inte gör som i steg 1, så missar vi fin statistik om vilken version spelarna kör på sina lurar. Inte så allvarligt alltså, men trist. 
   3. Att göra detta kan också hjälpa mig att reda ut skumliga buggar i framtiden. 
   
+Steg 4:
+  1. Om du ändrar databasens struktur, så MÅSTE du göra en uppdatering av tabellen/rna som finns, inte radera och skapa om dem! 
+  2. Du MÅSTE använda DEFAULT på samtliga nya kolumner! Eftersom serverkoden måste uppdateras efter att du uppdaterat databasen.
+  3. Du MÅSTE göra en backup av tabellen innan du uppdaterar den.
+  4. Om du inte följer steg 1, 2 och 3 faller det lava och pimpsten från himlen, och du får ett rent helvete på jorden.
+  (Servern skapar troligen massor av felmeddelanden, spelet kanske börjar gråta, du får fruktansvärt mycket att göra.)
+  5. Testa hela proceduren jävligt noggrant på din egen dator först.
+  
 ----------
 
 Följer du principerna ovan så har du minimerat lidandet. Men, tänk på dessa fakta:
 
-1. Spelet startar inte om av sig själv. Spelet kan ligga minimerat i veckor eller månader på någons telefon, och laddas alltså inte om. 
-2. Punkt 1 betyder helt enkelt att åtskilliga spelare kommer att ha en gammal version körandes på sin telefon! Oavsett vad du gör och med vilka vimplar och flaggor du står på ett ben och vinkar med.
-3. Så, servern kan öka sin version i version.php, men den ENDA effekten du får av det, är att nuvarande version av spelet helt skippar att uppdatera sina data, då den för säkerhets skull låtsas att servern inte va online. 
+1. FetchOnlineStats() har nu kod för att ladda om sig själv. I teorin fungerar det! Denna kod körs varje gång man kommer till startskärmen och spelaren är online.
+2. Om nåt går fel så ska spelet köra vidare ändå med den version som ligger på spelaren lur.
 
-...Slutsats, och några resonemang:
-1. Fixa så spelet laddar om sina filer. Börja om från början i deras artiklar om pwa och appar på android. 
-2. Se till att service_worker.js laddas om också. Det ska den väl i princip göra så fort spelet börjar vilja ladda några filer. 
-3. En liten grej som kanske löser 2an vore att med jämna mellanrum anropa FetchOnlineStats() som ju just laddar version.php, och då borde trigga en omladdning av service_worker.js, varpå den i sin tur borde inse att den är ny och tömma fil-cachen. 
-4. ..steg 3 tar däremot inte i beaktande att spelet är just minimerat, och därmed inte startar om javascriptet eller laddar om några filer alls. Så, se till att steg 1 fungerar!
+Detta har jag alltså åtgärdat och gäller inte längre: (!)
+  1. Spelet startar inte om av sig själv. Spelet kan ligga minimerat i veckor eller månader på någons telefon, och laddas alltså inte om. 
+  2. Punkt 1 betyder helt enkelt att åtskilliga spelare kommer att ha en gammal version körandes på sin telefon! Oavsett vad du gör och med vilka vimplar och flaggor du står på ett ben och vinkar med.
+  3. Så, servern kan öka sin version i version.php, men den ENDA effekten du får av det, är att nuvarande version av spelet helt skippar att uppdatera sina data, då den för säkerhets skull låtsas att servern inte va online. 
+
+  ...Slutsats, och några resonemang:
+  1. DONE: Fixa så spelet laddar om sina filer. Börja om från början i deras artiklar om pwa och appar på android. 
+    <-FetchOnlineStats()
+  2. YEP: Se till att service_worker.js laddas om också. Det ska den väl i princip göra så fort spelet börjar vilja ladda några filer. 
+    <-Ja, den kollar ju _alltid_ mot servern och gör en byte-wise compare, och om filen skiljer sig mot serverns så startar den om service workern med senaste versionen.
+  3. DONE: En liten grej som kanske löser 2an vore att med jämna mellanrum anropa FetchOnlineStats() som ju just laddar version.php, och då borde trigga en omladdning av service_worker.js, varpå den i sin tur borde inse att den är ny och tömma fil-cachen. 
+    <-Händer nu. 

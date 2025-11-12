@@ -272,9 +272,10 @@ class UserStatsHandler
     MySqlConnection::Connect();
   }
   
-  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $remoteAddr, $httpUserAgent)
+  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $remoteAddr, $httpUserAgent)
   {
-    if(HandlerHelper::ValueIsMySqlSafe(array($serverVersion, $gameVersion, $winCount, $highScore, $playCount)) == false)
+    if(HandlerHelper::ValueIsMySqlSafe(array(
+        $serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount)) == false)
     {
       // Någon av parametrarna är skumliga, abort!!
       return -1;
@@ -297,12 +298,13 @@ class UserStatsHandler
     
     $now = date("Y-m-d H:i:s");
     
-    $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, remote_addr, http_user_agent, created)".
-             " values (".$serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",'".$remoteAddr."','".$httpUserAgent."','".$now."');";
+    // Yikes. Håll reda på ordningen. Håll reda på var du sätter fnuttar, alltså '. Testa noga. 
+    $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, reload_count, remote_addr, http_user_agent, created)".
+             " values (".$serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",".$reloadCount.",'".$remoteAddr."','".$httpUserAgent."','".$now."');";
     HandlerHelper::Debug($query);
 
     $rowId = MySqlConnection::Insert($query);
-        
+
     return $rowId;
   }
   

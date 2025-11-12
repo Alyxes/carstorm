@@ -15,8 +15,16 @@
  *  and in the next frame draw it back, this time a tiny bit stretched to the edges of the screen, giving the effect of zooming in.
  * 
  */
- 
- // TODO: Ta in pauskod från nyare skärmsläckare.
+
+// Set to false to remove all log messages, good for releases!
+// So use Log("Jamsy message here."); not console.log(). 
+const PleaseLitterWithConsoleLogs = true;
+if (PleaseLitterWithConsoleLogs) 
+  var Log = console.log;
+else 
+  var Log = function(){};
+
+// TODO: Ta in pauskod från nyare skärmsläckare.
   
 // See Resize().
 var ScreenWidth;
@@ -192,14 +200,14 @@ function init()
   // Trist, variabler i service_worker.js är inte åtkomliga härifrån. (Är ju i en annan tråd så det är ju iofs. logiskt)
   /*if(ServiceWorkerVersion != "slork")
   {
-    console.log("It IS available from here! " + ServiceWorkerVersion);
+    Log("It IS available from here! " + ServiceWorkerVersion);
   }*/
   
   // Trist 2, caches kan inte lagra annat än "Response" objekt, dvs. filer som dras ner från servern o sånt.  
-  /*console.log("Test open cache.");
+  /*Log("Test open cache.");
   caches.match("ServiceWorkerVersion").then(cache => {
-    console.log("Fint! Gick att öppna cachen. ");
-    console.log(cache);
+    Log("Fint! Gick att öppna cachen. ");
+    Log(cache);
   });*/
   
   CreateLevel();
@@ -304,7 +312,7 @@ function SetupCallbacks()
       
       if(e.button == 0) // Most of the time the left button
       {
-        // console.log("mousedown: " + e.button);
+        // Log("mousedown: " + e.button);
         TouchClickEvent(e.clientX, e.clientY);
       }
     });
@@ -319,13 +327,13 @@ function SetupCallbacks()
         if (e.keyCode === 37)
         {
           // left arrow pressed.
-          // console.log("button left");
+          // Log("button left");
           PlayerMove("left");
         }
         else if (e.keyCode === 39)
         {
           // right arrow pressed.
-          // console.log("button right");
+          // Log("button right");
           PlayerMove("right");
         }
       }
@@ -346,12 +354,12 @@ function TouchClickEvent(xPos, yPos)
     case gsPlaying:
       if(xPos < ScreenWidth / 2)
       {
-        // console.log("mousedown left");
+        // Log("mousedown left");
         PlayerMove("left");
       }
       else
       {
-        // console.log("mousedown right");
+        // Log("mousedown right");
         PlayerMove("right");
       }
       break;
@@ -444,8 +452,6 @@ function Resize()
   // Så vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
   // 
   // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
-  
-  //console.log();
 }
 
 function StoreStuff()
@@ -514,6 +520,7 @@ async function FetchOnlineStats()
     url += "win_count="+WinCount+"&";
     url += "high_score="+HighScore+"&";
     url += "play_count="+PlayCount+"&"; 
+    url += "reload_count="+ReloadCount+"&"; 
     url += "cache_killer="+Math.random();// Last param omit the &.
     
     const response = await fetch(url);
@@ -525,12 +532,10 @@ async function FetchOnlineStats()
     }
     
     var OnlineStats = await response.json();
-    console.log(OnlineStats);
+    Log(OnlineStats);
     
     GotResponseFromServer = true;
-    
-    // TODO: Save in some storage for offline use! IndexedDB ? Read about it.
-    
+        
     // True if game's ServerVersion equals the server version.
     var RunningSameAsServer = (ServerVersion == OnlineStats.server_version);
     var GotUpdated = false;
@@ -538,12 +543,33 @@ async function FetchOnlineStats()
     
     // Idea: If this is an old version of carstorm.js, it does not know about
     // any other versions than stated below. It should keep working!
+    // Note the order of our ifs, we update from version 1 to version 2 etc. up to the version the server has.
+    if(OnlineStats.server_version >= 1)
+    {
+      if(ServerVersion < 1 && OnlineStats.server_version == 1)
+      {
+        // This never happens since version start at 1, but we keep it for purity.
+        GotUpdated = true;
+        
+        Log("Updating localstorage from version " + ServerVersion + " to version " + 1);
+        ServerVersion = 1;
+      }
+
+      // First version has these variables: server_version and players_now
+      PlayersPlayingNow = OnlineStats.players_now;
+    }
     if(OnlineStats.server_version >= 2)
     {
-      if(ServerVersion < 2 && OnlineStats.server_version == 2)
+      if(ServerVersion < 2 && OnlineStats.server_version >= 2)
       {
-        // Cool, we have the latest code, but the data storage seem to be outdated. Update.
+        // 'Our' ServerVersion is smaller than 2, but we have this code for updating localstorage to version 2, 
+        // so we have the latest version of the code.
+        // The localstorage must be updated to version 2 though. 
         GotUpdated = true;
+        
+        // Update code would be here if version 2 actually was anything more than an example.
+        Log("Updating localstorage from version " + ServerVersion + " to version " + 2);        
+        ServerVersion = 2;
       }
       
       // Server version 2 don't change anything, but show us this important fact:
@@ -551,47 +577,55 @@ async function FetchOnlineStats()
       // Why? Because newer versions MUST NOT break old game versions!
       // This just means an old game version should keep working, but not be aware of
       // the new stuff a newer game knows about. 
+      
+      // If version 2 would have added a new field to download for example, we would store it in localstorage here.
     }
-    if(OnlineStats.server_version >= 1)
-    {
-      if(ServerVersion < 1 && OnlineStats.server_version == 1)
-      {
-        GotUpdated = true;
-      }
-
-      // First version has these variables: server_version and players_now
-      ServerVersion = OnlineStats.server_version;
-      PlayersPlayingNow = OnlineStats.players_now;
-    }
+    
+    // Now we have two cases:
+    // 1. GotUpdated is true. This means we have the latest code, and the localstorage structure is updated in the code above. Store the changes by calling StoreStuff().
+    // 2. GotUpdated is false and RunningSameAsServer too! This means server has a new version, and this code is not updated. 
+    //    a. We must let service_worker.js invalidate its file cache, 
+    //    b. and reload all files from the server.
+    //    c. When this function is run again, we should have the latest version, goto 1. 
+    // 3. Since service_worker.js is designed strange, we might need to do step 2 twice to get the latest version!
+    //    a. Step 2 happens, and code below will reload the pages. 
+    //    b. service_worker.js detects its new version, reload and kill its cache. 
+    //    c. But, browser has aldready started loading files from the cache. So we might get a mix of files. 
+    //    d. If we got a mix, hopefully this file is not yet updated at least. Means we reload again at step 2!
+    //    e. This second time all files are guaranteed to be newly downloaded, so step 1.
+    //    f. Also, as a security measure ReloadCount is stored in localstorage and can reach a max of 2, 
+    //       after that the game don't care anymore and will run with whatever mix of versions it has.
+    // 4. And finally, if the user is offline, nothing of this ever happens and the game runs fine with its cached files.
     
     if(!RunningSameAsServer && !GotUpdated)
     {
       // Looks like server has a newer version that our code know nothing about. 
-      console.log("We seem to be running an old version of the game!");
+      Log("We seem to be running an old version of the game!");
             
       ReloadCount++;
       
-      // Store the reload count.
+      // Store the ReloadCount!
       StoreStuff();
       
-      // DONE: Store the ReloadCount.
-      // DONE: Store the ServerVersion!
+      // Store the ReloadCount.
+      // Store the ServerVersion!
       //   <-Det här är ännu viktigare. Så här måste det vara:
       // 
-      //   1. DONE: ServerVersion är alltid satt till 1 högst upp i denna fil.
-      //   2. DONE: Först laddas cachen/cookien/IndexedDB you name it.
-      //   3. DONE: ServerVersion sätts till det som finns i cachen.
-      //   4. DONE: Först nu anropas FetchOnlineStats().
-      //   5. TODO: Om ServerVersion NU skiljer sig från serverns, betyder det att
-      //      spelarens cache behöver uppdateras.
-      //   6. Uppdatera cachen. Uppdatera ServerVersion.
-      //   7. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
+      //   1. ServerVersion är alltid satt till 1 högst upp i denna fil.
+      //   2. Först laddas cachen/cookien/IndexedDB you name it.
+      //   3. ServerVersion sätts till det som finns i cachen.
+      //   4. Först nu anropas FetchOnlineStats().
+      //   5. Om ServerVersion NU skiljde sig från serverns, så har koden ovan gjort följande:
+      //        * Uppdaterat ServerVersion.
+      //        * Uppdaterat vad som uppdateras ska i localstorage, samt sparat ändringarna.
+      //   6. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
       //      som serverns.
       
       if(ReloadCount <= 2)
       {
         // Enforce a reload of the game files from server.
-        console.log("Reloading!");
+        // Please note we might do this twice! 
+        Log("Reloading!");
         
         window.location.reload();
       }
@@ -599,18 +633,32 @@ async function FetchOnlineStats()
       {
         // Note that we fail nicely here to keep the game working. 
 
-        // Not good, the game has reloaded the page a few times, but still this switch 
-        // is not happy.
-        console.log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion);
+        // Not good, the game has reloaded the page a few times, but still this switch is not happy. Pretend like nothing.
+        Log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion + ". Giving up.");
+        
+        // Since ReloadCount increase by one each time the game reach the start screen, we will soon have a 
+        // very high number. We reset it to zero after a few times (50), to retry the entire update procedure.
+        if(ReloadCount >= 50)
+        {
+          Log("It's time to try updating again. Reset ReloadCount and try next time.");
+          ReloadCount = 0;
+          StoreStuff();
+        }
       }
     }
+    else
+    {
+      // All cool, reset ReloadCount, store any changes and keep going.
+      ReloadCount = 0;
+      StoreStuff();
+    }
     
-    console.log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
+    Log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
   }
   catch (error)
   {
     // Any exception is just ignored, we want the game to keep on working regardless of server.
-    console.error(error.message);
+    Log(error.message);
     
     GotResponseFromServer = false;
   }
@@ -836,7 +884,7 @@ function SetState(newState)
     throw "Transition from " + gameState + " to " + newState + " is not valid!";
   }
   
-  console.log("Transition from " + gameState + " to " + newState + "!");
+  Log("Transition from " + gameState + " to " + newState + "!");
   
   // The transition is ok, do it.
   gameState = newState;
@@ -932,7 +980,7 @@ function PlayerMove(direction)
 {
   var HasMoved = false;
 
-  //console.log("player.RoadPos: " + player.RoadPos);
+  //Log("player.RoadPos: " + player.RoadPos);
   
   if (direction == "left")
   {
@@ -1486,7 +1534,7 @@ function CreateNewCars()
       level[0][x].hasCar = true;
     else if (xCount[x] < -1)
     {
-      // console.log("First if-statement: xCount[x] < -1");
+      // Log("First if-statement: xCount[x] < -1");
       xCount[x] = 0;
       level[0][x].hasCar = true;
       c++;
@@ -1494,16 +1542,16 @@ function CreateNewCars()
     }
     else if (xCount[x] > 1)
     {
-      // console.log("Second if-statement: xCount[x] > 1");
+      // Log("Second if-statement: xCount[x] > 1");
       xCount[x] = 0;
       xCount[x]--;
     }
     else if(randomizeBool())
     {
-      // console.log("Third if-statement: randomizeBool()");
+      // Log("Third if-statement: randomizeBool()");
       if (xCount[x] < 2)
       {
-        // console.log("Third if-statement: xCount[x] < 2");
+        // Log("Third if-statement: xCount[x] < 2");
         if (xCount[x] < 0)
             xCount[x] = 0;
             
@@ -1516,10 +1564,10 @@ function CreateNewCars()
     }
     else
     {
-      // console.log("Fourth if-statement: else");
+      // Log("Fourth if-statement: else");
       if (xCount[x] > -2)
       {
-        // console.log("Fourth if-statement: xCount[x] > -2");
+        // Log("Fourth if-statement: xCount[x] > -2");
         if (xCount[x] > 0)
           xCount[x] = 0;
         

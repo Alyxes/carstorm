@@ -6,15 +6,18 @@ require "private/handlers.php";
 // Increase version when server expect the given data to have a new format.
 $serverVersion = 2;
 
-//TEST: Funkar! Den laddar om sidan i all oändlighet.
-//$serverVersion = 3;
+//TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp.
+$serverVersion = 3;
 
+// FetchString() is friendly and returns empty string if there is no value given from the user.
+// intval() is friendly too, and returns 0 on empty string.
 $remoteAddr = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
 $httpUserAgent = HandlerHelper::FetchString($_SERVER, 'HTTP_USER_AGENT');
 $gameVersion = intval(HandlerHelper::FetchString($_GET, 'game_version'));
 $winCount = intval(HandlerHelper::FetchString($_GET, 'win_count'));
 $highScore = intval(HandlerHelper::FetchString($_GET, 'high_score'));
 $playCount = intval(HandlerHelper::FetchString($_GET, 'play_count'));
+$reloadCount = intval(HandlerHelper::FetchString($_GET, 'reload_count'));
 
 $ush = new UserStatsHandler();
 
@@ -37,7 +40,15 @@ if($playersNow == 0)
   }
 }
 
-$id = $ush->AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $remoteAddr, $httpUserAgent);
+$id = $ush->AddUserStats(
+        $serverVersion, 
+        $gameVersion, 
+        $winCount, 
+        $highScore, 
+        $playCount, 
+        $reloadCount, 
+        $remoteAddr, 
+        $httpUserAgent);
 
 $arr = array(
   'server_version' => $serverVersion, 
