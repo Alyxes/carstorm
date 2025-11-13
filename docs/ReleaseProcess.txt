@@ -7,6 +7,11 @@ Lättast går man hit i sin browser på datorn:
 Här hittar du Babbler. :-)
   https://play.google.com/store/apps/details?id=com.mask.texttospeech
 
+Monitor & Improve är dit du ska gå när appen är releasad:
+  https://play.google.com/console/u/0/developers/7421392476990213978/app/4975505023785672873/user-feedback/ratings
+
+-----------------
+
 Funkar så där: (Detta är DEN ENDA som fungerar efter en hel kväll av meckande)
   uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
   <-Däremot minimerar den inte variabelnamn eller sånt. 
@@ -39,6 +44,9 @@ Gillar inte ett spår att de fucking kräver att min hem-adress står bredvid va
 https://support.google.com/googleplay/android-developer/answer/139626?hl=en&sjid=8391415463213560471-EU#zippy=%2Cdeveloper-information-shown-to-users-on-google-play
   <-Det borde verkligen räcka med support-email och hemsida! 
     Adress och hemtelefon är INTE OK.
+
+TODO: Här har du hur du ändrar sådana här detaljer, men det verkar ändå svårt:
+https://support.google.com/googleplay/android-developer/answer/13634081#zippy=%2Cstore-listing-contact-details
 
 ----------------
 
