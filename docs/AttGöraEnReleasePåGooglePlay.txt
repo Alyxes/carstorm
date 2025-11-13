@@ -7,13 +7,24 @@
     c. chrome.exe - Shortcut
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
-  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 3
+  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 5
   b. Följ stegen 7 och 8 i den filen jävligt noga.
 4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
 6. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
 7. Publicera. Nu ska en ny version strax finnas uppe för nedladdning.
 8. Klicka på fliken Testers. Klicka Copy link. Ge den här länken till alla i testgruppen. 
+
+
+Stegen för att göra en open testing istället för en internal testing:
+5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
+  <-Jag har gått vidare till open testing, så alla som har utvecklarkonto får testa appen.
+    (men de hittar den ju knappast)
+6. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
+7. Klicka Next. (Var noga med att inte klicka bort härifrån, för då får du börja om på steg 3!!)
+8. Klicka Goto Overview.
+9. Send 1 change for review. (Running checks kan du låta vara, de kör först ändå)
+10. Nu kan det här ta en hel del tid! Upp till sju dar. Så det är inget vi ska använda för våra tester.
 
 --------------------
 

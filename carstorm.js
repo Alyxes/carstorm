@@ -117,8 +117,11 @@ var roadWidth = 0;
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
 
-// Variable to store a fifth of the screens width, regardless of resolution.
+// Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
+var screenwidthSeventh;
 var screenwidthFifth;
+var screenwidthThird;
+var screenwidthHalf;
 
 var roadStartLeft;
 
@@ -380,9 +383,11 @@ function TouchClickEvent(xPos, yPos)
   }  
 }
 
-var ScreenScale;
-var realScreenWidth;
-var realScreenHeight;
+// var ScreenScale;
+// var realScreenWidth;
+// var realScreenHeight;
+
+var Width4K = 3840;
 
 function Resize()
 {
@@ -392,14 +397,15 @@ function Resize()
   {
     SetState(gsPaused);
   }
-  
-  ScreenScale = window.devicePixelRatio;
+
+  // Behåll som kommentar, kul att veta.  
+  // ScreenScale = window.devicePixelRatio;
   // window.visualViewport.scale
   // We should read this article. I don't have time tonight...
   // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
   
-  realScreenWidth = Math.floor(window.innerWidth * ScreenScale);
-  realScreenHeight = Math.floor(window.innerHeight * ScreenScale);
+  // realScreenWidth = Math.floor(window.innerWidth * ScreenScale);
+  // realScreenHeight = Math.floor(window.innerHeight * ScreenScale);
   ScreenWidth = window.innerWidth;
   ScreenHeight = window.innerHeight;
     
@@ -418,10 +424,14 @@ function Resize()
   hiddenCanvas.height = ScreenHeight;
   hiddenCanvas.width = ScreenWidth;
   
-  textScale = ScreenWidth / 3840;
+  textScale = ScreenWidth / Width4K;
   textScale = textScale + ((1-textScale)/2);
   
+  // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
+  screenwidthSeventh = ScreenWidth/7;
   screenwidthFifth = ScreenWidth/5;
+  screenwidthThird = ScreenWidth/3;
+  screenwidthHalf = ScreenWidth/2;
   
   lightWidth = ScreenWidth/23;
   lightHeight = ScreenHeight/20;
@@ -1172,8 +1182,15 @@ function GameLoopStartScreen()
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
-    topctx.drawImage(MadSkullLogoImage, 0 + ScreenWidth * 0.015, 0 + ScreenHeight * 0.03, ScreenWidth/4, carWidth * 1.4);
+    // We want to define width, but keep aspect ratio.
+    // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
+    var width = ScreenWidth/3;
+    topctx.drawImage(
+      MadSkullLogoImage, 
+      ScreenWidth * 0.015, ScreenHeight * 0.03, 
+      width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
+    width = ScreenWidth/2;
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
     topctx.font = "bold " + titleFontSize + "vw Arial";
@@ -1203,7 +1220,7 @@ function GameLoopStartScreen()
     // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
     topctx.fillText(ScreenWidth, ScreenWidth / 30, oneRow * 26.5);
     topctx.fillText(ScreenHeight, ScreenWidth / 30, oneRow * 28);
-    topctx.fillText("Scale: " + ScreenScale, ScreenWidth / 30, oneRow * 29.5);
+    // topctx.fillText("Scale: " + ScreenScale, ScreenWidth / 30, oneRow * 29.5);
     
     if(GotResponseFromServer)
     {
