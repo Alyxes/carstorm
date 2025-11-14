@@ -6,8 +6,8 @@ require "private/handlers.php";
 // Increase version when server expect the given data to have a new format.
 $serverVersion = 2;
 
-//TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp.
-$serverVersion = 3;
+//TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp. Har dubbelkollat med appen, funkar likaslurt.
+//$serverVersion = 3;
 
 // FetchString() is friendly and returns empty string if there is no value given from the user.
 // intval() is friendly too, and returns 0 on empty string.
