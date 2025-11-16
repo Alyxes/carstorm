@@ -388,6 +388,7 @@ function TouchClickEvent(xPos, yPos)
 // var realScreenHeight;
 
 var Width4K = 3840;
+var Height4K = 2160;
 
 function Resize()
 {
@@ -425,6 +426,7 @@ function Resize()
   hiddenCanvas.width = ScreenWidth;
   
   textScale = ScreenWidth / Width4K;
+  // textScale = ScreenHeight / Height4K;
   textScale = textScale + ((1-textScale)/2);
   
   // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
@@ -1175,7 +1177,7 @@ function GameLoopStartScreen()
     
     DrawSnowstorm();
     
-    var titleFontSize = 14 * textScale;
+    var titleFontSize = 15 * textScale;
     var highScoreFontSize = 3.5 * textScale;
     touchMessageFontSize = 3.8 * textScale;
     
@@ -1184,17 +1186,23 @@ function GameLoopStartScreen()
     
     // We want to define width, but keep aspect ratio.
     // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
-    var width = ScreenWidth/3;
+    var width = ScreenWidth/2.5;
     topctx.drawImage(
       MadSkullLogoImage, 
       ScreenWidth * 0.015, ScreenHeight * 0.03, 
       width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
     width = ScreenWidth/2;
-    topctx.fillStyle = "black";
+    topctx.fillStyle = "red";
     topctx.textAlign = "center";
+    topctx.textBaseline = "middle";
     topctx.font = "bold " + titleFontSize + "vw Arial";
-    //topctx.fontWeight = "bold";
+    topctx.globalAlpha = 0.5;
+    topctx.fillText("CARSTORM", ScreenWidth/2 - (5 * textScale), ScreenHeight/2 - ScreenHeight/6);
+    topctx.fillStyle = "blue";
+    topctx.fillText("CARSTORM", ScreenWidth/2 + (5 * textScale), ScreenHeight/2 - ScreenHeight/6);
+    topctx.fillStyle = "black";
+    topctx.globalAlpha = 1;
     topctx.fillText("CARSTORM", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/6);
     
     if (LastDriveScore > 0)
@@ -1236,7 +1244,7 @@ function GameLoopStartScreen()
     {
       topctx.textAlign = "center";
       topctx.font = touchMessageFontSize + "vw CarStormFont1";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2- ScreenHeight/45);
+      topctx.fillText("touch screen to drive", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/20);
     }
   }
 }
@@ -1444,35 +1452,35 @@ function GameLoopWinGame()
     DrawPlayerLives();
     
     var finalScoreFontSize = 9 * textScale;
-    var victoryFontSize = 13.5 * textScale;
+    var victoryFontSize = 16 * textScale;
     var superPlayerFontSize = 5.5 * textScale;
     touchMessageFontSize = 3.8 * textScale;
     
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
-    topctx.lineWidth = 5 * textScale;
+    topctx.lineWidth = 12 * textScale;
     topctx.textAlign = "left";
     topctx.font = finalScoreFontSize + "vw CarStormFont2";
-    topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     topctx.strokeText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
+    topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
     
     topctx.fillStyle = "white";
     topctx.strokeStyle = "black";
-    topctx.lineWidth = 8 * textScale;
+    topctx.lineWidth = 20 * textScale;
     topctx.textAlign = "center";
     topctx.font = "bold " + victoryFontSize + "vw Arial";
-    topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     topctx.strokeText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
+    topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
     
     if (messageTimer < 2500)
     {
       // Should be 1.5 seconds after winning.
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
-      topctx.lineWidth = 4 * textScale;
+      topctx.lineWidth = 10 * textScale;
       topctx.font = superPlayerFontSize + "vw CarStormFont2";
-      topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
       topctx.strokeText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
+      topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
     }
     
     if (messageTimer == 0)
@@ -1875,8 +1883,8 @@ function DrawSpeedIncreaseMessage()
 }
 
 var stormRotationDegrees = 0;
-var stormRotationSpeed = 0.01;
-var stormRotationMax = 0.5;
+var stormRotationSpeed = 0.007;
+var stormRotationMax = 0.4;
 
 function DrawSnowstorm()
 {
@@ -1884,15 +1892,13 @@ function DrawSnowstorm()
   
   if (stormRotationDegrees > stormRotationMax)
   {
-    // stormRotationDegrees = stormRotationMax;
     stormRotationSpeed = -stormRotationSpeed;
-    stormRotationMax = 0.2 + randomizeFloatNumber(0.6);
+    stormRotationMax = 0.2 + randomizeFloatNumber(0.4);
   }
   else if (stormRotationDegrees < -stormRotationMax)
   {
-    // stormRotationDegrees = -stormRotationMax;
     stormRotationSpeed = -stormRotationSpeed;
-    stormRotationMax = 0.2 + randomizeFloatNumber(0.6);
+    stormRotationMax = 0.2 + randomizeFloatNumber(0.4);
   }
   
   var max;
@@ -1951,9 +1957,9 @@ function DrawSnowstorm()
   {
     snowImage = snowImages[randomizeNumber(5)];
     
-    max = ScreenHeight/10;
-    var minSize = ScreenHeight/30;
-    var maxSize = ScreenHeight/22;
+    max = ScreenHeight/7;
+    var minSize = ScreenHeight/25;
+    var maxSize = ScreenHeight/16;
     
     var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
     var yRand = max - Math.floor(Math.random() * (max));
