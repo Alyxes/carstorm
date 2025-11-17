@@ -1,0 +1,7 @@
+When preparing audio for television/radio programmes, podcasts and some websites you may be subject to loudness restrictions for the audio. 
+
+Loudness is usually measure in LUFS (Loudness Units Full Scale). The LUFS level restrictions can vary by application. For example the level for television in the US is normally -24 LUFS and the EBU (European Broadcasting Union) recommends -23 LUFS.
+
+https://manual.audacityteam.org/man/loudness_normalization.html
+
+-Jag valde -23 LUFS för det liknar väl det vi är vana vid här i Europa. :-) Framförallt gör audacity det riktigt bra, plötsligt låter alla ljuden ungefär lika mycket!
