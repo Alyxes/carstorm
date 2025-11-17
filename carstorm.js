@@ -106,7 +106,7 @@ var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 999;     // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 299;     // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -136,9 +136,20 @@ var explosionAnimFrameCounter = 0;
 const audioAcceleration = new Audio("sound/acceleration.mp3");
 const audioStart = new Audio("sound/start.mp3");
 const audioBlip = new Audio("sound/blip.mp3");
-const audioMove = new Audio("sound/move.mp3");
+const audioMove1 = new Audio("sound/move1.mp3");
+const audioMove2 = new Audio("sound/move2.mp3");
+const audioMove3 = new Audio("sound/move3.mp3");
+const audioMove4 = new Audio("sound/move4.mp3");
+const audioMove5 = new Audio("sound/move5.mp3");
 const audioCrash = new Audio("sound/crash.mp3");
 const audioGameOver = new Audio("sound/gameover.mp3");
+const audioEndingWin = new Audio("sound/ending_win.mp3");
+
+const audioMoveSounds = [audioMove1,audioMove2,audioMove3,audioMove4,audioMove5];
+
+var MoveSound = {
+  lastPlayed: null,
+};
 
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png";
@@ -977,6 +988,7 @@ function OnEnterGameOver()
 function OnEnterWinGame()
 {
   // Start the wingame trudelutt.
+  audioEndingWin.play();
   messageTimer = 4000; // Set for the "touch screen to play again" message.
   
   player.Score = WinningScore;
@@ -985,6 +997,53 @@ function OnEnterWinGame()
   
   SetScoreStatistics();
   EndGameVariableResets();
+}
+
+// Starts at sound zero, if zero is not selected, continue at one, and so on until 
+// a sound is selected. By moving the selected sound to play to the end of the array
+// it is not likely to be played again anytime soon. (but it has a chance!)
+function PlayMoveSound(pos)
+{
+  if(Math.random() < 0.5)
+  {
+    // Yeah, sound at position pos got selected. 
+    if(MoveSound.lastPlayed != null && MoveSound.lastPlayed.ended == false)
+    {
+      // Previous sound still playing. 
+      // TODO: Have some quick fadeout and then play the new sound.
+      // MoveSound.lastPlayed.volume = 0.2;
+      
+      // Just stop current sound and rewind to start until next time it gets played.
+      // https://stackoverflow.com/questions/14834520/html5-audio-stop-function
+      MoveSound.lastPlayed.pause();
+      MoveSound.lastPlayed.currentTime = 0;      
+    }
+    
+    MoveSound.lastPlayed = audioMoveSounds[pos];
+    MoveSound.lastPlayed.play();
+    
+    // Move the selected sound to the end of the array.
+    audioMoveSounds.splice(pos,1);
+    audioMoveSounds.push(MoveSound.lastPlayed);
+    
+    Log("Break sound nr " + pos + " proudly selected.");
+  }
+  else
+  {
+    if(pos + 1 < audioMoveSounds.length)
+    {
+      // Nopey, let's go on with another sound!
+      PlayMoveSound(pos + 1);
+    }
+    else
+    {
+      // We are on the end of the list, so just select the last sound. (again)
+      MoveSound.lastPlayed = audioMoveSounds[audioMoveSounds.length - 1];
+      MoveSound.lastPlayed.play();
+      
+      Log("Boring! Make the list bigger!");
+    }
+  }
 }
 
 // Gets the direction and checks HasMoved(boolean) and if you can move any further in desired direction.
@@ -1018,8 +1077,7 @@ function PlayerMove(direction)
   if(HasMoved)
   {
     player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-    audioMove.currentTime = 0;
-    audioMove.play();
+    PlayMoveSound(0);
   }
 }
 

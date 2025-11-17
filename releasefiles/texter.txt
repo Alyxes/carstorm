@@ -9,6 +9,24 @@ Keywords:
   
 ----------
 
+-The Game-
+
+This is a classical arcade game, or maybe more of a game-n-watch. Drive and avoid the cars! 
+
+-Programming-
+
+Joint effort by Jon & Timothy Lennryd.
+
+-Graphics-
+
+Timothy Lennryd has transformed the initial idea of a car racing game into a "oops - wrong highway" game with his ingenious graphic arts. 
+
+-The Sound effects?-
+
+We have the honour and [möjlighet] of using open source sound effects. Our main source has been pixabay.com where lots of people upload their creations, sound effects, music, graphic, art and so on! 
+
+----------
+
 Jag fick ändrat till det att de visar support@madskullcreations.com istället för jonlennryd.
 
 Men att ändra adressen är i stort sett ogörbart, då får man skaffa en box-adress, och en sådan kostar flera tusen kronor per år..
@@ -20,6 +38,12 @@ För att ändra telefonnummer:
     Välj Standard 100kr 0.2GB, gäller 1 år. 
     https://www.comviq.se/kontantkort
     <-Man börjar så klart med att registrera ett nytt nummer och det är tydligen gratis. Man måste koppla det till sig själv.
+    
+    Halebop skriver detta:
+      "Saldo har egentligen ingen tid som det gäller utan det är tillgängligt så länge ens nummer är aktivt eller tills den använts upp då."
+      <-Verkar som man kan ladda det en enda gång och aldrig mer. :)
+      <-De har också 100 kr laddning.
+      <-Jag väljer dem eftersom comviq uttryckligen skriver "giltigt i 1 år".
     
 ---------
 
