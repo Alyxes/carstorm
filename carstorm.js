@@ -24,6 +24,9 @@ if (PleaseLitterWithConsoleLogs)
 else 
   var Log = function(){};
 
+// Set to false to remove debug-prints onscreen in the game.
+const ShowDebugStuff = false;
+
 // TODO: Ta in pauskod från nyare skärmsläckare.
   
 // See Resize().
@@ -1278,18 +1281,24 @@ function GameLoopStartScreen()
       topctx.fillText(HighScore + "   ", ScreenWidth, textTwentyRows * 19);
     }
   
-    var oneRow = ScreenHeight / 30;
     topctx.textAlign = "left";
     topctx.font = textTwentyRows + "px Arial";
     
-    // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
-    // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
-    topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
-    topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
+    if(ShowDebugStuff)
+    {
+      // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
+      // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
+      topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
+      topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
+    }
     
     if(GotResponseFromServer)
     {
-      topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textTwentyRows * 18);
+      if(ShowDebugStuff)
+      {
+        topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textTwentyRows * 18);
+      }
+      
       topctx.fillText("Players online now: " + PlayersPlayingNow, screenwidthThirteenth / 2, textTwentyRows * 19);
     }
     else
