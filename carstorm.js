@@ -1295,13 +1295,15 @@ function GameLoopStartScreen()
     
     if (LastDriveScore > 0)
     {
-      topctx.font = textTwentyRows + "px CarStormFont2";
-
-      topctx.textAlign = "left";
-      topctx.fillText("last drive score: ", 2 * screenwidthThird, textTwentyRows * 18);
-      topctx.fillText("highscore: ", 2 * screenwidthThird, textTwentyRows * 19);
+      topctx.font = textFifteenRows + "px CarStormFont2";
       
       topctx.textAlign = "right";
+      topctx.fillText("last drive score: ", ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+      topctx.fillText("highscore: ", ScreenWidth - screenwidthNinth, textFifteenRows * 14);
+      
+      topctx.textAlign = "left";
+      topctx.fillText(LastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+      topctx.fillText(HighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
     }
 
     topctx.textAlign = "left";
