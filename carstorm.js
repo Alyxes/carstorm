@@ -19,6 +19,7 @@
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
 const PleaseLitterWithConsoleLogs = true;
+
 if (PleaseLitterWithConsoleLogs) 
   var Log = console.log;
 else 
@@ -30,6 +31,7 @@ else
 var ScreenWidth;
 var ScreenHeight;
 
+var textFourRows;
 var textFiveRows;
 var textTenRows;
 var textFifteenRows;
@@ -109,7 +111,7 @@ var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 299;     // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 9999;     // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -121,6 +123,7 @@ var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
 
 // Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
+var screenwidthNinth;
 var screenwidthSeventh;
 var screenwidthFifth;
 var screenwidthThird;
@@ -439,6 +442,7 @@ function Resize()
   hiddenCanvas.height = ScreenHeight;
   hiddenCanvas.width = ScreenWidth;
   
+  textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
   textTenRows = ScreenHeight / 10;
   textFifteenRows = ScreenHeight / 15;
@@ -446,6 +450,7 @@ function Resize()
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
   // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
+  screenwidthNinth = ScreenWidth/9; // ... sorry :j
   screenwidthSeventh = ScreenWidth/7;
   screenwidthFifth = ScreenWidth/5;
   screenwidthThird = ScreenWidth/3;
@@ -1253,31 +1258,41 @@ function GameLoopStartScreen()
       ScreenWidth * 0.015, ScreenHeight * 0.03, 
       width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
-    topctx.fillStyle = "red";
+    var TitleColorShift = ScreenHeight/90;
+    var titleHeight = textTwentyRows * 11;
+    
+    // First base draw of the colours, this is needed to get a specific transparency level.
+    topctx.fillStyle = "rgba(237,73,51,0.3)"; // red-like
     topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
     topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
-    topctx.font = "bold " + textFiveRows + "px Arial";
-    topctx.globalAlpha = 0.5;
-    topctx.fillText("CARSTORM", ScreenWidth/2 - (10), textFiveRows * 3);
-    topctx.fillStyle = "blue";
-    topctx.fillText("CARSTORM", ScreenWidth/2 + (10), textFiveRows * 3);
+    topctx.font = "bold " + (textTwentyRows * 5) + "px Arial";
+    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    
+    // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
+    topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    
+    // Finally, black text.
     topctx.fillStyle = "black";
-    topctx.globalAlpha = 1;
-    topctx.fillText("CARSTORM", ScreenWidth/2, textFiveRows * 3);
+    topctx.fillText("CARSTORM", ScreenWidth/2, titleHeight);
     
     if (LastDriveScore > 0)
     {
-      topctx.font = textTwentyRows + "px CarStormFont2";
+      topctx.font = textFifteenRows + "px CarStormFont2";
 
-      topctx.textAlign = "left";      
-      topctx.fillText("last drive score: ", 2 * ScreenWidth / 3, textTwentyRows * 18);
-      topctx.fillText("highscore: ", 2 * ScreenWidth / 3, textTwentyRows * 19);
-      
       topctx.textAlign = "right";
-      topctx.fillText(LastDriveScore + "   ", ScreenWidth, textTwentyRows * 18);
-      topctx.fillText(HighScore + "   ", ScreenWidth, textTwentyRows * 19);
+      topctx.fillText("last drive score: ", ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+      topctx.fillText("highscore: ", ScreenWidth - screenwidthNinth, textFifteenRows * 14);
+      
+      topctx.textAlign = "left";
+      topctx.fillText(LastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+      topctx.fillText(HighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
     }
-  
+    
     var oneRow = ScreenHeight / 30;
     var oneTenth = ScreenWidth / 10;
     topctx.textAlign = "left";
@@ -1302,7 +1317,7 @@ function GameLoopStartScreen()
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, textFifteenRows * 10);
+      topctx.fillText("touch screen to drive", ScreenWidth/2, textTwentyRows * 13);
     }
   }
 }
