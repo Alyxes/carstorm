@@ -15,8 +15,6 @@ Monitor & Improve är dit du ska gå när appen är releasad:
 Funkar så där: (Detta är DEN ENDA som fungerar efter en hel kväll av meckande)
   uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
   uglifyjs service_worker.js -c -m --mangle-props --v8 -o minified\service_worker.js 
-  uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
-  uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
   <-Däremot minimerar den inte variabelnamn eller sånt. 
   https://www.npmjs.com/package/uglify-js
   1. Installera (om) nodejs: https://nodejs.org/en/download
@@ -70,7 +68,7 @@ Dashboard
     <-DONE: Gör samma för carstorm!
       https://madskullcreations.com/doku.php?id=carstorm
       
-      TODO: Den ska återspegla det vi faktiskt spelar in på servern!
+      DONE: Den ska återspegla det vi faktiskt spelar in på servern!
       https://madskullcreations.com/doku.php?id=carstorm_privacy_policy
   Steg 2:
     DONE: Håller på att stega igenom deras steg!
