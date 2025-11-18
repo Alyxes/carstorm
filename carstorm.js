@@ -19,6 +19,7 @@
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
 const PleaseLitterWithConsoleLogs = true;
+
 if (PleaseLitterWithConsoleLogs) 
   var Log = console.log;
 else 
@@ -40,6 +41,7 @@ var Width4K = 3840;
 var Height4K = 2160;
 
 // textFiveRows is simply ScreenHeight / 5, so we can easily put large text on five rows.
+var textFourRows;
 var textFiveRows;
 var textTenRows;
 var textFifteenRows;
@@ -48,6 +50,7 @@ var textTwentyRows;
 // Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
 // Convenience: Divide with 2 to get 1/26, 1/14, 1/10, 1/6, 1/4.
 var screenwidthThirteenth;
+var screenwidthNinth;
 var screenwidthSeventh;
 var screenwidthFifth;
 var screenwidthThird;
@@ -448,13 +451,16 @@ function Resize()
   hiddenCanvas.height = ScreenHeight;
   hiddenCanvas.width = ScreenWidth;
   
+  textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
   textTenRows = ScreenHeight / 10;
   textFifteenRows = ScreenHeight / 15;
   textTwentyRows = ScreenHeight / 20;
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
+  // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
   screenwidthThirteenth = ScreenWidth/13;
+  screenwidthNinth = ScreenWidth/9; // ... sorry :j
   screenwidthSeventh = ScreenWidth/7;
   screenwidthFifth = ScreenWidth/5;
   screenwidthThird = ScreenWidth/3;
@@ -1265,18 +1271,27 @@ function GameLoopStartScreen()
       ScreenWidth * 0.015, ScreenHeight * 0.03, 
       width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
+    var TitleColorShift = ScreenHeight/90;
+    var titleHeight = textTwentyRows * 11;
+    
+    // First base draw of the colours, this is needed to get a specific transparency level.
+    topctx.fillStyle = "rgba(237,73,51,0.3)"; // red-like
     topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
     topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
-    topctx.font = "bold " + textFiveRows + "px Arial";
-    topctx.globalAlpha = 0.5;
-
-    topctx.fillStyle = "red";
-    topctx.fillText("CARSTORM", screenwidthHalf - (5), textFiveRows * 3);
-    topctx.fillStyle = "blue";
-    topctx.fillText("CARSTORM", screenwidthHalf + (5), textFiveRows * 3);
+    topctx.font = "bold " + (textTwentyRows * 5) + "px Arial";
+    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    
+    // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
+    topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
+    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    
+    // Finally, black text.
     topctx.fillStyle = "black";
-    topctx.globalAlpha = 1;
-    topctx.fillText("CARSTORM", screenwidthHalf, textFiveRows * 3);
+    topctx.fillText("CARSTORM", ScreenWidth/2, titleHeight);
     
     if (LastDriveScore > 0)
     {
@@ -1287,8 +1302,6 @@ function GameLoopStartScreen()
       topctx.fillText("highscore: ", 2 * screenwidthThird, textTwentyRows * 19);
       
       topctx.textAlign = "right";
-      topctx.fillText(LastDriveScore + "   ", ScreenWidth, textTwentyRows * 18);
-      topctx.fillText(HighScore + "   ", ScreenWidth, textTwentyRows * 19);
     }
 
     topctx.textAlign = "left";
@@ -1320,7 +1333,7 @@ function GameLoopStartScreen()
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to drive", screenwidthHalf, textFifteenRows * 10);
+      topctx.fillText("touch screen to drive", ScreenWidth/2, textTwentyRows * 13);
     }
   }
 }
