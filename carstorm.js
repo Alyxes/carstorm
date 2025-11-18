@@ -18,7 +18,7 @@
 
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
-const PleaseLitterWithConsoleLogs = true;
+const PleaseLitterWithConsoleLogs = false;
 
 if (PleaseLitterWithConsoleLogs) 
   var Log = console.log;
