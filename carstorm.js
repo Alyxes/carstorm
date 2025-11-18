@@ -30,10 +30,19 @@ else
 var ScreenWidth;
 var ScreenHeight;
 
+// textFiveRows is simply ScreenHeight / 5, so we can easily put large text on five rows.
 var textFiveRows;
 var textTenRows;
 var textFifteenRows;
 var textTwentyRows;
+
+// Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
+// Convenience: Divide with 2 to get 1/26, 1/14, 1/10, 1/6, 1/4.
+var screenwidthThirteenth;
+var screenwidthSeventh;
+var screenwidthFifth;
+var screenwidthThird;
+var screenwidthHalf;
 
 // If true, it starts in paused mode, and gets activated by the focus event.
 var screenSaverPaused = false;
@@ -81,7 +90,6 @@ var lightWidth = 0; //Global because we just so happens to use them as the width
 var lightHeight = 0;
 var orangeLightSize = 0;
 var yellowLightSize = 0;
-var touchMessageFontSize = 6;
 
 var player = null;
 
@@ -102,14 +110,13 @@ var GotResponseFromServer = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
 var GameVersion = 1;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
 
-
 var nextLevel = 300;        // Reaching this score increase speed and "level".
 var finalScore = 0;         // After finishing current game, this is your final score.
 var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 299;     // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 199;     // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -119,12 +126,6 @@ var roadWidth = 0;
 
 var hiddenCanvas = document.createElement('canvas');
 var hiddenCtx = hiddenCanvas.getContext("2d");
-
-// Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
-var screenwidthSeventh;
-var screenwidthFifth;
-var screenwidthThird;
-var screenwidthHalf;
 
 var roadStartLeft;
 
@@ -369,7 +370,7 @@ function TouchClickEvent(xPos, yPos)
         SetState(gsIntroPlay);
       break;
     case gsPlaying:
-      if(xPos < ScreenWidth / 2)
+      if(xPos < screenwidthHalf)
       {
         // Log("mousedown left");
         PlayerMove("left");
@@ -445,7 +446,7 @@ function Resize()
   textTwentyRows = ScreenHeight / 20;
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
-  // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
+  screenwidthThirteenth = ScreenWidth/13;
   screenwidthSeventh = ScreenWidth/7;
   screenwidthFifth = ScreenWidth/5;
   screenwidthThird = ScreenWidth/3;
@@ -462,7 +463,7 @@ function Resize()
   
   roadWidth = lightWidth * 2;
   
-  roadStartLeft = ScreenWidth/2 - lightWidth;
+  roadStartLeft = screenwidthHalf - lightWidth;
   
   ResizePlayer();
   
@@ -1239,9 +1240,7 @@ function GameLoopStartScreen()
     CheckMessageTimer();
     
     DrawSnowstorm();
-    
-    touchMessageFontSize = textTenRows;
-    
+
     // The cars and text are drawn here so they don't get smeared.
     topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
     
@@ -1253,25 +1252,26 @@ function GameLoopStartScreen()
       ScreenWidth * 0.015, ScreenHeight * 0.03, 
       width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
-    topctx.fillStyle = "red";
     topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
     topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
     topctx.font = "bold " + textFiveRows + "px Arial";
     topctx.globalAlpha = 0.5;
-    topctx.fillText("CARSTORM", ScreenWidth/2 - (10), textFiveRows * 3);
+
+    topctx.fillStyle = "red";
+    topctx.fillText("CARSTORM", screenwidthHalf - (5), textFiveRows * 3);
     topctx.fillStyle = "blue";
-    topctx.fillText("CARSTORM", ScreenWidth/2 + (10), textFiveRows * 3);
+    topctx.fillText("CARSTORM", screenwidthHalf + (5), textFiveRows * 3);
     topctx.fillStyle = "black";
     topctx.globalAlpha = 1;
-    topctx.fillText("CARSTORM", ScreenWidth/2, textFiveRows * 3);
+    topctx.fillText("CARSTORM", screenwidthHalf, textFiveRows * 3);
     
     if (LastDriveScore > 0)
     {
       topctx.font = textTwentyRows + "px CarStormFont2";
 
       topctx.textAlign = "left";      
-      topctx.fillText("last drive score: ", 2 * ScreenWidth / 3, textTwentyRows * 18);
-      topctx.fillText("highscore: ", 2 * ScreenWidth / 3, textTwentyRows * 19);
+      topctx.fillText("last drive score: ", 2 * screenwidthThird, textTwentyRows * 18);
+      topctx.fillText("highscore: ", 2 * screenwidthThird, textTwentyRows * 19);
       
       topctx.textAlign = "right";
       topctx.fillText(LastDriveScore + "   ", ScreenWidth, textTwentyRows * 18);
@@ -1279,30 +1279,29 @@ function GameLoopStartScreen()
     }
   
     var oneRow = ScreenHeight / 30;
-    var oneTenth = ScreenWidth / 10;
     topctx.textAlign = "left";
     topctx.font = textTwentyRows + "px Arial";
     
     // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
-    topctx.fillText("X: " + ScreenWidth, 0, textTwentyRows * 17);
-    topctx.fillText("Y: " + ScreenHeight, 0, textTwentyRows * 18);
-    // topctx.fillText("Scale: " + ScreenScale, ScreenWidth / 30, oneRow * 29.5);
+    // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
+    topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
+    topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
     
     if(GotResponseFromServer)
     {
-      topctx.fillText("Server version: " + ServerVersion, 0, textTwentyRows * 19);
-      topctx.fillText("Players online now: " + PlayersPlayingNow, 0, textTwentyRows * 20);
+      topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textTwentyRows * 18);
+      topctx.fillText("Players online now: " + PlayersPlayingNow, screenwidthThirteenth / 2, textTwentyRows * 19);
     }
     else
     {
-      topctx.fillText("Offline", oneTenth, oneRow * 28);
+      topctx.fillText("Offline", screenwidthThirteenth / 2, textTwentyRows * 19);
     }
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, textFifteenRows * 10);
+      topctx.fillText("touch screen to drive", screenwidthHalf, textFifteenRows * 10);
     }
   }
 }
@@ -1438,13 +1437,11 @@ function GameLoopPaused()
     DrawPlayerCar(false);
     DrawPlayerLives();
     DrawPlayerScore();
-    
-    touchMessageFontSize = 5.5 * textFiveRows;
-    
+        
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
-    topctx.font = touchMessageFontSize + "px CarStormFont1";
-    topctx.fillText("touch screen to continue", ScreenWidth/2, ScreenHeight/2);
+    topctx.font = textFifteenRows + "px CarStormFont1";
+    topctx.fillText("touch screen to continue", screenwidthHalf, textFifteenRows * 8);
   }
 }
 function GameLoopGameOver()
@@ -1464,25 +1461,22 @@ function GameLoopGameOver()
     DrawStreetLights();
     DrawAllCars(false);
     DrawPlayerCar(true);
-        
-    var gameOverFontSize = 13 * textFiveRows;
-    var finalScoreFontSize = 5 * textFiveRows;
-    touchMessageFontSize = 3.8 * textFiveRows;
 
     topctx.fillStyle = "darkorange";
     topctx.textAlign = "center";
-    topctx.font = "bold " + gameOverFontSize + "px Arial";
-    topctx.fillText("GAME OVER", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/7);
+    topctx.font = "bold " + textFiveRows + "px Arial";
+    topctx.fillText("GAME OVER", screenwidthHalf, textFiveRows * 2);
+    
     topctx.fillStyle = "black";
-    topctx.font = finalScoreFontSize + "px CarStormFont2";
-    topctx.fillText("Your final score was", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/32);
-    topctx.fillText(finalScore, ScreenWidth/2, ScreenHeight/2 + ScreenHeight/13.5);
+    topctx.font = textFifteenRows + "px CarStormFont2";
+    topctx.fillText("Your final score was", screenwidthHalf, textFifteenRows * 7);
+    topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 8);
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "px CarStormFont1";
-      topctx.fillText("touch screen to restart", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/5.5);
+      topctx.font = textFifteenRows + "px CarStormFont1";
+      topctx.fillText("touch screen to restart", screenwidthHalf, textFifteenRows * 10);
     }
   }
 }
@@ -1508,45 +1502,38 @@ function GameLoopWinGame()
     
     DrawPlayerCar(true);
     DrawPlayerLives();
-    
-    var finalScoreFontSize = 9 * textFiveRows;
-    var victoryFontSize = 16 * textFiveRows;
-    var superPlayerFontSize = 5.5 * textFiveRows;
-    touchMessageFontSize = 3.8 * textFiveRows;
-    
-    topctx.fillStyle = "yellow";
-    topctx.strokeStyle = "black";
-    topctx.lineWidth = 12 * textFiveRows;
-    topctx.textAlign = "left";
-    topctx.font = finalScoreFontSize + "px CarStormFont2";
-    topctx.strokeText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
-    topctx.fillText(player.Score, ScreenWidth - ScreenWidth/4, ScreenHeight/6);
-    
+
     topctx.fillStyle = "white";
     topctx.strokeStyle = "black";
-    topctx.lineWidth = 20 * textFiveRows;
     topctx.textAlign = "center";
-    topctx.font = "bold " + victoryFontSize + "px Arial";
-    topctx.strokeText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
-    topctx.fillText("VICTORY", ScreenWidth/2, ScreenHeight/2 -ScreenHeight/10);
+    topctx.font = "bold " + textFiveRows + "px Arial";
+    topctx.strokeText("VICTORY", screenwidthHalf, textFiveRows * 2);
+    topctx.fillText("VICTORY", screenwidthHalf, textFiveRows * 2);
+    
+    var finalScore = "Final score: " + player.Score;
+    topctx.fillStyle = "yellow";
+    topctx.strokeStyle = "black";
+    topctx.textAlign = "center";
+    topctx.font = textTenRows + "px CarStormFont2";
+    topctx.strokeText(finalScore, screenwidthHalf, textTenRows * 5);
+    topctx.fillText(finalScore, screenwidthHalf, textTenRows * 5);    
     
     if (messageTimer < 2500)
     {
-      // Should be 1.5 seconds after winning.
+      // Show up a few seconds after winning.
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
-      topctx.lineWidth = 10 * textFiveRows;
-      topctx.font = superPlayerFontSize + "px CarStormFont2";
-      topctx.strokeText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
-      topctx.fillText("You are a super player", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/25);
+      topctx.font = textTenRows + "px CarStormFont2";
+      topctx.strokeText("You are a super player", screenwidthHalf, textTenRows * 6);
+      topctx.fillText("You are a super player", screenwidthHalf, textTenRows * 6);
     }
     
     if (messageTimer == 0)
     {
       topctx.fillStyle = "black";
       topctx.textAlign = "center";
-      topctx.font = touchMessageFontSize + "px CarStormFont1";
-      topctx.fillText("touch screen to play again", ScreenWidth/2, ScreenHeight/2 + ScreenHeight/6);
+      topctx.font = textFifteenRows + "px CarStormFont1";
+      topctx.fillText("touch screen to play again", screenwidthHalf, textFifteenRows * 11);
     }
   }
 }
@@ -1785,11 +1772,11 @@ function DrawAllCars(onlyTheShadows)
       // topctx.fillStyle = "blue";
       // topctx.textAlign = "center";
       // topctx.font = testTextFont + "px Arial";
-      // topctx.fillText("emptyRowCount: " + emptyRowCount, ScreenWidth/2,  ScreenHeight/2 - ScreenHeight/6);
+      // topctx.fillText("emptyRowCount: " + emptyRowCount, screenwidthHalf,  ScreenHeight/2 - ScreenHeight/6);
       // topctx.font = testTextFont + "px Arial";
-      // topctx.fillText(xCount[0], ScreenWidth/2 - ScreenWidth/20, ScreenHeight/2 - ScreenHeight/10);
-      // topctx.fillText(xCount[1], ScreenWidth/2,  ScreenHeight/2 - ScreenHeight/10);
-      // topctx.fillText(xCount[2], ScreenWidth/2 + ScreenWidth/20,  ScreenHeight/2 - ScreenHeight/10);
+      // topctx.fillText(xCount[0], screenwidthHalf - ScreenWidth/20, ScreenHeight/2 - ScreenHeight/10);
+      // topctx.fillText(xCount[1], screenwidthHalf,  ScreenHeight/2 - ScreenHeight/10);
+      // topctx.fillText(xCount[2], screenwidthHalf + ScreenWidth/20,  ScreenHeight/2 - ScreenHeight/10);
     // }
   }
 }
@@ -1815,18 +1802,18 @@ function DrawStreetLights()
   {
     streetctx.fillStyle = "rgba(255,100,0,1)";
     streetctx.beginPath();
-    streetctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    streetctx.arc(screenwidthHalf - lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
     streetctx.fill();
     streetctx.beginPath();
-    streetctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
+    streetctx.arc(screenwidthHalf + lightWidth, (ScreenHeight / 2) + lightHeight, orangeLightSize, 0, 2 * Math.PI);
     streetctx.fill();
     
     streetctx.fillStyle = "yellow";
     streetctx.beginPath();
-    streetctx.arc((ScreenWidth / 2) - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    streetctx.arc(screenwidthHalf - lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
     streetctx.fill();
     streetctx.beginPath();
-    streetctx.arc((ScreenWidth / 2) + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
+    streetctx.arc(screenwidthHalf + lightWidth, (ScreenHeight / 2) + lightHeight, yellowLightSize, 0, 2 * Math.PI);
     streetctx.fill();
     
     streetLightTimer = 0;
@@ -1910,33 +1897,29 @@ function DrawPlayerLives()
 }
 function DrawPlayerScore()
 {
-  var scoreFontSize = 8 * textFiveRows;
-  
   topctx.fillStyle = "black";
   topctx.textAlign = "left";
-  topctx.font = scoreFontSize + "px CarStormFont2";
-  topctx.fillText(player.Score, ScreenWidth - ScreenWidth/5, ScreenHeight/6.5);
+  topctx.font = textFifteenRows + "px CarStormFont2";
+  topctx.fillText(player.Score, ScreenWidth - screenwidthFifth, textFifteenRows * 2);
 }
 function DrawSpeedIncreaseMessage()
 {
   if (messageTimer != 0 && messageTimer%600 > 300)
   {
-    // touchMessageFontSize = 3.8 * textFiveRows;
-    
-    var SIimageWidth = ScreenWidth/2;
-    topctx.drawImage(SpeedIncreaseImage, ScreenWidth/2 - SIimageWidth/2, ScreenHeight/2 - ScreenHeight/7, SIimageWidth, SIimageWidth * 0.076);
+    var SIimageWidth = screenwidthHalf;
+    topctx.drawImage(SpeedIncreaseImage, screenwidthHalf - SIimageWidth/2, ScreenHeight/2 - ScreenHeight/7, SIimageWidth, SIimageWidth * 0.076);
     
     // Try to create the red and blue effect with text only. Possible, but not as good looking. Can't make only intersecting colors turn black...
     // topctx.textAlign = "center";
     // topctx.font = touchMessageFontSize + "px CarStormFont1";
     // // topctx.globalAlpha = 0.5;
     // topctx.fillStyle = "rgba(236,72,50,0.7)";
-    // topctx.fillText("SPEED INCREASE", ScreenWidth/2 - carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
+    // topctx.fillText("SPEED INCREASE", screenwidthHalf - carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
     // topctx.fillStyle = "rgba(0,154,255,0.7)";
-    // topctx.fillText("SPEED INCREASE", ScreenWidth/2 + carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
+    // topctx.fillText("SPEED INCREASE", screenwidthHalf + carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
     // // topctx.globalAlpha = 1;
     // topctx.fillStyle = "black";
-    // topctx.fillText("SPEED INCREASE", ScreenWidth/2, ScreenHeight/2 - ScreenHeight/7);
+    // topctx.fillText("SPEED INCREASE", screenwidthHalf, ScreenHeight/2 - ScreenHeight/7);
   }
 }
 
@@ -1980,9 +1963,9 @@ function DrawSnowstorm()
     
     // Rotating the storm eliminates the 8 artifact rays coming from the zoom in.
     // However, the lights and car shadows will rotate too... So we need ANOTHER canvas AND another hidden canvas (I assume) to let those scale normally.
-    ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+    ctx.translate(screenwidthHalf, ScreenHeight / 2);
     ctx.rotate(stormRotationDegrees * Math.PI / 180);
-    ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
+    ctx.translate(-screenwidthHalf, -ScreenHeight / 2);
     
     // Stretch out the copied (smaller) image over the entire canvas.
     // Note! We are drawing the _canvas_ object, not its 2d context. 
@@ -2006,7 +1989,7 @@ function DrawSnowstorm()
     // var size = minSize + Math.floor(Math.random() * (maxSize));
     
     // ctx.beginPath();
-    // ctx.arc(ScreenWidth / 2 - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
+    // ctx.arc(screenwidthHalf - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
     // ctx.fill();
   //}
   ctx.globalAlpha = 0.64;
@@ -2025,7 +2008,7 @@ function DrawSnowstorm()
     yRand -= max / 2;
     
     var size = minSize + Math.floor(Math.random() * maxSize);
-    var xPos = ScreenWidth / 2 - 1 - xRand;
+    var xPos = screenwidthHalf - 1 - xRand;
     var yPos = ScreenHeight / 2 - 1 - yRand;
     var imageHalf = size/2;
     
@@ -2033,9 +2016,9 @@ function DrawSnowstorm()
     
     ctx.save();
     {
-      ctx.translate(ScreenWidth / 2, ScreenHeight / 2);
+      ctx.translate(screenwidthHalf, ScreenHeight / 2);
       ctx.rotate(snowImageRotation * Math.PI / 180);
-      ctx.translate(-ScreenWidth / 2, -ScreenHeight / 2);
+      ctx.translate(-screenwidthHalf, -ScreenHeight / 2);
       
       ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
     }
