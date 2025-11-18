@@ -6,6 +6,9 @@ This is a classic arcade game where you control your car, avoid the meeting traf
 Keywords: 
   arcade, 
   early access, <-Bara för att det är open testing tror jag..?
+
+TODO: 
+  game-n-watch
   
 ----------
 
@@ -23,7 +26,7 @@ Timothy Lennryd has transformed the initial idea of a car racing game into a "oo
 
 -The Sound effects?-
 
-We have the honour and [möjlighet] of using open source sound effects. Our main source has been pixabay.com where lots of people upload their creations, sound effects, music, graphic, art and so on! 
+We have the honour and opportunity of using open source sound effects. Our main source has been pixabay.com where lots of people upload their creations, sound effects, music, graphic, art and so on! 
 
 ----------
 

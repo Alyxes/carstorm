@@ -33,6 +33,7 @@ var ScreenHeight;
 var textFiveRows;
 var textTenRows;
 var textFifteenRows;
+var textTwentyRows;
 
 // If true, it starts in paused mode, and gets activated by the focus event.
 var screenSaverPaused = false;
@@ -441,6 +442,7 @@ function Resize()
   textFiveRows = ScreenHeight / 5;
   textTenRows = ScreenHeight / 10;
   textFifteenRows = ScreenHeight / 15;
+  textTwentyRows = ScreenHeight / 20;
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
   // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
@@ -1265,32 +1267,31 @@ function GameLoopStartScreen()
     
     if (LastDriveScore > 0)
     {
-      topctx.textAlign = "left";
-      topctx.font = textFifteenRows + "px CarStormFont2";
-      
-      topctx.fillText("last drive score: ", 2 * ScreenWidth / 3, textFifteenRows * 12);
-      topctx.fillText("highscore: ", 2 * ScreenWidth / 3, textFifteenRows * 13);
+      topctx.font = textTwentyRows + "px CarStormFont2";
+
+      topctx.textAlign = "left";      
+      topctx.fillText("last drive score: ", 2 * ScreenWidth / 3, textTwentyRows * 18);
+      topctx.fillText("highscore: ", 2 * ScreenWidth / 3, textTwentyRows * 19);
       
       topctx.textAlign = "right";
-      
-      topctx.fillText(LastDriveScore + "   ", ScreenWidth, textFifteenRows * 12);
-      topctx.fillText(HighScore + "   ", ScreenWidth, textFifteenRows * 13);
+      topctx.fillText(LastDriveScore + "   ", ScreenWidth, textTwentyRows * 18);
+      topctx.fillText(HighScore + "   ", ScreenWidth, textTwentyRows * 19);
     }
   
     var oneRow = ScreenHeight / 30;
     var oneTenth = ScreenWidth / 10;
     topctx.textAlign = "left";
-    topctx.font = textFifteenRows + "px Arial";
+    topctx.font = textTwentyRows + "px Arial";
     
     // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
-    topctx.fillText("X: " + ScreenWidth, 0, textFifteenRows * 12);
-    topctx.fillText("Y: " + ScreenHeight, 0, textFifteenRows * 13);
+    topctx.fillText("X: " + ScreenWidth, 0, textTwentyRows * 17);
+    topctx.fillText("Y: " + ScreenHeight, 0, textTwentyRows * 18);
     // topctx.fillText("Scale: " + ScreenScale, ScreenWidth / 30, oneRow * 29.5);
     
     if(GotResponseFromServer)
     {
-      topctx.fillText("Server version: " + ServerVersion, oneTenth, textFifteenRows * 14);
-      topctx.fillText("Players online now: " + PlayersPlayingNow, oneTenth, textFifteenRows * 15);
+      topctx.fillText("Server version: " + ServerVersion, 0, textTwentyRows * 19);
+      topctx.fillText("Players online now: " + PlayersPlayingNow, 0, textTwentyRows * 20);
     }
     else
     {
@@ -1300,8 +1301,8 @@ function GameLoopStartScreen()
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
-      topctx.font = textTenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, textTenRows * 7);
+      topctx.font = textFifteenRows + "px CarStormFont1";
+      topctx.fillText("touch screen to drive", ScreenWidth/2, textFifteenRows * 10);
     }
   }
 }
