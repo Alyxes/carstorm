@@ -32,6 +32,12 @@ const ShowDebugStuff = false;
 // See Resize().
 var ScreenWidth;
 var ScreenHeight;
+var ScreenScale;
+// var realScreenWidth;
+// var realScreenHeight;
+
+var Width4K = 3840;
+var Height4K = 2160;
 
 // textFiveRows is simply ScreenHeight / 5, so we can easily put large text on five rows.
 var textFiveRows;
@@ -110,8 +116,11 @@ var TimeToGoBackToPlay = 0; // dito
 var clearStreetTimer = 0;   // Timer until the street gets cleared from other cars.
 
 var GotResponseFromServer = false;
+var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
 var GameVersion = 1;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+
+var IntroMelodyPlayed = false;
 
 var nextLevel = 300;        // Reaching this score increase speed and "level".
 var finalScore = 0;         // After finishing current game, this is your final score.
@@ -140,7 +149,7 @@ var explosionAnimFrameLength = 0;
 var explosionAnimTimer = 0;
 var explosionAnimFrameCounter = 0;
 
-const audioAcceleration = new Audio("sound/acceleration.mp3");
+const audioIntroMelody = new Audio("sound/intro_melody.mp3");
 const audioStart = new Audio("sound/start.mp3");
 const audioBlip = new Audio("sound/blip.mp3");
 const audioMove1 = new Audio("sound/move1.mp3");
@@ -153,6 +162,9 @@ const audioGameOver = new Audio("sound/gameover.mp3");
 const audioEndingWin = new Audio("sound/ending_win.mp3");
 
 const audioMoveSounds = [audioMove1,audioMove2,audioMove3,audioMove4,audioMove5];
+
+// Longer sounds must be paused when the game is minimized, put a reference to it here.
+var audioCurrentlyPlaying = null;
 
 var MoveSound = {
   lastPlayed: null,
@@ -401,13 +413,6 @@ function TouchClickEvent(xPos, yPos)
   }  
 }
 
-var ScreenScale;
-// var realScreenWidth;
-// var realScreenHeight;
-
-var Width4K = 3840;
-var Height4K = 2160;
-
 function Resize()
 {
   // If we are playing and the screen is resizing, it usually means player rotate the 
@@ -536,8 +541,12 @@ function ReadStuff()
 // Fetch, and push your stats to server.
 async function FetchOnlineStats() 
 {
+  FetchOnlineStatsDone = false;
   if(TimeToFetchOnlineStats > Now)
+  {
+    FetchOnlineStatsDone = true;
     return;
+  }
   
   // TEMP: Every 30 seconds, but you must still play one round and come back to start screen.
   TimeToFetchOnlineStats = Now + 1000 * 30;// * 3600; // Update every hour.
@@ -560,132 +569,134 @@ async function FetchOnlineStats()
     if (!response.ok) 
     {
       // We just ignore if we don't get any response, since the game very well might be offline and that should be ok.
-      return;
-    }
-    
-    var OnlineStats = await response.json();
-    Log(OnlineStats);
-    
-    GotResponseFromServer = true;
-        
-    // True if game's ServerVersion equals the server version.
-    var RunningSameAsServer = (ServerVersion == OnlineStats.server_version);
-    var GotUpdated = false;
-    var FromVersion = ServerVersion;
-    
-    // Idea: If this is an old version of carstorm.js, it does not know about
-    // any other versions than stated below. It should keep working!
-    // Note the order of our ifs, we update from version 1 to version 2 etc. up to the version the server has.
-    if(OnlineStats.server_version >= 1)
-    {
-      if(ServerVersion < 1 && OnlineStats.server_version == 1)
-      {
-        // This never happens since version start at 1, but we keep it for purity.
-        GotUpdated = true;
-        
-        Log("Updating localstorage from version " + ServerVersion + " to version " + 1);
-        ServerVersion = 1;
-      }
-
-      // First version has these variables: server_version and players_now
-      PlayersPlayingNow = OnlineStats.players_now;
-    }
-    if(OnlineStats.server_version >= 2)
-    {
-      if(ServerVersion < 2 && OnlineStats.server_version >= 2)
-      {
-        // 'Our' ServerVersion is smaller than 2, but we have this code for updating localstorage to version 2, 
-        // so we have the latest version of the code.
-        // The localstorage must be updated to version 2 though. 
-        GotUpdated = true;
-        
-        // Update code would be here if version 2 actually was anything more than an example.
-        Log("Updating localstorage from version " + ServerVersion + " to version " + 2);        
-        ServerVersion = 2;
-      }
-      
-      // Server version 2 don't change anything, but show us this important fact:
-      // Next if-statement will also run. 
-      // Why? Because newer versions MUST NOT break old game versions!
-      // This just means an old game version should keep working, but not be aware of
-      // the new stuff a newer game knows about. 
-      
-      // If version 2 would have added a new field to download for example, we would store it in localstorage here.
-    }
-    
-    // Now we have two cases:
-    // 1. GotUpdated is true. This means we have the latest code, and the localstorage structure is updated in the code above. Store the changes by calling StoreStuff().
-    // 2. GotUpdated is false and RunningSameAsServer too! This means server has a new version, and this code is not updated. 
-    //    a. We must let service_worker.js invalidate its file cache, 
-    //    b. and reload all files from the server.
-    //    c. When this function is run again, we should have the latest version, goto 1. 
-    // 3. Since service_worker.js is designed strange, we might need to do step 2 twice to get the latest version!
-    //    a. Step 2 happens, and code below will reload the pages. 
-    //    b. service_worker.js detects its new version, reload and kill its cache. 
-    //    c. But, browser has aldready started loading files from the cache. So we might get a mix of files. 
-    //    d. If we got a mix, hopefully this file is not yet updated at least. Means we reload again at step 2!
-    //    e. This second time all files are guaranteed to be newly downloaded, so step 1.
-    //    f. Also, as a security measure ReloadCount is stored in localstorage and can reach a max of 2, 
-    //       after that the game don't care anymore and will run with whatever mix of versions it has.
-    // 4. And finally, if the user is offline, nothing of this ever happens and the game runs fine with its cached files.
-    
-    if(!RunningSameAsServer && !GotUpdated)
-    {
-      // Looks like server has a newer version that our code know nothing about. 
-      Log("We seem to be running an old version of the game!");
-            
-      ReloadCount++;
-      
-      // Store the ReloadCount!
-      StoreStuff();
-      
-      // Store the ReloadCount.
-      // Store the ServerVersion!
-      //   <-Det här är ännu viktigare. Så här måste det vara:
-      // 
-      //   1. ServerVersion är alltid satt till 1 högst upp i denna fil.
-      //   2. Först laddas cachen/cookien/IndexedDB you name it.
-      //   3. ServerVersion sätts till det som finns i cachen.
-      //   4. Först nu anropas FetchOnlineStats().
-      //   5. Om ServerVersion NU skiljde sig från serverns, så har koden ovan gjort följande:
-      //        * Uppdaterat ServerVersion.
-      //        * Uppdaterat vad som uppdateras ska i localstorage, samt sparat ändringarna.
-      //   6. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
-      //      som serverns.
-      
-      if(ReloadCount <= 2)
-      {
-        // Enforce a reload of the game files from server.
-        // Please note we might do this twice! 
-        Log("Reloading!");
-        
-        window.location.reload();
-      }
-      else
-      {
-        // Note that we fail nicely here to keep the game working. 
-
-        // Not good, the game has reloaded the page a few times, but still this switch is not happy. Pretend like nothing.
-        Log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion + ". Giving up.");
-        
-        // Since ReloadCount increase by one each time the game reach the start screen, we will soon have a 
-        // very high number. We reset it to zero after a few times (50), to retry the entire update procedure.
-        if(ReloadCount >= 50)
-        {
-          Log("It's time to try updating again. Reset ReloadCount and try next time.");
-          ReloadCount = 0;
-          StoreStuff();
-        }
-      }
     }
     else
     {
-      // All cool, reset ReloadCount, store any changes and keep going.
-      ReloadCount = 0;
-      StoreStuff();
+      // We got a response!
+      var OnlineStats = await response.json();
+      Log(OnlineStats);
+      
+      GotResponseFromServer = true;
+          
+      // True if game's ServerVersion equals the server version.
+      var RunningSameAsServer = (ServerVersion == OnlineStats.server_version);
+      var GotUpdated = false;
+      var FromVersion = ServerVersion;
+      
+      // Idea: If this is an old version of carstorm.js, it does not know about
+      // any other versions than stated below. It should keep working!
+      // Note the order of our ifs, we update from version 1 to version 2 etc. up to the version the server has.
+      if(OnlineStats.server_version >= 1)
+      {
+        if(ServerVersion < 1 && OnlineStats.server_version == 1)
+        {
+          // This never happens since version start at 1, but we keep it for purity.
+          GotUpdated = true;
+          
+          Log("Updating localstorage from version " + ServerVersion + " to version " + 1);
+          ServerVersion = 1;
+        }
+
+        // First version has these variables: server_version and players_now
+        PlayersPlayingNow = OnlineStats.players_now;
+      }
+      if(OnlineStats.server_version >= 2)
+      {
+        if(ServerVersion < 2 && OnlineStats.server_version >= 2)
+        {
+          // 'Our' ServerVersion is smaller than 2, but we have this code for updating localstorage to version 2, 
+          // so we have the latest version of the code.
+          // The localstorage must be updated to version 2 though. 
+          GotUpdated = true;
+          
+          // Update code would be here if version 2 actually was anything more than an example.
+          Log("Updating localstorage from version " + ServerVersion + " to version " + 2);        
+          ServerVersion = 2;
+        }
+        
+        // Server version 2 don't change anything, but show us this important fact:
+        // Next if-statement will also run. 
+        // Why? Because newer versions MUST NOT break old game versions!
+        // This just means an old game version should keep working, but not be aware of
+        // the new stuff a newer game knows about. 
+        
+        // If version 2 would have added a new field to download for example, we would store it in localstorage here.
+      }
+      
+      // Now we have two cases:
+      // 1. GotUpdated is true. This means we have the latest code, and the localstorage structure is updated in the code above. Store the changes by calling StoreStuff().
+      // 2. GotUpdated is false and RunningSameAsServer too! This means server has a new version, and this code is not updated. 
+      //    a. We must let service_worker.js invalidate its file cache, 
+      //    b. and reload all files from the server.
+      //    c. When this function is run again, we should have the latest version, goto 1. 
+      // 3. Since service_worker.js is designed strange, we might need to do step 2 twice to get the latest version!
+      //    a. Step 2 happens, and code below will reload the pages. 
+      //    b. service_worker.js detects its new version, reload and kill its cache. 
+      //    c. But, browser has aldready started loading files from the cache. So we might get a mix of files. 
+      //    d. If we got a mix, hopefully this file is not yet updated at least. Means we reload again at step 2!
+      //    e. This second time all files are guaranteed to be newly downloaded, so step 1.
+      //    f. Also, as a security measure ReloadCount is stored in localstorage and can reach a max of 2, 
+      //       after that the game don't care anymore and will run with whatever mix of versions it has.
+      // 4. And finally, if the user is offline, nothing of this ever happens and the game runs fine with its cached files.
+      
+      if(!RunningSameAsServer && !GotUpdated)
+      {
+        // Looks like server has a newer version that our code know nothing about. 
+        Log("We seem to be running an old version of the game!");
+              
+        ReloadCount++;
+        
+        // Store the ReloadCount!
+        StoreStuff();
+        
+        // Store the ReloadCount.
+        // Store the ServerVersion!
+        //   <-Det här är ännu viktigare. Så här måste det vara:
+        // 
+        //   1. ServerVersion är alltid satt till 1 högst upp i denna fil.
+        //   2. Först laddas cachen/cookien/IndexedDB you name it.
+        //   3. ServerVersion sätts till det som finns i cachen.
+        //   4. Först nu anropas FetchOnlineStats().
+        //   5. Om ServerVersion NU skiljde sig från serverns, så har koden ovan gjort följande:
+        //        * Uppdaterat ServerVersion.
+        //        * Uppdaterat vad som uppdateras ska i localstorage, samt sparat ändringarna.
+        //   6. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
+        //      som serverns.
+        
+        if(ReloadCount <= 2)
+        {
+          // Enforce a reload of the game files from server.
+          // Please note we might do this twice! 
+          Log("Reloading!");
+          
+          window.location.reload();
+        }
+        else
+        {
+          // Note that we fail nicely here to keep the game working. 
+
+          // Not good, the game has reloaded the page a few times, but still this switch is not happy. Pretend like nothing.
+          Log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion + ". Giving up.");
+          
+          // Since ReloadCount increase by one each time the game reach the start screen, we will soon have a 
+          // very high number. We reset it to zero after a few times (50), to retry the entire update procedure.
+          if(ReloadCount >= 50)
+          {
+            Log("It's time to try updating again. Reset ReloadCount and try next time.");
+            ReloadCount = 0;
+            StoreStuff();
+          }
+        }
+      }
+      else
+      {
+        // All cool, reset ReloadCount, store any changes and keep going.
+        ReloadCount = 0;
+        StoreStuff();
+      }
+      
+      Log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
     }
-    
-    Log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
   }
   catch (error)
   {
@@ -694,6 +705,8 @@ async function FetchOnlineStats()
     
     GotResponseFromServer = false;
   }
+  
+  FetchOnlineStatsDone = true;
 }
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
@@ -780,18 +793,10 @@ function EnterSomeKindOfPause()
   // Loosing focus or getting hidden, meaning screen saver should pause.
   screenSaverPaused = true;
   
-  // if (audioAcceleration.currentTime > 0 && !audioAcceleration.paused)
-  // {
-    // audioAcceleration.pause();
-  // }
-  // if (audioStart.currentTime > 0 && !audioStart.paused)
-  // {
-    // audioStart.pause();
-  // }
-  // if (audioGameOver.currentTime > 0 && !audioGameOver.paused)
-  // {
-    // audioGameOver.pause();
-  // }
+  if(audioCurrentlyPlaying != null)
+  {
+    audioCurrentlyPlaying.pause();
+  }
   
   // If we are playing it might be nice to return to a paused screen. :-)
   if(gameState == gsPlaying)
@@ -802,22 +807,10 @@ function EnterSomeKindOfPause()
 function ResumeFromSomeKindOfPause()
 {
   // Regaining focus, meaning screen saver is back in full screen.
+  // Don't bother resume playing any paused sound!
   screenSaverPaused = false;
   
   LastDraw = Date.now();
-
-  // if (audioAcceleration.currentTime > 0 && audioAcceleration.paused)
-  // {
-    // audioAcceleration.play();
-  // }
-  // if (audioStart.currentTime > 0 && audioStart.paused)
-  // {
-    // audioStart.play();
-  // }
-  // if (audioGameOver.currentTime > 0 && audioGameOver.paused)
-  // {
-    // audioGameOver.play();
-  // }
   
   GameLoop();
 }
@@ -925,8 +918,7 @@ function SetState(newState)
 function OnEnterStartScreen()
 {
   messageTimer = 3000; // Used for the message "touch screen to drive".
-  audioAcceleration.play();
-  
+  IntroMelodyPlayed = false;
   FetchOnlineStats();
 }
 function TransitFromStartScreenToIntroPlay()
@@ -934,9 +926,10 @@ function TransitFromStartScreenToIntroPlay()
   TimeToGoBackToPlay = Now + 2500;
   player.CrashState = "Restarting";
   player.RestartBlinkTimer = 0;
-  audioAcceleration.pause();
-  audioAcceleration.currentTime = 0;
+  audioIntroMelody.pause();
+  audioIntroMelody.currentTime = 0;
   audioStart.play();
+  audioCurrentlyPlaying = audioStart;
 }
 function TransitFromIntroPlayToPlaying()
 {
@@ -987,6 +980,7 @@ function OnEnterPaused()
 function OnEnterGameOver()
 {
   audioGameOver.play();
+  audioCurrentlyPlaying = audioGameOver;
   messageTimer = 5000; // Set for the "touch screen to restart" message.
   
   PlayCount++;
@@ -998,6 +992,7 @@ function OnEnterWinGame()
 {
   // Start the wingame trudelutt.
   audioEndingWin.play();
+  audioCurrentlyPlaying = audioEndingWin;
   messageTimer = 4000; // Set for the "touch screen to play again" message.
   
   player.Score = WinningScore;
@@ -1239,6 +1234,21 @@ function GameLoopStartScreen()
 {
   if (ElapsedTime >= fpsInterval)
   {
+    if(FetchOnlineStatsDone && 
+        IntroMelodyPlayed == false && 
+        (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
+    {
+      // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
+      // We just wait until it has done it's job before starting the sound.
+      // 
+      // Interesting details to check if a sound is playing, downloaded or downloading etc.
+      // https://stackoverflow.com/questions/9437228/how-to-check-if-an-audio-is-playing
+      // 
+      audioIntroMelody.play();
+      audioCurrentlyPlaying = audioIntroMelody;
+      IntroMelodyPlayed = true;
+    }
+    
     UpdateTimers();
     CheckMessageTimer();
     
@@ -1272,7 +1282,7 @@ function GameLoopStartScreen()
     {
       topctx.font = textTwentyRows + "px CarStormFont2";
 
-      topctx.textAlign = "left";      
+      topctx.textAlign = "left";
       topctx.fillText("last drive score: ", 2 * screenwidthThird, textTwentyRows * 18);
       topctx.fillText("highscore: ", 2 * screenwidthThird, textTwentyRows * 19);
       
@@ -1280,7 +1290,7 @@ function GameLoopStartScreen()
       topctx.fillText(LastDriveScore + "   ", ScreenWidth, textTwentyRows * 18);
       topctx.fillText(HighScore + "   ", ScreenWidth, textTwentyRows * 19);
     }
-  
+
     topctx.textAlign = "left";
     topctx.font = textTwentyRows + "px Arial";
     

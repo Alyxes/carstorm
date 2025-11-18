@@ -7,7 +7,7 @@ require "private/handlers.php";
 $serverVersion = 2;
 
 //TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp. Har dubbelkollat med appen, funkar likaslurt.
-//$serverVersion = 3;
+$serverVersion = 3;
 
 // FetchString() is friendly and returns empty string if there is no value given from the user.
 // intval() is friendly too, and returns 0 on empty string.
