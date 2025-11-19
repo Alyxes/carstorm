@@ -138,7 +138,7 @@ var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 9999;    // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 250;    // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -226,6 +226,20 @@ var Smoke1Image = new Image();
 Smoke1Image.src = "graphics/Smoke1.png";
 var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
+
+const txtCARSTORM = "CARSTORM";
+const txtLastDriveScore = "last drive score: ";
+const txtHighScore = "highscore: ";
+const txtPlayersOnlineNow = "Players online now: ";
+const txtOffline = "Offline";
+const txtVICTORY = "VICTORY";
+const txtTouchScreenToPlayAgain = "touch screen to play again";
+const txtYouAreASuperPlayer = "You are a super player";
+const txtTouchScreenToRestart = "touch screen to restart";
+const txtGAMEOVER = "GAME OVER";
+const txtYourFinalScoreWas = "Your final score was";
+const txtTouchScreenToContinue = "touch screen to continue";
+const txtTouchScreenToDrive = "touch screen to drive";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -940,7 +954,7 @@ function SetState(newState)
 
 function OnEnterStartScreen()
 {
-  messageTimer = 3000; // Used for the message "touch screen to drive".
+  messageTimer = 3000; // Used for the message txtTouchScreenToDrive.
   IntroMelodyPlayed = false;
   FetchOnlineStats();
 }
@@ -1006,7 +1020,7 @@ function OnEnterGameOver()
 {
   audioGameOver.play();
   audioCurrentlyPlaying = audioGameOver;
-  messageTimer = 5000; // Set for the "touch screen to restart" message.
+  messageTimer = 5000; // Set for the txtTouchScreenToRestart message.
   
   PlayCount++;
   
@@ -1018,7 +1032,7 @@ function OnEnterWinGame()
   // Start the wingame trudelutt.
   audioEndingWin.play();
   audioCurrentlyPlaying = audioEndingWin;
-  messageTimer = 4000; // Set for the "touch screen to play again" message.
+  messageTimer = 4000; // Set for the txtTouchScreenToPlayAgain message.
   
   player.Score = WinningScore;
   WinCount++;
@@ -1297,27 +1311,27 @@ function GameLoopStartScreen()
     topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
     topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
     topctx.font = "bold " + (textFourRows) + "px Arial";
-    topctx.fillText("CARSTORM", ScreenWidth/2 - BigLettersColorShift, titleHeight);
+    topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
     topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 + BigLettersColorShift, titleHeight);
+    topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
     
     // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
     topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 - BigLettersColorShift, titleHeight);
+    topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
     topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 + BigLettersColorShift, titleHeight);
+    topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
     
     // Finally, black text.
     topctx.fillStyle = "black";
-    topctx.fillText("CARSTORM", ScreenWidth/2, titleHeight);
+    topctx.fillText(txtCARSTORM, ScreenWidth/2, titleHeight);
     
     if (LastDriveScore > 0)
     {
       topctx.font = textFifteenRows + "px CarStormFont2";
       
       topctx.textAlign = "right";
-      topctx.fillText("last drive score: ", ScreenWidth - screenwidthNinth, textFifteenRows * 13);
-      topctx.fillText("highscore: ", ScreenWidth - screenwidthNinth, textFifteenRows * 14);
+      topctx.fillText(txtLastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+      topctx.fillText(txtHighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
       
       topctx.textAlign = "left";
       topctx.fillText(LastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
@@ -1339,25 +1353,24 @@ function GameLoopStartScreen()
     {
       if(ShowDebugStuff)
       {
-        topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textTwentyRows * 18);
+        topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textFifteenRows * 13);
       }
       
-      topctx.fillText("Players online now: " + PlayersPlayingNow, screenwidthThirteenth / 2, textTwentyRows * 19);
+      topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, screenwidthThirteenth / 2, textFifteenRows * 14);
     }
     else
     {
-      topctx.fillText("Offline", screenwidthThirteenth / 2, textTwentyRows * 19);
+      topctx.fillText(txtOffline, screenwidthThirteenth / 2, textFifteenRows * 14);
     }
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to drive", ScreenWidth/2, textTwentyRows * 13);
+      topctx.fillText(txtTouchScreenToDrive, ScreenWidth/2, textTwentyRows * 13);
     }
   }
 }
-
 function GameLoopIntroPlay()
 {
   if (ElapsedTime >= fpsInterval)
@@ -1493,7 +1506,7 @@ function GameLoopPaused()
     topctx.fillStyle = "black";
     topctx.textAlign = "center";
     topctx.font = textFifteenRows + "px CarStormFont1";
-    topctx.fillText("touch screen to continue", screenwidthHalf, textFifteenRows * 8);
+    topctx.fillText(txtTouchScreenToContinue, screenwidthHalf, textFifteenRows * 8);
   }
 }
 function GameLoopGameOver()
@@ -1519,21 +1532,21 @@ function GameLoopGameOver()
     topctx.textAlign = "center";
     topctx.font = "bold " + textFiveRows + "px Arial";
     topctx.globalAlpha = 0.4;
-    topctx.fillText("GAME OVER", screenwidthHalf - BigLettersColorShift, textFiveRows * 2);
-    topctx.fillText("GAME OVER", screenwidthHalf + BigLettersColorShift, textFiveRows * 2);
+    topctx.fillText(txtGAMEOVER, screenwidthHalf - BigLettersColorShift, textFiveRows * 2);
+    topctx.fillText(txtGAMEOVER, screenwidthHalf + BigLettersColorShift, textFiveRows * 2);
     topctx.globalAlpha = 1;
-    topctx.fillText("GAME OVER", screenwidthHalf, textFiveRows * 2);
+    topctx.fillText(txtGAMEOVER, screenwidthHalf, textFiveRows * 2);
     
     topctx.fillStyle = "black";
     topctx.font = textTwelveRows + "px CarStormFont2";
-    topctx.fillText("Your final score was", screenwidthHalf, textTwentyRows * 10);
+    topctx.fillText(txtYourFinalScoreWas, screenwidthHalf, textTwentyRows * 10);
     topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 9);
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to restart", screenwidthHalf, textFifteenRows * 11);
+      topctx.fillText(txtTouchScreenToRestart, screenwidthHalf, textFifteenRows * 11);
     }
   }
 }
@@ -1560,19 +1573,19 @@ function GameLoopWinGame()
     DrawPlayerCar(true);
     DrawPlayerLives();
     
-    var yPosVictory = textTwelveRows * 5;
+    var yPosVictory = textTwelveRows * 6;
     topctx.fillStyle = "white";
     topctx.strokeStyle = "black";
     topctx.lineWidth = ScreenHeightThreePercent;
     topctx.textAlign = "center";
     topctx.font = "bold " + textFourRows + "px Arial";
-    topctx.strokeText("VICTORY", screenwidthHalf, yPosVictory);
-    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory);
+    topctx.strokeText(txtVICTORY, screenwidthHalf, yPosVictory);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory);
     topctx.globalAlpha = 0.4;
-    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory + VictoryColorShift * 2);
-    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory - VictoryColorShift * 2);
-    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory + VictoryColorShift);
-    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory - VictoryColorShift);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift * 2);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift * 2);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift);
     topctx.globalAlpha = 1;
     
     var finalScore = player.Score;
@@ -1589,8 +1602,8 @@ function GameLoopWinGame()
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
       topctx.font = textTwelveRows + "px CarStormFont2";
-      topctx.strokeText("You are a super player", screenwidthHalf, textTwelveRows * 8);
-      topctx.fillText("You are a super player", screenwidthHalf, textTwelveRows * 8);
+      topctx.strokeText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
+      topctx.fillText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
     }
     
     if (messageTimer == 0)
@@ -1599,11 +1612,12 @@ function GameLoopWinGame()
       topctx.font = textFifteenRows + "px CarStormFont1";
       topctx.strokeStyle = "white";
       topctx.lineWidth = ScreenHeightOnePointOnePercent;
-      topctx.strokeText("touch screen to play again", screenwidthHalf, textFifteenRows * 12);
-      topctx.fillText("touch screen to play again", screenwidthHalf, textFifteenRows * 12);
+      topctx.strokeText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
+      topctx.fillText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
     }
   }
 }
+
 // Every "game tick" check if the gamers car collides with any car in the bottom array. 
 // Then move down the existing cars in the array, and create new ones on the top.
 function GameTickTheCars(isPlaying)
