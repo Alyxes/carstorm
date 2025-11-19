@@ -44,8 +44,12 @@ var Height4K = 2160;
 var textFourRows;
 var textFiveRows;
 var textTenRows;
+var textTwelveRows;
+var textThirteenRows;
 var textFifteenRows;
 var textTwentyRows;
+var textThirtyRows;
+var textNinetyRows;
 
 // Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
 // Convenience: Divide with 2 to get 1/26, 1/14, 1/10, 1/6, 1/4.
@@ -102,6 +106,8 @@ var lightWidth = 0; //Global because we just so happens to use them as the width
 var lightHeight = 0;
 var orangeLightSize = 0;
 var yellowLightSize = 0;
+var BigLettersColorShift = 0;
+var VictoryColorShift = 0;
 
 var player = null;
 
@@ -131,7 +137,7 @@ var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 9999;    // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 30;    // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -454,8 +460,12 @@ function Resize()
   textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
   textTenRows = ScreenHeight / 10;
+  textTwelveRows = ScreenHeight / 12;
+  textThirteenRows = ScreenHeight / 13;
   textFifteenRows = ScreenHeight / 15;
   textTwentyRows = ScreenHeight / 20;
+  textThirtyRows = ScreenHeight / 30;
+  textNinetyRows = ScreenHeight / 90;
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
   // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
@@ -470,6 +480,8 @@ function Resize()
   lightHeight = ScreenHeight/20;
   orangeLightSize = ScreenWidth/370;
   yellowLightSize = ScreenWidth/480;
+  BigLettersColorShift = ScreenHeight/90;
+  VictoryColorShift = ScreenHeight/110;
   
   carWidth = ScreenWidth/42;
   carHeight = carWidth * 0.536;
@@ -976,6 +988,8 @@ function TransitFromGameOverToStartScreen()
 }
 function TransitFromWinGameToStartScreen()
 {
+  audioEndingWin.pause();
+  audioEndingWin.currentTime = 0;
   ResetGameVariables();
   StoreStuff();
 }
@@ -1026,7 +1040,7 @@ function PlayMoveSound(pos)
       // Just stop current sound and rewind to start until next time it gets played.
       // https://stackoverflow.com/questions/14834520/html5-audio-stop-function
       MoveSound.lastPlayed.pause();
-      MoveSound.lastPlayed.currentTime = 0;      
+      MoveSound.lastPlayed.currentTime = 0;
     }
     
     MoveSound.lastPlayed = audioMoveSounds[pos];
@@ -1265,29 +1279,28 @@ function GameLoopStartScreen()
     
     // We want to define width, but keep aspect ratio.
     // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
-    var width = ScreenWidth/2.5;
+    var width = ScreenWidth/2.7;
     topctx.drawImage(
       MadSkullLogoImage, 
       ScreenWidth * 0.015, ScreenHeight * 0.03, 
       width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
-    
-    var TitleColorShift = ScreenHeight/90;
+      
     var titleHeight = textTwentyRows * 11;
     
     // First base draw of the colours, this is needed to get a specific transparency level.
     topctx.fillStyle = "rgba(237,73,51,0.3)"; // red-like
     topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
     topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
-    topctx.font = "bold " + (textTwentyRows * 5) + "px Arial";
-    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.font = "bold " + (textFourRows) + "px Arial";
+    topctx.fillText("CARSTORM", ScreenWidth/2 - BigLettersColorShift, titleHeight);
     topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    topctx.fillText("CARSTORM", ScreenWidth/2 + BigLettersColorShift, titleHeight);
     
     // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
     topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 - TitleColorShift, titleHeight);
+    topctx.fillText("CARSTORM", ScreenWidth/2 - BigLettersColorShift, titleHeight);
     topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
-    topctx.fillText("CARSTORM", ScreenWidth/2 + TitleColorShift, titleHeight);
+    topctx.fillText("CARSTORM", ScreenWidth/2 + BigLettersColorShift, titleHeight);
     
     // Finally, black text.
     topctx.fillStyle = "black";
@@ -1307,7 +1320,7 @@ function GameLoopStartScreen()
     }
 
     topctx.textAlign = "left";
-    topctx.font = textTwentyRows + "px Arial";
+    topctx.font = textTwentyRows + "px CarStormFont2";
     
     if(ShowDebugStuff)
     {
@@ -1496,21 +1509,26 @@ function GameLoopGameOver()
     DrawAllCars(false);
     DrawPlayerCar(true);
 
-    topctx.fillStyle = "darkorange";
+    // topctx.fillStyle = "darkorange";
+    topctx.fillStyle = "rgba(255,93,40,1)";
     topctx.textAlign = "center";
     topctx.font = "bold " + textFiveRows + "px Arial";
+    topctx.globalAlpha = 0.4;
+    topctx.fillText("GAME OVER", screenwidthHalf - BigLettersColorShift, textFiveRows * 2);
+    topctx.fillText("GAME OVER", screenwidthHalf + BigLettersColorShift, textFiveRows * 2);
+    topctx.globalAlpha = 1;
     topctx.fillText("GAME OVER", screenwidthHalf, textFiveRows * 2);
     
     topctx.fillStyle = "black";
-    topctx.font = textFifteenRows + "px CarStormFont2";
-    topctx.fillText("Your final score was", screenwidthHalf, textFifteenRows * 7);
-    topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 8);
+    topctx.font = textTwelveRows + "px CarStormFont2";
+    topctx.fillText("Your final score was", screenwidthHalf, textTwentyRows * 10);
+    topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 9);
     
     if (messageTimer == 0)
     {
       topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to restart", screenwidthHalf, textFifteenRows * 10);
+      topctx.fillText("touch screen to restart", screenwidthHalf, textFifteenRows * 11);
     }
   }
 }
@@ -1536,36 +1554,42 @@ function GameLoopWinGame()
     
     DrawPlayerCar(true);
     DrawPlayerLives();
-
+    
     topctx.fillStyle = "white";
     topctx.strokeStyle = "black";
+    topctx.lineWidth = textThirtyRows;
     topctx.textAlign = "center";
-    topctx.font = "bold " + textFiveRows + "px Arial";
-    topctx.strokeText("VICTORY", screenwidthHalf, textFiveRows * 2);
-    topctx.fillText("VICTORY", screenwidthHalf, textFiveRows * 2);
+    topctx.font = "bold " + textFourRows + "px Arial";
+    topctx.strokeText("VICTORY", screenwidthHalf, textFifteenRows * 7);
+    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7);
+    topctx.globalAlpha = 0.4;
+    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 + VictoryColorShift * 2);
+    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 - VictoryColorShift * 2);
+    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 + VictoryColorShift);
+    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 - VictoryColorShift);
+    topctx.globalAlpha = 1;
     
-    var finalScore = "Final score: " + player.Score;
+    var finalScore = player.Score;
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
-    topctx.textAlign = "center";
+    topctx.lineWidth = textNinetyRows;
     topctx.font = textTenRows + "px CarStormFont2";
-    topctx.strokeText(finalScore, screenwidthHalf, textTenRows * 5);
-    topctx.fillText(finalScore, screenwidthHalf, textTenRows * 5);    
+    topctx.strokeText(finalScore, screenwidthHalf, textTwentyRows * 11);
+    topctx.fillText(finalScore, screenwidthHalf, textTwentyRows * 11);
     
-    if (messageTimer < 2500)
+    if (messageTimer < 2000)
     {
       // Show up a few seconds after winning.
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
-      topctx.font = textTenRows + "px CarStormFont2";
-      topctx.strokeText("You are a super player", screenwidthHalf, textTenRows * 6);
-      topctx.fillText("You are a super player", screenwidthHalf, textTenRows * 6);
+      topctx.font = textTwelveRows + "px CarStormFont2";
+      topctx.strokeText("You are a super player", screenwidthHalf, textThirteenRows * 8);
+      topctx.fillText("You are a super player", screenwidthHalf, textThirteenRows * 8);
     }
     
     if (messageTimer == 0)
     {
       topctx.fillStyle = "black";
-      topctx.textAlign = "center";
       topctx.font = textFifteenRows + "px CarStormFont1";
       topctx.fillText("touch screen to play again", screenwidthHalf, textFifteenRows * 11);
     }
@@ -1933,8 +1957,8 @@ function DrawPlayerScore()
 {
   topctx.fillStyle = "black";
   topctx.textAlign = "left";
-  topctx.font = textFifteenRows + "px CarStormFont2";
-  topctx.fillText(player.Score, ScreenWidth - screenwidthFifth, textFifteenRows * 2);
+  topctx.font = textTenRows + "px CarStormFont2";
+  topctx.fillText(player.Score, ScreenWidth - screenwidthSeventh, textTwentyRows * 3);
 }
 function DrawSpeedIncreaseMessage()
 {
