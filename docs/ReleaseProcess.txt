@@ -10,6 +10,24 @@ Här hittar du Babbler. :-)
 Monitor & Improve är dit du ska gå när appen är releasad:
   https://play.google.com/console/u/0/developers/7421392476990213978/app/4975505023785672873/user-feedback/ratings
 
+
+"Get it on Google Play" -länkbild hittade jag här:
+  https://developer.android.com/distribute/marketing-tools/linking-to-google-play
+  
+Apropå youtube! Man får inte lägga till en "slutskärm" på sin video förrän man är nån slags "supermedlem" på youtube, med ett visst antal visningar etc.
+  <-Däremot fick jag länka till appen i videons beskrivning mot att jag validerade mitt telefonnummer. :-)
+  
+-----------------
+
+Gjort inlägg med länk till spelet på 
+  facebook, både som jag och på Madskull Creations sida.
+  linkedin, min profil. 
+  sajten så klart (madskullcreations.com)
+  youtube-videon har en länk till spelet
+  
+  ..fler självklara kanaler? 
+
+
 -----------------
 
 Funkar så där: (Detta är DEN ENDA som fungerar efter en hel kväll av meckande)
