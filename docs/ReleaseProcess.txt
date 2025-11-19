@@ -84,6 +84,18 @@ Dashboard
     For apps that target children: You must link to a privacy policy on your app's store listing page and within your app, regardless of your app's access to sensitive permissions or data. Make sure that your privacy policy is available on an active URL, applies to your app and specifically covers user privacy. Note that even apps that do not access any personal or sensitive user data must still submit a privacy policy.
       <-TODO: Red ut vad du vill spela in och koda det i php-filen! Se till att det funkar först, sedan kan du beskriva vad du spar.
     
+Videon:
+  https://support.google.com/googleplay/android-developer/answer/9866151?hl=en#zippy=%2Cfeature-graphic%2Cpreview-video
+  
+  Turn off ads! Nu har youtube gjort det automatiskt eftersom vi säger att videon är till för barn, men annars ska det vara AVSTÄNGT för videor som ska visas på app store.
+  https://support.google.com/youtube/answer/6332943?
+  
+  Man får ha flera videos om man vill ha "monetization" på för en video, men den till app store ska vara AVSTÄNGD.
+  https://support.google.com/youtube/answer/6332943?sjid=11926854311207188089-EU
+  
+  Aldrig längre än 30 sekunder så klart.
+  Tumnagelbild av bra upplösning för videon, den används på flera ställen i app store.
+  
 --------------
 Saker som vi faktiskt spelar in:
   https://support.google.com/googleplay/android-developer/answer/10787469?hl=en-GB#types&zippy=%2Cdata-types

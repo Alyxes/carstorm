@@ -48,8 +48,9 @@ var textTwelveRows;
 var textThirteenRows;
 var textFifteenRows;
 var textTwentyRows;
-var textThirtyRows;
-var textNinetyRows;
+
+var ScreenHeightThreePercent;
+var ScreenHeightOnePointOnePercent;
 
 // Variable to store a fifth of the screens width, regardless of resolution. Note the choice of prime numbers. :)
 // Convenience: Divide with 2 to get 1/26, 1/14, 1/10, 1/6, 1/4.
@@ -137,7 +138,7 @@ var LastDriveScore = 0;     // Last game's final score.
 var HighScore = 0;          // Gamers highest score of all times.
 var WinCount = 0;           // How many times the gamer has won the game.
 var PlayCount = 0;          // How many times the gamer has started a new round.
-var WinningScore = 199;    // Game ends when you reach this score. Should be 9999 :)
+var WinningScore = 9999;    // Game ends when you reach this score. Should be 9999 :)
 
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
@@ -464,8 +465,10 @@ function Resize()
   textThirteenRows = ScreenHeight / 13;
   textFifteenRows = ScreenHeight / 15;
   textTwentyRows = ScreenHeight / 20;
-  textThirtyRows = ScreenHeight / 30;
-  textNinetyRows = ScreenHeight / 90;
+  
+  ScreenHeightThreePercent = ScreenHeight / 30;
+  ScreenHeightOnePointOnePercent = ScreenHeight / 90;
+  
   Log("ScreenHeight (WINDOW HEIGHT): " + ScreenHeight + ", so one text-line is " + textFiveRows + " pixels. ScreenScale is " + ScreenScale);
   
   // Convenience: Divide with 2 to get 1/14, 1/10, 1/6, 1/4.
@@ -813,7 +816,9 @@ function EnterSomeKindOfPause()
   
   if(audioCurrentlyPlaying != null)
   {
+    // Stop any playing sounds.
     audioCurrentlyPlaying.pause();
+    audioCurrentlyPlaying.currentTime = 0;
   }
   
   // If we are playing it might be nice to return to a paused screen. :-)
@@ -1555,27 +1560,28 @@ function GameLoopWinGame()
     DrawPlayerCar(true);
     DrawPlayerLives();
     
+    var yPosVictory = textTwelveRows * 5;
     topctx.fillStyle = "white";
     topctx.strokeStyle = "black";
-    topctx.lineWidth = textThirtyRows;
+    topctx.lineWidth = ScreenHeightThreePercent;
     topctx.textAlign = "center";
     topctx.font = "bold " + textFourRows + "px Arial";
-    topctx.strokeText("VICTORY", screenwidthHalf, textFifteenRows * 7);
-    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7);
+    topctx.strokeText("VICTORY", screenwidthHalf, yPosVictory);
+    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory);
     topctx.globalAlpha = 0.4;
-    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 + VictoryColorShift * 2);
-    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 - VictoryColorShift * 2);
-    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 + VictoryColorShift);
-    topctx.fillText("VICTORY", screenwidthHalf, textFifteenRows * 7 - VictoryColorShift);
+    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory + VictoryColorShift * 2);
+    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory - VictoryColorShift * 2);
+    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory + VictoryColorShift);
+    topctx.fillText("VICTORY", screenwidthHalf, yPosVictory - VictoryColorShift);
     topctx.globalAlpha = 1;
     
     var finalScore = player.Score;
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
-    topctx.lineWidth = textNinetyRows;
+    topctx.lineWidth = ScreenHeightOnePointOnePercent;
     topctx.font = textTenRows + "px CarStormFont2";
-    topctx.strokeText(finalScore, screenwidthHalf, textTwentyRows * 11);
-    topctx.fillText(finalScore, screenwidthHalf, textTwentyRows * 11);
+    topctx.strokeText(finalScore, screenwidthHalf, textTenRows * 6);
+    topctx.fillText(finalScore, screenwidthHalf, textTenRows * 6);
     
     if (messageTimer < 2000)
     {
@@ -1583,15 +1589,18 @@ function GameLoopWinGame()
       topctx.fillStyle = "yellow";
       topctx.strokeStyle = "black";
       topctx.font = textTwelveRows + "px CarStormFont2";
-      topctx.strokeText("You are a super player", screenwidthHalf, textThirteenRows * 8);
-      topctx.fillText("You are a super player", screenwidthHalf, textThirteenRows * 8);
+      topctx.strokeText("You are a super player", screenwidthHalf, textTwelveRows * 8);
+      topctx.fillText("You are a super player", screenwidthHalf, textTwelveRows * 8);
     }
     
     if (messageTimer == 0)
     {
       topctx.fillStyle = "black";
       topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText("touch screen to play again", screenwidthHalf, textFifteenRows * 11);
+      topctx.strokeStyle = "white";
+      topctx.lineWidth = ScreenHeightOnePointOnePercent;
+      topctx.strokeText("touch screen to play again", screenwidthHalf, textFifteenRows * 12);
+      topctx.fillText("touch screen to play again", screenwidthHalf, textFifteenRows * 12);
     }
   }
 }
