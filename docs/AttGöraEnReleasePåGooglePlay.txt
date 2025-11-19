@@ -7,7 +7,7 @@
     c. chrome.exe - Shortcut
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
-  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 6
+  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 7
   b. Följ stegen 7 och 8 i den filen jävligt noga.
 4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.

@@ -1,3 +1,18 @@
+-----FIRST RELEASE------
+  -Sent for review 18/11 2025!
+
+Release name:
+  7 (First public release 7)
+
+Release notes:
+<en-GB>
+This is a classical arcade game, or maybe more of a game-n-watch. Drive and avoid the meeting traffic! 
+
+Beat your highscore while waiting for the bus or explain to your kids they have to get 5000 points before they get any candy. This is a nice to have game.
+</en-GB>
+
+--------------
+
 Follow the traffic! Or.. sorry, don't. At least, please don't crash the car.
 
 This is a classic arcade game where you control your car, avoid the meeting traffic! Beat your highscore while waiting for the bus or explain to your kids they have to get 5000 points before they get any candy. This is a nice to have game.
@@ -7,8 +22,24 @@ Keywords:
   arcade, 
   early access, <-Bara för att det är open testing tror jag..?
 
-TODO: 
+NOPE: 
   game-n-watch
+    <-Finns inte bland googles Tags!
+ 
+För övrigt: 
+  Grow users->Store presence->Store settings
+    <-Här ändrar du bilderna!
+  https://support.google.com/googleplay/android-developer/answer/9866151?hl=en
+  
+    ->YouTube videos
+      <-Här har jag lagt upp madskull creations youtube kanal.
+    
+    ->Store listings->Default store listing
+      <-HÄR! Scrolla ner och byt ut bilderna här!
+      1. Ta en "standard" skärmratio för mobiler, sätt skärmen till det på pc
+          whatismyresolution.net e bra, visar 
+      2. Skärmdumpa loss. De ska vara 1024x500px.
+      3. Ladda upp de nya.
   
 ----------
 
