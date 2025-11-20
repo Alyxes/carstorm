@@ -498,7 +498,7 @@ function Resize()
   orangeLightSize = ScreenWidth/370;
   yellowLightSize = ScreenWidth/480;
   BigLettersColorShift = ScreenHeight/90;
-  VictoryColorShift = ScreenHeight/110;
+  VictoryColorShift = ScreenHeight/100;
   
   carWidth = ScreenWidth/42;
   carHeight = carWidth * 0.536;
@@ -791,10 +791,10 @@ function ResizePlayer()
   // Eventually a resize event happens before a player object has been created, so check for it.
   if(player)
   {
-    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-    player.Yposition = (ScreenHeight/5) * 4;
     player.Xsize = screenwidthFifth;
     player.Ysize = player.Xsize * 0.548;
+    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    player.Yposition = ScreenHeight - player.Ysize * 1.05;
   }
 }
 function ResetGameVariables()
@@ -1409,6 +1409,20 @@ function GameLoopCrashed()
       player.RestartBlinkTimer += ElapsedTime;
     }
     
+    DrawSnowstorm();
+    DrawStreetLayer();
+    
+    // The cars and text are drawn here so they don't get smeared.
+    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+    DrawStreetLights();
+    DrawAllCars(false);
+    DrawPlayerCar(true);    
+    DrawPlayerLives();
+    DrawPlayerScore();
+    
+    DrawSpeedIncreaseMessage();
+    
+    // Placed this timer function below all draw functions to avoid having the explosion changing frame just before the blinking, which was a bit ugly. This fixes it.
     CheckExplosionAnimTimer();
     
     if (explosionAnimFrameCounter >= 3)
@@ -1429,19 +1443,6 @@ function GameLoopCrashed()
         player.Xposition = screenwidthFifth * (player.RoadPos + 1);
       }
     }
-    
-    DrawSnowstorm();
-    DrawStreetLayer();
-    
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawStreetLights();
-    DrawAllCars(false);
-    DrawPlayerCar(true);    
-    DrawPlayerLives();
-    DrawPlayerScore();
-    
-    DrawSpeedIncreaseMessage();
     
     if (Now > TimeToGoBackToPlay)
     {      
@@ -1582,8 +1583,10 @@ function GameLoopWinGame()
     topctx.strokeText(txtVICTORY, screenwidthHalf, yPosVictory);
     topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory);
     topctx.globalAlpha = 0.4;
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift * 2);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift * 2);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift * 1.7);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift * 1.7);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift / 2.2);
+    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift / 2.2);
     topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift);
     topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift);
     topctx.globalAlpha = 1;
@@ -1917,7 +1920,7 @@ function DrawPlayerCar(isNotPaused)
     topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
     if (isNotPaused)
     {
-      streetctx.globalAlpha = 0.24;
+      streetctx.globalAlpha = 0.17;
       streetctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
       streetctx.globalAlpha = 1;
     }
