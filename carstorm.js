@@ -85,6 +85,7 @@ var fpsInterval = 1000 / fps; // milliseconds.
 // Let the name and string be the same to avoid confusion. 
 var gsNothing = "Nothing";
 var gsStartScreen = "StartScreen";
+var gsSettings = "Settings";
 var gsIntroPlay = "IntroPlay";
 var gsPlaying = "Playing";
 var gsCrashed = "Crashed";
@@ -93,7 +94,7 @@ var gsGameOver = "GameOver";
 var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [ gsNothing, gsStartScreen, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
+var gameStates = [ gsNothing, gsStartScreen, gsSettings, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -378,7 +379,7 @@ function SetupCallbacks()
     document.addEventListener("keydown", (e) => {
       e = e || window.event;
       
-      // TODO: Remove if it keeps getting ugly, mouse/touch is enough.
+      // NOTE: Remove if it keeps getting ugly, mouse/touch is enough.
       if(gameState == gsPlaying)
       {
         if (e.keyCode === 37)
@@ -405,8 +406,17 @@ function TouchClickEvent(xPos, yPos)
   switch(gameState)
   {
     case gsStartScreen:
-      // Clicking the start screen starts a new game.
-        SetState(gsIntroPlay);
+        // Clicking the start screen starts a new game.
+        //SetState(gsIntroPlay);
+        
+        SetState(gsSettings);
+      break;
+    case gsSettings:
+      // TODO: Click the buttons. 
+      // Buttons: Back. Sound switch. Input mode toggle.
+      
+      // Clicking the screen goes back to start screen right now.
+      SetState(gsStartScreen);
       break;
     case gsPlaying:
       if(xPos < screenwidthHalf)
@@ -876,7 +886,19 @@ function SetState(newState)
         TransitFromStartScreenToIntroPlay();
         transitionCool = true;
       }
+      else if(newState == gsSettings)
+      {
+        OnEnterSettings();
+        transitionCool = true;
+      }
       break;
+    case gsSettings:
+      if(newState == gsStartScreen)
+      {
+        OnEnterStartScreen();
+        transitionCool = true;
+      }
+      break;    
     case gsIntroPlay:
       if(newState == gsPlaying)
       {
@@ -946,9 +968,11 @@ function SetState(newState)
     throw "Transition from " + gameState + " to " + newState + " is not valid!";
   }
   
-  Log("Transition from " + gameState + " to " + newState + "!");
+  Log("Transition from " + gameState + " to " + newState + "!");  
   
   // The transition is ok, do it.
+
+  // Set the new game state.
   gameState = newState;
 }
 
@@ -957,6 +981,10 @@ function OnEnterStartScreen()
   messageTimer = 3000; // Used for the message txtTouchScreenToDrive.
   IntroMelodyPlayed = false;
   FetchOnlineStats();
+}
+function OnEnterSettings()
+{
+  // TODO: Define buttons.
 }
 function TransitFromStartScreenToIntroPlay()
 {
@@ -1140,40 +1168,46 @@ function GameLoop()
   // TODO: Should be here, but Date.now() returns integer ms, and the diff (ElapsedTime) can be zero sometimes.
   // LastDraw = Now;
 
-  switch(gameState)
+  if (ElapsedTime >= fpsInterval)
   {
-    case gsNothing:
-      // This should never happen.
-      break;
-    case gsStartScreen:
-      // Draw the start screen! Look for a touch/click meaning user want to start a new game!
-      GameLoopStartScreen();
-      break;
-    case gsIntroPlay:
-      GameLoopIntroPlay();
-      break;
-    case gsPlaying:
-      // Draw game as usual.
-      GameLoopPlaying();
-      break;
-    case gsCrashed:
-      GameLoopCrashed();
-      break;
-    case gsPaused:
-      // Draw game as usual, except time has "stopped".
-      GameLoopPaused();
-      // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
-      break;
-    case gsGameOver:
-      // Draw game as usual, except enemy cars stop coming and player car is smoking and can't be moved.
-      GameLoopGameOver();
-      break;
-    case gsWinGame:
-      // Draw game as usual, enemy cars stop coming, player can't control, happy win message printed.
-      GameLoopWinGame();
-      break;
+    switch(gameState)
+    {
+      case gsNothing:
+        // This should never happen.
+        break;
+      case gsStartScreen:
+        // Draw the start screen! Look for a touch/click meaning user want to start a new game!
+        GameLoopStartScreen();
+        break;
+      case gsSettings:
+        GameLoopSettings();
+        break;
+      case gsIntroPlay:
+        GameLoopIntroPlay();
+        break;
+      case gsPlaying:
+        // Draw game as usual.
+        GameLoopPlaying();
+        break;
+      case gsCrashed:
+        GameLoopCrashed();
+        break;
+      case gsPaused:
+        // Draw game as usual, except time has "stopped".
+        GameLoopPaused();
+        // Draw a pause button, maybe in a canvas showing the paused "Playing" canvas in the background?
+        break;
+      case gsGameOver:
+        // Draw game as usual, except enemy cars stop coming and player car is smoking and can't be moved.
+        GameLoopGameOver();
+        break;
+      case gsWinGame:
+        // Draw game as usual, enemy cars stop coming, player can't control, happy win message printed.
+        GameLoopWinGame();
+        break;
+    }
   }
-    
+  
   // Always keep asking for the next animation frame.
   window.requestAnimationFrame(GameLoop);
 }
@@ -1271,353 +1305,352 @@ function CheckExplosionAnimTimer()
 
 function GameLoopStartScreen()
 {
-  if (ElapsedTime >= fpsInterval)
+  if(FetchOnlineStatsDone && 
+      IntroMelodyPlayed == false && 
+      (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
   {
-    if(FetchOnlineStatsDone && 
-        IntroMelodyPlayed == false && 
-        (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
-    {
-      // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
-      // We just wait until it has done it's job before starting the sound.
-      // 
-      // Interesting details to check if a sound is playing, downloaded or downloading etc.
-      // https://stackoverflow.com/questions/9437228/how-to-check-if-an-audio-is-playing
-      // 
-      audioIntroMelody.play();
-      audioCurrentlyPlaying = audioIntroMelody;
-      IntroMelodyPlayed = true;
-    }
-    
-    UpdateTimers();
-    CheckMessageTimer();
-    
-    DrawSnowstorm();
+    // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
+    // We just wait until it has done it's job before starting the sound.
+    // 
+    // Interesting details to check if a sound is playing, downloaded or downloading etc.
+    // https://stackoverflow.com/questions/9437228/how-to-check-if-an-audio-is-playing
+    // 
+    audioIntroMelody.play();
+    audioCurrentlyPlaying = audioIntroMelody;
+    IntroMelodyPlayed = true;
+  }
+  
+  UpdateTimers();
+  CheckMessageTimer();
+  
+  DrawSnowstorm();
 
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  // The cars and text are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+  // We want to define width, but keep aspect ratio.
+  // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
+  var width = ScreenWidth/2.7;
+  topctx.drawImage(
+    MadSkullLogoImage, 
+    ScreenWidth * 0.015, ScreenHeight * 0.03, 
+    width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
     
-    // We want to define width, but keep aspect ratio.
-    // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
-    var width = ScreenWidth/2.7;
-    topctx.drawImage(
-      MadSkullLogoImage, 
-      ScreenWidth * 0.015, ScreenHeight * 0.03, 
-      width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
-      
-    var titleHeight = textTwentyRows * 11;
+  var titleHeight = textTwentyRows * 11;
+  
+  // First base draw of the colours, this is needed to get a specific transparency level.
+  topctx.fillStyle = "rgba(237,73,51,0.3)"; // red-like
+  topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
+  topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
+  topctx.font = "bold " + (textFourRows) + "px Arial";
+  topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
+  topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
+  topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
+  
+  // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
+  topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
+  topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
+  topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
+  topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
+  
+  // Finally, black text.
+  topctx.fillStyle = "black";
+  topctx.fillText(txtCARSTORM, ScreenWidth/2, titleHeight);
+  
+  if (LastDriveScore > 0)
+  {
+    topctx.font = textFifteenRows + "px CarStormFont2";
     
-    // First base draw of the colours, this is needed to get a specific transparency level.
-    topctx.fillStyle = "rgba(237,73,51,0.3)"; // red-like
-    topctx.textAlign = "center"; // Horizontal alignment only as far as I know.
-    topctx.textBaseline = "bottom"; // We want the "line" start at the bottom of the text, not the middle.
-    topctx.font = "bold " + (textFourRows) + "px Arial";
-    topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
-    topctx.fillStyle = "rgba(0,154,255,0.3)"; // blue-like
-    topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
+    topctx.textAlign = "right";
+    topctx.fillText(txtLastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+    topctx.fillText(txtHighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
     
-    // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
-    topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
-    topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
-    topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
-    topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
-    
-    // Finally, black text.
-    topctx.fillStyle = "black";
-    topctx.fillText(txtCARSTORM, ScreenWidth/2, titleHeight);
-    
-    if (LastDriveScore > 0)
-    {
-      topctx.font = textFifteenRows + "px CarStormFont2";
-      
-      topctx.textAlign = "right";
-      topctx.fillText(txtLastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
-      topctx.fillText(txtHighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
-      
-      topctx.textAlign = "left";
-      topctx.fillText(LastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
-      topctx.fillText(HighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
-    }
-
     topctx.textAlign = "left";
-    topctx.font = textTwentyRows + "px CarStormFont2";
+    topctx.fillText(LastDriveScore, ScreenWidth - screenwidthNinth, textFifteenRows * 13);
+    topctx.fillText(HighScore, ScreenWidth - screenwidthNinth, textFifteenRows * 14);
+  }
+
+  topctx.textAlign = "left";
+  topctx.font = textTwentyRows + "px CarStormFont2";
+  
+  if(ShowDebugStuff)
+  {
+    // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
+    // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
+    topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
+    topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
+  }
     
+  if (messageTimer == 0)
+  {
+    topctx.textAlign = "center";
+    topctx.font = textFifteenRows + "px CarStormFont1";
+    topctx.fillText(txtTouchScreenToDrive, ScreenWidth/2, textTwentyRows * 13);
+  }
+}
+function GameLoopSettings()
+{
+  UpdateTimers();
+  CheckMessageTimer();
+  
+  DrawSnowstorm();
+  
+  // The text and buttons are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+  var width = ScreenWidth/2.7;
+  topctx.drawImage(
+    MadSkullLogoImage, 
+    ScreenWidth * 0.015, ScreenHeight * 0.03, 
+    width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
+  
+  // TODO: Buttons.
+  
+  topctx.textAlign = "left";
+  topctx.font = textTwentyRows + "px CarStormFont2";
+  
+  if(GotResponseFromServer)
+  {
     if(ShowDebugStuff)
     {
-      // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
-      // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
-      topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
-      topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
+      topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textFifteenRows * 13);
     }
     
-    if(GotResponseFromServer)
-    {
-      if(ShowDebugStuff)
-      {
-        topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textFifteenRows * 13);
-      }
-      
-      topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, screenwidthThirteenth / 2, textFifteenRows * 14);
-    }
-    else
-    {
-      topctx.fillText(txtOffline, screenwidthThirteenth / 2, textFifteenRows * 14);
-    }
-    
-    if (messageTimer == 0)
-    {
-      topctx.textAlign = "center";
-      topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText(txtTouchScreenToDrive, ScreenWidth/2, textTwentyRows * 13);
-    }
+    topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, screenwidthThirteenth / 2, textFifteenRows * 14);
+  }
+  else
+  {
+    topctx.fillText(txtOffline, screenwidthThirteenth / 2, textFifteenRows * 14);
   }
 }
 function GameLoopIntroPlay()
 {
-  if (ElapsedTime >= fpsInterval)
+  UpdateTimers();
+  player.RestartBlinkTimer += ElapsedTime;
+      
+  DrawSnowstorm();
+  DrawStreetLayer();
+  
+  // The cars and text are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawStreetLights();
+  DrawAllCars(false);
+  DrawPlayerCar(true);    
+  DrawPlayerLives();
+  DrawPlayerScore();
+  
+  if(Now > TimeToGoBackToPlay)
   {
-    UpdateTimers();
-    player.RestartBlinkTimer += ElapsedTime;
-        
-    DrawSnowstorm();
-    DrawStreetLayer();
-    
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawStreetLights();
-    DrawAllCars(false);
-    DrawPlayerCar(true);    
-    DrawPlayerLives();
-    DrawPlayerScore();
-    
-    if(Now > TimeToGoBackToPlay)
-    {
-      SetState(gsPlaying);
-    }
+    SetState(gsPlaying);
   }
 }
-
 function GameLoopCrashed()
 {
-  if (ElapsedTime >= fpsInterval)
+  UpdateTimers();
+  CheckMessageTimer();
+  CheckLivesBlinkTimer();
+  
+  if (player.CrashState == "Restarting")
   {
-    UpdateTimers();
-    CheckMessageTimer();
-    CheckLivesBlinkTimer();
+    player.RestartBlinkTimer += ElapsedTime;
+  }
+  
+  DrawSnowstorm();
+  DrawStreetLayer();
+  
+  // The cars and text are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawStreetLights();
+  DrawAllCars(false);
+  DrawPlayerCar(true);    
+  DrawPlayerLives();
+  DrawPlayerScore();
+  
+  DrawSpeedIncreaseMessage();
+  
+  // Placed this timer function below all draw functions to avoid having the explosion changing frame just before the blinking, which was a bit ugly. This fixes it.
+  CheckExplosionAnimTimer();
+  
+  if (explosionAnimFrameCounter >= 3)
+  {
+    explosionAnimFrameCounter = 0;
     
-    if (player.CrashState == "Restarting")
+    player.Lives--;
+    player.LivesBlinkTimer = 0;
+    
+    if (player.Lives <= 0)
     {
-      player.RestartBlinkTimer += ElapsedTime;
+      TimeToGoBackToPlay = 0;
     }
-    
-    DrawSnowstorm();
-    DrawStreetLayer();
-    
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawStreetLights();
-    DrawAllCars(false);
-    DrawPlayerCar(true);    
-    DrawPlayerLives();
-    DrawPlayerScore();
-    
-    DrawSpeedIncreaseMessage();
-    
-    // Placed this timer function below all draw functions to avoid having the explosion changing frame just before the blinking, which was a bit ugly. This fixes it.
-    CheckExplosionAnimTimer();
-    
-    if (explosionAnimFrameCounter >= 3)
+    else
     {
-      explosionAnimFrameCounter = 0;
-      
-      player.Lives--;
-      player.LivesBlinkTimer = 0;
-      
-      if (player.Lives <= 0)
-      {
-        TimeToGoBackToPlay = 0;
-      }
-      else
-      {
-        player.CrashState = "Restarting";
-        player.RoadPos = 2;
-        player.Xposition = screenwidthFifth * (player.RoadPos + 1);
-      }
+      player.CrashState = "Restarting";
+      player.RoadPos = 2;
+      player.Xposition = screenwidthFifth * (player.RoadPos + 1);
     }
-    
-    if (Now > TimeToGoBackToPlay)
-    {      
-      if (player.Lives <= 0)
-      {
-        // Game over! 
-        SetState(gsGameOver);
+  }
+  
+  if (Now > TimeToGoBackToPlay)
+  {      
+    if (player.Lives <= 0)
+    {
+      // Game over! 
+      SetState(gsGameOver);
 
-        finalScore = player.Score;
-        player.Score = 0;
-        player.CrashState = "GameOver";
-      }
-      else
-      {
-        player.CrashState = "None";
-        player.HasCollided = false;
-        explosionAnimTimer = 0;
-        
-        SetState(gsPlaying);
-      }
+      finalScore = player.Score;
+      player.Score = 0;
+      player.CrashState = "GameOver";
+    }
+    else
+    {
+      player.CrashState = "None";
+      player.HasCollided = false;
+      explosionAnimTimer = 0;
+      
+      SetState(gsPlaying);
     }
   }
 }
 function GameLoopPlaying()
 {
-  if (ElapsedTime >= fpsInterval)
+  UpdateTimers();
+  CheckMessageTimer();
+  CheckElapsedCarsTime(true);
+  CheckLivesBlinkTimer();
+  
+  DrawSnowstorm();
+  DrawStreetLayer();
+
+  // The cars and text are drawn at streetctx or topctx so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawStreetLights();
+  DrawAllCars(false);
+  DrawPlayerCar(true);
+  DrawPlayerLives();
+  DrawPlayerScore();
+  
+  DrawSpeedIncreaseMessage();
+
+  if (player.Score >= WinningScore)
   {
-    UpdateTimers();
-    CheckMessageTimer();
-    CheckElapsedCarsTime(true);
-    CheckLivesBlinkTimer();
-    
-    DrawSnowstorm();
-    DrawStreetLayer();
-
-    // The cars and text are drawn at streetctx or topctx so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawStreetLights();
-    DrawAllCars(false);
-    DrawPlayerCar(true);
-    DrawPlayerLives();
-    DrawPlayerScore();
-    
-    DrawSpeedIncreaseMessage();
-
-    if (player.Score >= WinningScore)
-    {
-      SetState(gsWinGame);
-    }
-  }  
+    SetState(gsWinGame);
+  }
 }
 function GameLoopPaused()
 {
-  if (ElapsedTime >= fpsInterval)
-  {
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawAllCars(false);
-    DrawPlayerCar(false);
-    DrawPlayerLives();
-    DrawPlayerScore();
-        
-    topctx.fillStyle = "black";
-    topctx.textAlign = "center";
-    topctx.font = textFifteenRows + "px CarStormFont1";
-    topctx.fillText(txtTouchScreenToContinue, screenwidthHalf, textFifteenRows * 8);
-  }
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawAllCars(false);
+  DrawPlayerCar(false);
+  DrawPlayerLives();
+  DrawPlayerScore();
+      
+  topctx.fillStyle = "black";
+  topctx.textAlign = "center";
+  topctx.font = textFifteenRows + "px CarStormFont1";
+  topctx.fillText(txtTouchScreenToContinue, screenwidthHalf, textFifteenRows * 8);
 }
 function GameLoopGameOver()
 {
-  if (ElapsedTime >= fpsInterval)
+  UpdateTimers();
+  CheckMessageTimer();
+  CheckLivesBlinkTimer();
+  CheckExplosionAnimTimer();
+
+  DrawSnowstorm();
+  DrawStreetLayer();
+  
+  // The cars and text are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawStreetLights();
+  DrawAllCars(false);
+  DrawPlayerCar(true);
+
+  // topctx.fillStyle = "darkorange";
+  topctx.fillStyle = "rgba(255,93,40,1)";
+  topctx.textAlign = "center";
+  topctx.font = "bold " + textFiveRows + "px Arial";
+  topctx.globalAlpha = 0.4;
+  topctx.fillText(txtGAMEOVER, screenwidthHalf - BigLettersColorShift, textFiveRows * 2);
+  topctx.fillText(txtGAMEOVER, screenwidthHalf + BigLettersColorShift, textFiveRows * 2);
+  topctx.globalAlpha = 1;
+  topctx.fillText(txtGAMEOVER, screenwidthHalf, textFiveRows * 2);
+  
+  topctx.fillStyle = "black";
+  topctx.font = textTwelveRows + "px CarStormFont2";
+  topctx.fillText(txtYourFinalScoreWas, screenwidthHalf, textTwentyRows * 10);
+  topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 9);
+  
+  if (messageTimer == 0)
   {
-    UpdateTimers();
-    CheckMessageTimer();
-    CheckLivesBlinkTimer();
-    CheckExplosionAnimTimer();
-
-    DrawSnowstorm();
-    DrawStreetLayer();
-    
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-    DrawStreetLights();
-    DrawAllCars(false);
-    DrawPlayerCar(true);
-
-    // topctx.fillStyle = "darkorange";
-    topctx.fillStyle = "rgba(255,93,40,1)";
     topctx.textAlign = "center";
-    topctx.font = "bold " + textFiveRows + "px Arial";
-    topctx.globalAlpha = 0.4;
-    topctx.fillText(txtGAMEOVER, screenwidthHalf - BigLettersColorShift, textFiveRows * 2);
-    topctx.fillText(txtGAMEOVER, screenwidthHalf + BigLettersColorShift, textFiveRows * 2);
-    topctx.globalAlpha = 1;
-    topctx.fillText(txtGAMEOVER, screenwidthHalf, textFiveRows * 2);
-    
-    topctx.fillStyle = "black";
-    topctx.font = textTwelveRows + "px CarStormFont2";
-    topctx.fillText(txtYourFinalScoreWas, screenwidthHalf, textTwentyRows * 10);
-    topctx.fillText(finalScore, screenwidthHalf, textFifteenRows * 9);
-    
-    if (messageTimer == 0)
-    {
-      topctx.textAlign = "center";
-      topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.fillText(txtTouchScreenToRestart, screenwidthHalf, textFifteenRows * 11);
-    }
+    topctx.font = textFifteenRows + "px CarStormFont1";
+    topctx.fillText(txtTouchScreenToRestart, screenwidthHalf, textFifteenRows * 11);
   }
 }
 function GameLoopWinGame()
 {
-  if (ElapsedTime >= fpsInterval)
+  UpdateTimers();
+  CheckMessageTimer();
+  CheckElapsedCarsTime(false);
+  CheckLivesBlinkTimer();
+    
+  DrawSnowstorm();
+  DrawStreetLayer();
+
+  // The cars and text are drawn here so they don't get smeared.
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+
+  // The street lights shouldn't stop because you've finished the game.
+  DrawStreetLights();
+  
+  DrawAllCars(false);
+  
+  DrawPlayerCar(true);
+  DrawPlayerLives();
+  
+  var yPosVictory = textTwelveRows * 6;
+  topctx.fillStyle = "white";
+  topctx.strokeStyle = "black";
+  topctx.lineWidth = ScreenHeightThreePercent;
+  topctx.textAlign = "center";
+  topctx.font = "bold " + textFourRows + "px Arial";
+  topctx.strokeText(txtVICTORY, screenwidthHalf, yPosVictory);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory);
+  topctx.globalAlpha = 0.4;
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift * 1.7);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift * 1.7);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift / 2.2);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift / 2.2);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift);
+  topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift);
+  topctx.globalAlpha = 1;
+  
+  var finalScore = player.Score;
+  topctx.fillStyle = "yellow";
+  topctx.strokeStyle = "black";
+  topctx.lineWidth = ScreenHeightOnePointOnePercent;
+  topctx.font = textTenRows + "px CarStormFont2";
+  topctx.strokeText(finalScore, screenwidthHalf, textTenRows * 6);
+  topctx.fillText(finalScore, screenwidthHalf, textTenRows * 6);
+  
+  if (messageTimer < 2000)
   {
-    UpdateTimers();
-    CheckMessageTimer();
-    CheckElapsedCarsTime(false);
-    CheckLivesBlinkTimer();
-      
-    DrawSnowstorm();
-    DrawStreetLayer();
-
-    // The cars and text are drawn here so they don't get smeared.
-    topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-
-    // The street lights shouldn't stop because you've finished the game.
-    DrawStreetLights();
-    
-    DrawAllCars(false);
-    
-    DrawPlayerCar(true);
-    DrawPlayerLives();
-    
-    var yPosVictory = textTwelveRows * 6;
-    topctx.fillStyle = "white";
-    topctx.strokeStyle = "black";
-    topctx.lineWidth = ScreenHeightThreePercent;
-    topctx.textAlign = "center";
-    topctx.font = "bold " + textFourRows + "px Arial";
-    topctx.strokeText(txtVICTORY, screenwidthHalf, yPosVictory);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory);
-    topctx.globalAlpha = 0.4;
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift * 1.7);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift * 1.7);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift / 2.2);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift / 2.2);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory + VictoryColorShift);
-    topctx.fillText(txtVICTORY, screenwidthHalf, yPosVictory - VictoryColorShift);
-    topctx.globalAlpha = 1;
-    
-    var finalScore = player.Score;
+    // Show up a few seconds after winning.
     topctx.fillStyle = "yellow";
     topctx.strokeStyle = "black";
+    topctx.font = textTwelveRows + "px CarStormFont2";
+    topctx.strokeText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
+    topctx.fillText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
+  }
+  
+  if (messageTimer == 0)
+  {
+    topctx.fillStyle = "black";
+    topctx.font = textFifteenRows + "px CarStormFont1";
+    topctx.strokeStyle = "white";
     topctx.lineWidth = ScreenHeightOnePointOnePercent;
-    topctx.font = textTenRows + "px CarStormFont2";
-    topctx.strokeText(finalScore, screenwidthHalf, textTenRows * 6);
-    topctx.fillText(finalScore, screenwidthHalf, textTenRows * 6);
-    
-    if (messageTimer < 2000)
-    {
-      // Show up a few seconds after winning.
-      topctx.fillStyle = "yellow";
-      topctx.strokeStyle = "black";
-      topctx.font = textTwelveRows + "px CarStormFont2";
-      topctx.strokeText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
-      topctx.fillText(txtYouAreASuperPlayer, screenwidthHalf, textTwelveRows * 8);
-    }
-    
-    if (messageTimer == 0)
-    {
-      topctx.fillStyle = "black";
-      topctx.font = textFifteenRows + "px CarStormFont1";
-      topctx.strokeStyle = "white";
-      topctx.lineWidth = ScreenHeightOnePointOnePercent;
-      topctx.strokeText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
-      topctx.fillText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
-    }
+    topctx.strokeText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
+    topctx.fillText(txtTouchScreenToPlayAgain, screenwidthHalf, textFifteenRows * 12);
   }
 }
 

@@ -30,14 +30,25 @@ TODO: facebook-inlägg: (MÅNDAG KL 10, gör ett nytt inlägg på Madskull Creat
   -Ta bort det gamla kanske..
   -Lägg upp på din egen igen också.
 
+Tags på app store: (Max 5 st, och bara välja bland deras..)
+  Action, Arcade, Car racing, Casual, Racing
+
 Tags:
-#carstorm #arcade #arcadegame #mobilegames #mobile #singleplayer #timewaste #speedrun #musica #song #ai-music #old-school #remake #snowstorm #trafficjam #male-singer #singer #highscore #gameandwatch 
+#carstorm #arcade #arcadegame #mobilegames #mobile #singleplayer #timewaste #musica #song #ai-music #old-school #remake #snowstorm #trafficjam #male-singer #singer #highscore #gameandwatch 
 
 taggar på youtube ska vara komma-separerade:
 arcade,arcadegame,mobilegames, ..
 
-carstorm,arcade,arcadegame,mobilegames,mobile,singleplayer,timewaste,speedrun,musica,song,ai-music,old-school,remake,snowstorm,trafficjam,male-singer,singer,highscore,gameandwatch 
+carstorm,arcade,arcadegame,mobilegames,mobile,singleplayer,timewaste,musica,song,ai-music,old-school,remake,snowstorm,trafficjam,male-singer,singer,highscore,gameandwatch 
 
+--------------
+
+Gjorde en piratgrej och postade här: (21/11)
+  https://www.facebook.com/groups/180526295645638/
+  
+Not sure it's ok to post this here, but we released a simple feel-good game with vibes from the 80s. We call it Carstorm! It's for android, free and well worth five minutes of your time. :) 
+
+https://play.google.com/store/apps/details?id=com.mask.carstorm
 
 --------------
 
