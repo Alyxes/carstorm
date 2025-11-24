@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <title>Button!</title>
+    <meta charset="utf-8" />        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+<style>
+  html, body
+  {
+    -webkit-user-select:none;
+    background-color: #005500;
+    overscroll-behavior-y: contain;
+      
+    touch-action: pan-x pan-y;
+  }
+  @font-face
+  {
+    font-family: 'CarStormFont1';
+    src: url('fonts/SkitserSwift.ttf');
+    
+  }
+  @font-face
+  {
+    font-family: 'CarStormFont2';
+    src: url('fonts/Snowstorm.ttf');
+  }
+  @font-face
+  {
+    font-family: 'CarStormFont3';
+    src: url('fonts/Again.ttf');
+  }
+  #canvas
+  {
+    position:absolute;
+    background-color: white;
+    top:0px;
+    left:0px;
+  }
+</style>
+<!--https://jsfiddle.net/robhawkes/gHCJt/-->
+<body onLoad="doIt();">
+	<canvas id="canvas"></canvas>
+  
+  <script>
+  // TODO: Vi kan lägga in kod som väntar på att grafiken hunnit laddas, men vi har inte haft några problem med det ännu? 
+  var InputModeButtonNormal = new Image();
+  InputModeButtonNormal.src = "InputModeButtonNormal.png";
+  var InputModeButtonLeft = new Image();
+  InputModeButtonLeft.src = "InputModeButtonLeft.png";
+  var InputModeButtonRight = new Image();
+  InputModeButtonRight.src = "InputModeButtonRight.png";
+  
+  var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
+  var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
+  
+  // TODO: Gör ett Button-objekt med x,y,w,h, cornerRadius, fillingInset, shadowBlur, strokeColor, fillingColor, shadowColor, image, selectedStrokeColor, selectedShadowColor, selectedCornerRadius, selectedShadowBlur.
+  // Tanken med alla selected-variablerna är att knappen ska växa och ändra färg när man pekar på den. (men det kan vi vänta med)
+  //  <-Då behövs en animationLength och lite arbetsvariabler för det också, såvida den inte bara ska poppa upp till selected-size direkt.
+  // Min idé är att settings-skärmen har tre knappar som den ritar ut i loopen, och som ett touch event checkar mot.
+  //  Startskärmen har bara en knapp, settings, övrig yta startar spelet.
+  //  ..Vi ska _inte_ använda knappar i spelet, de ska ju inte synas.
+  
+  function doIt()
+  {
+    var ScreenWidth = window.innerWidth / 2;
+    var ScreenHeight = window.innerHeight / 2;
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    // Note; setting size in css above will totally skew the scale.
+    canvas.height = ScreenHeight;
+    canvas.width = ScreenWidth;
+    
+    // We want the button to be pretty big, take up a third of the screen width.
+    var width = ScreenWidth / 3;
+
+    // To keep aspect ratio the height depends on the given width.
+    // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
+    var height = width * InputModeImages[SelectedInputMode].height / InputModeImages[SelectedInputMode].width;
+
+    // Set rectangle and corner values
+    var rectX = 50;
+    var rectY = 50;
+    var rectWidth = width;
+    var rectHeight = height;
+    var cornerRadius = 40;
+    var fillingInset = 12;
+
+    // Reference rectangle without rounding, for size comparison
+    //ctx.fillStyle = "black";
+    //ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+    ctx.fillStyle = "rgba(255,255,0,0.8)";
+    ctx.strokeStyle = "rgba(255,128,255,0.5)";
+
+    // bevel, round, miter. Bevel får mig att tänka på tintin. :)
+    ctx.lineJoin = "bevel";   
+    ctx.lineWidth = cornerRadius;
+
+    // The shadow goes for both filling and stroking...
+    ctx.shadowColor = "rgba(255,0,255,1.0)";
+    ctx.shadowBlur = 20;
+
+    // Change origin and dimensions to match true size (a stroke is drawn centered around the position given, so move it in a bit.)
+    ctx.strokeRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
+
+    // ...so remove the shadow here.
+    ctx.shadowColor = "white";
+    ctx.shadowBlur = 0;
+
+    // The filling should be _inside_ the stroked outline, so move it down a bit and a bit smaller. 
+    // ..Fast nu tyckte jag det blev snyggare om den gick över en bit. 
+    ctx.fillRect(rectX+(fillingInset), rectY+(fillingInset), rectWidth-fillingInset * 2, rectHeight-fillingInset * 2);
+
+    // The image should have the size of the filling rectangle.
+    ctx.drawImage(InputModeImages[SelectedInputMode], rectX+(fillingInset), rectY+(fillingInset), rectWidth-fillingInset * 2, rectHeight-fillingInset * 2);
+
+    // You can do the same thing with paths, like this triangle
+    // Remember that a stroke will make the shape a bit larger so you'll need to fiddle with the
+    // coordinates to get the correct dimensions.
+    /*ctx.beginPath();
+    ctx.moveTo(200, 0);
+    ctx.lineTo(240, 60);
+    ctx.lineTo(260, 60);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();*/
+  }
+  </script>
+</body>
+</html>

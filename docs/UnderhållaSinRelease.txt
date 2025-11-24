@@ -1,0 +1,42 @@
+  
+---Custom Store Listings---
+
+Man kan ha olika "app stores" med olika presentationer för nästan vad man vill:
+  1. Om du publicerar spelet på några game developer sajter, så kan du dela en länk till en presentation på app store som presenterar spelet ur deras nördiga synvinkel!
+    (man kan tom byta namn på appen!?)
+  2. Standard-vyn finns ju alltid kvar och ska så klart slå an på bredast publik möjligt, på engelska. 
+    -Auto-translate kan folk slå på nu för tiden så det är inte lika viktigt att sitta och översätta till olika språk längre. Babelfisken is here.
+  3. Här går de igenom riktigt detaljerat vad man kan göra för grejer:
+  https://support.google.com/googleplay/android-developer/answer/9867158?visit_id=638993206993426573-840150366&rd=1#zippy=%2Cview-examples-of-how-you-can-use-custom-store-listings
+  
+  4. Här skapar du dem:
+    https://play.google.com/console/u/0/developers/7421392476990213978/app/4975505023785672873/store-listings
+    
+
+---Achievements---
+  För litet spel för det, men om vi senare säljer ett set om tre spel tex, så kan vi stoppa in achievements, tex. tre-fyra stycken i varje spel. 
+  Minimum för ett spel är 10, men ett paket med tre spel kan vi nog kränga som "ett" ur app stores perspektiv. :-)
+  
+  https://developer.android.com/games/pgs/achievements
+  
+  Web-api för alltihop! 
+  https://developer.android.com/games/services/web/api/rest#achievements
+
+---Friends---
+Antar att en community med galningar som spelar vissa spel tillsammans vill kunna jämföra sina poäng i spelet enkelt:
+  https://developer.android.com/games/pgs/friends
+  -leta upp (sina) vänner.
+  -jämföra poäng.
+  -that's about it. Fördelen är så klart att vänlistorna sköts av google, massorna finns redan där. 
+  
+---Leaderboards---
+Det kanske är bra att använda googles leaderboards, då spelarens gametag/namn kommer automagiskt, och så klart att de sköter stattesteeken.
+(Det visuella kodar du själv!)
+  https://developer.android.com/games/pgs/leaderboards  
+  <-Dessutom dyker dessa grejer upp på "you"-tabben i app store. Infinitode's spelarlistor är praktexempel på detta. Gå in på din profil, klicka på View Profile, 
+    där har du leaderboards och listor på spelare! (43.000 spelare har de..)
+    De har också en achievements-sida du kan titta på. 
+    
+---Kurser---
+
+  https://playacademy.withgoogle.com/courses/
