@@ -131,17 +131,6 @@
       selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode);
     
     GameLoop();
-    
-    // You can do the same thing with paths, like this triangle
-    // Remember that a stroke will make the shape a bit larger so you'll need to fiddle with the
-    // coordinates to get the correct dimensions.
-    /*ctx.beginPath();
-    ctx.moveTo(200, 0);
-    ctx.lineTo(240, 60);
-    ctx.lineTo(260, 60);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();*/
   }
   
   function GameLoop()
@@ -149,6 +138,17 @@
     ctx.clearRect(0,0,ScreenWidth,ScreenHeight);
   
     button.Draw(ctx);
+
+    // You can do the same thing with paths, like this triangle
+    // Remember that a stroke will make the shape a bit larger so you'll need to fiddle with the
+    // coordinates to get the correct dimensions.
+    ctx.beginPath();
+    ctx.moveTo(500, 100);
+    ctx.lineTo(540, 160);
+    ctx.lineTo(560, 160);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
     
     window.requestAnimationFrame(GameLoop);
   }
@@ -246,9 +246,24 @@
         }
         
         // Change origin and dimensions to match true size (a stroke is drawn centered around the position given, so move it in a bit.)
-        ctx.strokeRect(
+        /*ctx.strokeRect(
           this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2), 
-          this.w-this.cornerRadius, this.h-this.cornerRadius);
+          this.w-this.cornerRadius, this.h-this.cornerRadius);*/
+
+// TODO: Ser för jävligt ut eftersom de överlappar varann. :P 
+        // Ändarna på linjer så heter det lineCap, lineJoin är jointen mellan två linjer.
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
+        ctx.lineTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2));
+        ctx.lineTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2));
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2));
+        ctx.lineTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
+        ctx.lineTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
+        ctx.stroke();
 
         // ...so remove the shadow here.
         ctx.shadowBlur = 0;
