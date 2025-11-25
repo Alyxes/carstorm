@@ -53,8 +53,41 @@
   var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
   var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
   
-  // TODO: Gör ett Button-objekt med x,y,w,h, cornerRadius, fillingInset, shadowBlur, strokeColor, fillingColor, shadowColor, image, selectedStrokeColor, selectedShadowColor, selectedCornerRadius, selectedShadowBlur.
-  // Tanken med alla selected-variablerna är att knappen ska växa och ändra färg när man pekar på den. (men det kan vi vänta med)
+  var ScreenWidth = 0;
+  var ScreenHeight = 0;
+
+  var ctx = null;
+  var button = null;
+  
+  document.addEventListener("mousedown", (e) => {
+    e = e || window.event;
+    
+    if(e.button == 0) // Most of the time the left button
+    {
+      button.OnTouchStart(e.clientX, e.clientY);
+    }
+  });
+  document.addEventListener("mouseup", (e) => {
+    e = e || window.event;
+    
+    if(e.button == 0) // Most of the time the left button
+    {
+      button.OnTouchEnd(e.clientX, e.clientY);
+    }
+  });
+  
+  // Den här skickar vi med till knappen, som anropar denna funktion när man klickar på den.
+  function SwitchInputMode()
+  {
+    SelectedInputMode++;
+    
+    if(SelectedInputMode > 2)
+      SelectedInputMode = 0;
+      
+    return SelectedInputMode;
+  }
+  
+  // Tanken med knappens alla selected-variablerna är att knappen ska växa och ändra färg när man pekar på den. (men det kan vi vänta med)
   //  <-Då behövs en animationLength och lite arbetsvariabler för det också, såvida den inte bara ska poppa upp till selected-size direkt.
   // Min idé är att settings-skärmen har tre knappar som den ritar ut i loopen, och som ett touch event checkar mot.
   //  Startskärmen har bara en knapp, settings, övrig yta startar spelet.
@@ -62,11 +95,11 @@
   
   function doIt()
   {
-    var ScreenWidth = window.innerWidth / 2;
-    var ScreenHeight = window.innerHeight / 2;
+    ScreenWidth = window.innerWidth / 2;
+    ScreenHeight = window.innerHeight / 2;
 
     var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d");
 
     // Note; setting size in css above will totally skew the scale.
     canvas.height = ScreenHeight;
@@ -79,43 +112,26 @@
     // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
     var height = width * InputModeImages[SelectedInputMode].height / InputModeImages[SelectedInputMode].width;
 
-    // Set rectangle and corner values
-    var rectX = 50;
-    var rectY = 50;
-    var rectWidth = width;
-    var rectHeight = height;
     var cornerRadius = 40;
-    var fillingInset = 12;
+    var fillingInset = 40;
+    var shadowBlur = 20;
+    var strokeStyle = "rgba(255,128,255,0.5)";
+    var fillStyle = "rgba(255,255,0,0.8)";
+    var shadowColor = "rgba(255,0,255,1.0)";
 
-    // Reference rectangle without rounding, for size comparison
-    //ctx.fillStyle = "black";
-    //ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+    var selectedStrokeStyle = "rgba(255,0,0,0.5)";
+    var selectedShadowColor = "rgba(0,0,255,1.0)";
+    var selectedCornerRadius = cornerRadius + 10;
+    var selectedShadowBlur = shadowBlur + 10;
 
-    ctx.fillStyle = "rgba(255,255,0,0.8)";
-    ctx.strokeStyle = "rgba(255,128,255,0.5)";
-
-    // bevel, round, miter. Bevel får mig att tänka på tintin. :)
-    ctx.lineJoin = "bevel";   
-    ctx.lineWidth = cornerRadius;
-
-    // The shadow goes for both filling and stroking...
-    ctx.shadowColor = "rgba(255,0,255,1.0)";
-    ctx.shadowBlur = 20;
-
-    // Change origin and dimensions to match true size (a stroke is drawn centered around the position given, so move it in a bit.)
-    ctx.strokeRect(rectX+(cornerRadius/2), rectY+(cornerRadius/2), rectWidth-cornerRadius, rectHeight-cornerRadius);
-
-    // ...so remove the shadow here.
-    ctx.shadowColor = "white";
-    ctx.shadowBlur = 0;
-
-    // The filling should be _inside_ the stroked outline, so move it down a bit and a bit smaller. 
-    // ..Fast nu tyckte jag det blev snyggare om den gick över en bit. 
-    ctx.fillRect(rectX+(fillingInset), rectY+(fillingInset), rectWidth-fillingInset * 2, rectHeight-fillingInset * 2);
-
-    // The image should have the size of the filling rectangle.
-    ctx.drawImage(InputModeImages[SelectedInputMode], rectX+(fillingInset), rectY+(fillingInset), rectWidth-fillingInset * 2, rectHeight-fillingInset * 2);
-
+    button = CreateButton(
+      50, 50, width, height, 
+      cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+      fillStyle, shadowColor, InputModeImages, selectedStrokeStyle, 
+      selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode);
+    
+    GameLoop();
+    
     // You can do the same thing with paths, like this triangle
     // Remember that a stroke will make the shape a bit larger so you'll need to fiddle with the
     // coordinates to get the correct dimensions.
@@ -127,6 +143,133 @@
     ctx.stroke();
     ctx.fill();*/
   }
+  
+  function GameLoop()
+  {
+    ctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+    button.Draw(ctx);
+    
+    window.requestAnimationFrame(GameLoop);
+  }
+  
+  function CreateButton(
+    x, y, w, h, 
+    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+    fillStyle, shadowColor, imageArray, selectedStrokeStyle, 
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, callbackFunction)
+  {
+    // If there is an image, the buttons h will depend on the given w and the height of the image.
+    if(imageArray != null)
+    {
+      h = w * imageArray[0].height / imageArray[0].width;
+    }
+    
+    // fyfan...
+    var button = {
+      x:x,
+      y:y,
+      w:w,
+      h:h,
+      
+      cornerRadius:cornerRadius,
+      fillingInset:fillingInset,
+      shadowBlur:shadowBlur,
+      
+      strokeStyle:strokeStyle,
+      fillStyle:fillStyle,
+      shadowColor:shadowColor,
+      selectedStrokeStyle:selectedStrokeStyle,
+      selectedShadowColor:selectedShadowColor,
+      selectedCornerRadius:selectedCornerRadius,
+      selectedShadowBlur:selectedShadowBlur,
+      imageArray:imageArray,
+      callbackFunction:callbackFunction,
+      selectedImage:0,
+      buttonPressed:false,
+      
+      // TODO: Resize() för resize screen event. 
+      
+      OnTouchStart: function(x,y) {
+        // TODO: OBS, alla knappars OnTouchStart måste anropas, så får var o en avgöra om det är just de som blivit gnuggade på.
+        if(x >= this.x && x <= this.x + this.w 
+          && y >= this.y && y <= this.y + this.h)
+        {
+          this.buttonPressed = true;
+          console.log("yey, someone's touching me!");
+        }
+      },
+      
+      OnTouchEnd: function(x,y) {
+        // TODO: Samma, alla måste anropas när fingret lyfter igen eller nåt cancel event händer. (minimize, etc, var noggrann!)
+        if(x >= this.x && x <= this.x + this.w 
+          && y >= this.y && y <= this.y + this.h)
+        {
+          console.log("yey, a full click happened! Calling callbackFunction().");
+          this.selectedImage = this.callbackFunction();
+        }
+        else if(this.buttonPressed)
+        {
+          // Att släppa upp fingret utanför knappen är ofint, men cancellerar i varje fall klicket.
+          console.log("Halfway in...");
+        }
+
+        this.buttonPressed = false;
+      },
+            
+      Draw: function(ctx) {
+        // Reference rectangle without rounding, for size comparison
+        //ctx.fillStyle = "black";
+        //ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+
+        // Det finns faktiskt inga knappar utan bild i vårt spel, så man kan inte heller ändra bakgrundsfärg för en nertryckt knapp.
+        ctx.fillStyle = this.fillStyle;
+
+        // bevel, round, miter. Bevel får mig att tänka på tintin. :)
+        ctx.lineJoin = "round";   
+
+        if(this.buttonPressed)
+        {
+          ctx.strokeStyle = this.selectedStrokeStyle;
+          ctx.lineWidth = this.selectedCornerRadius;
+          ctx.shadowColor = this.selectedShadowColor;
+          ctx.shadowBlur = this.selectedShadowBlur;
+        }
+        else
+        {
+          ctx.strokeStyle = this.strokeStyle;
+          ctx.lineWidth = this.cornerRadius;
+
+          // The shadow goes for both filling and stroking...
+          ctx.shadowColor = this.shadowColor;
+          ctx.shadowBlur = this.shadowBlur;
+        }
+        
+        // Change origin and dimensions to match true size (a stroke is drawn centered around the position given, so move it in a bit.)
+        ctx.strokeRect(
+          this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2), 
+          this.w-this.cornerRadius, this.h-this.cornerRadius);
+
+        // ...so remove the shadow here.
+        ctx.shadowBlur = 0;
+
+        // The filling should be _inside_ the stroked outline, so move it down a bit and a bit smaller. 
+        // ..Fast nu tyckte jag det blev snyggare om den gick över en bit. 
+        ctx.fillRect(
+          this.x+(this.fillingInset), this.y+(this.fillingInset), 
+          this.w-this.fillingInset * 2, this.h-this.fillingInset * 2);
+
+        // The image should have the size of the filling rectangle.
+        ctx.drawImage(
+          this.imageArray[this.selectedImage], 
+          this.x+(this.fillingInset), this.y+(this.fillingInset), 
+          this.w-this.fillingInset * 2, this.h-this.fillingInset * 2);
+      },
+    };
+    
+    return button;
+  }
+  
   </script>
 </body>
 </html>
