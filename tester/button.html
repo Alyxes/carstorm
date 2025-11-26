@@ -3,7 +3,7 @@
     <title>Button!</title>
     <meta charset="utf-8" />        
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="button.js"></script>
+    <script src="../button.js"></script>
   </head>
 <style>
   html, body
@@ -105,15 +105,21 @@
     // Note; setting size in css above will totally skew the scale.
     canvas.height = ScreenHeight;
     canvas.width = ScreenWidth;
+        
+    CreateSettingsButtonSelectedInputMode();
+    
+    GameLoop();
+  }
+  
+  function CreateSettingsButtonSelectedInputMode()
+  {
+    var x = 50;
+    var y = 50;
     
     // We want the button to be pretty big, take up a third of the screen width.
     var width = ScreenWidth / 3;
     var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
-
-    // To keep aspect ratio the height depends on the given width.
-    // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
-    // var height = width * InputModeImages[SelectedInputMode].height / InputModeImages[SelectedInputMode].width;
-
+  
     var cornerRadius = 10;
     var fillingInset = 10;
     var shadowBlur = 20;
@@ -130,13 +136,11 @@
     var images = InputModeImages;
 
     button = CreateButton(
-      50, 50, width, height,
+      x, y, width, height,
       ScreenWidth, ScreenHeight,
       cornerRadius, fillingInset, shadowBlur, strokeStyle, 
       fillStyle, shadowColor, images, selectedStrokeStyle, 
       selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode);
-    
-    GameLoop();
   }
   
   function GameLoop()

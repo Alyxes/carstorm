@@ -228,6 +228,18 @@ Smoke1Image.src = "graphics/Smoke1.png";
 var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
 
+var InputModeButtonNormal = new Image();
+InputModeButtonNormal.src = "graphics/InputModeButtonNormal.png";
+var InputModeButtonLeft = new Image();
+InputModeButtonLeft.src = "graphics/InputModeButtonLeft.png";
+var InputModeButtonRight = new Image();
+InputModeButtonRight.src = "graphics/InputModeButtonRight.png";
+var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
+
+var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
+var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
+var SettingsButtonSelectedInputMode = null; // Lessen att jag inte kunde komma på ett längre namn. :D
+
 const txtCARSTORM = "CARSTORM";
 const txtLastDriveScore = "last drive score: ";
 const txtHighScore = "highscore: ";
@@ -361,6 +373,13 @@ function SetupCallbacks()
       // Multitouch you know. :)
       TouchClickEvent(e.touches[0].clientX, e.touches[0].clientY);
     });
+    
+    document.addEventListener("touchend", (e) => {
+      var x = e.touches[0].clientX;
+
+      // Multitouch you know. :)
+      ButtonsOnTouchEnd(e.touches[0].clientX, e.touches[0].clientY);
+    });    
   }
   else
   {
@@ -372,6 +391,14 @@ function SetupCallbacks()
       {
         // Log("mousedown: " + e.button);
         TouchClickEvent(e.clientX, e.clientY);
+      }
+    });
+    document.addEventListener("mouseup", (e) => {
+      e = e || window.event;
+      
+      if(e.button == 0) // Most of the time the left button
+      {
+        ButtonsOnTouchEnd(e.clientX, e.clientY);
       }
     });
     
@@ -402,6 +429,8 @@ function SetupCallbacks()
 // Touch or click event happened. 
 function TouchClickEvent(xPos, yPos)
 {
+  ButtonsOnTouchStart(xPos, yPos);
+  
   // Eeh, ugly but works. Spreading out game state checks this way is error prone.
   switch(gameState)
   {
@@ -416,7 +445,7 @@ function TouchClickEvent(xPos, yPos)
       // Buttons: Back. Sound switch. Input mode toggle.
       
       // Clicking the screen goes back to start screen right now.
-      SetState(gsStartScreen);
+      //SetState(gsStartScreen);
       break;
     case gsPlaying:
       if(xPos < screenwidthHalf)
@@ -519,6 +548,7 @@ function Resize()
   roadStartLeft = screenwidthHalf - lightWidth;
   
   ResizePlayer();
+  ButtonsResize();
   
   ctx.drawImage(StartBGImage, 0, 0, ScreenWidth, ScreenHeight);
   
@@ -754,6 +784,51 @@ async function FetchOnlineStats()
   FetchOnlineStatsDone = true;
 }
 
+// Den här skickar vi med till knappen, som anropar denna funktion när man klickar på den.
+function SettingsButtonSwitchInputMode()
+{
+  SelectedInputMode++;
+  
+  if(SelectedInputMode > 2)
+    SelectedInputMode = 0;
+    
+  return SelectedInputMode;
+}
+
+function CreateSettingsButtonSelectedInputMode()
+{
+  var x = ScreenWidth / 10;
+  var y = ScreenHeight / 10;
+  
+  // We want the button to be pretty big, take up a third of the screen width.
+  var width = ScreenWidth / 3;
+  var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
+
+  var cornerRadius = 10;
+  var fillingInset = 10;
+  var shadowBlur = 20;
+  var strokeStyle = "rgba(255,128,255,1.0)";
+  var fillStyle = "rgba(255,255,0,1.0)";
+  var shadowColor = "rgba(255,0,255,1.0)";
+
+  var selectedStrokeStyle = "rgba(255,0,0,1.0)";
+  var selectedShadowColor = "rgba(0,0,255,1.0)";
+  var selectedCornerRadius = cornerRadius + 10;
+  var selectedShadowBlur = shadowBlur + 10;
+
+  //var images = null; 
+  var images = InputModeImages;
+
+  SettingsButtonSelectedInputMode = CreateButton(
+    x, y, width, height,
+    ScreenWidth, ScreenHeight,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+    fillStyle, shadowColor, images, selectedStrokeStyle, 
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode);
+    
+  AllButtons.push(SettingsButtonSelectedInputMode);
+}
+
 // Create a double array of this format: level[y][x], where each "cell" is an object.
 function CreateLevel()
 {
@@ -895,6 +970,7 @@ function SetState(newState)
     case gsSettings:
       if(newState == gsStartScreen)
       {
+        OnExitSettings();
         OnEnterStartScreen();
         transitionCool = true;
       }
@@ -984,7 +1060,12 @@ function OnEnterStartScreen()
 }
 function OnEnterSettings()
 {
-  // TODO: Define buttons.
+  // Define buttons.
+  CreateSettingsButtonSelectedInputMode();
+}
+function OnExitSettings()
+{
+  AllButtons.length = 0; // Clear the buttons!
 }
 function TransitFromStartScreenToIntroPlay()
 {
@@ -1404,7 +1485,7 @@ function GameLoopSettings()
     ScreenWidth * 0.015, ScreenHeight * 0.03, 
     width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
   
-  // TODO: Buttons.
+  DrawButtons();
   
   topctx.textAlign = "left";
   topctx.font = textTwentyRows + "px CarStormFont2";
@@ -2172,4 +2253,34 @@ function DrawStreetLayer()
       0, 0, ScreenWidth, ScreenHeight);
   }
   streetctx.restore();
+}
+
+function DrawButtons()
+{
+  // This only works as long as we assume all buttons are drawn on the topctx.
+  for(var i=0; i<AllButtons.length; i++)
+  {
+    AllButtons[i].Draw(topctx);
+  }
+}
+function ButtonsResize()
+{
+  for(var i=0; i<AllButtons.length; i++)
+  {
+    AllButtons[i].Resize(ScreenWidth, ScreenHeight);
+  }  
+}
+function ButtonsOnTouchStart(x,y)
+{
+  for(var i=0; i<AllButtons.length; i++)
+  {
+    AllButtons[i].OnTouchStart(x,y);
+  }
+}
+function ButtonsOnTouchEnd(x,y)
+{
+  for(var i=0; i<AllButtons.length; i++)
+  {
+    AllButtons[i].OnTouchEnd(x,y);
+  }
 }
