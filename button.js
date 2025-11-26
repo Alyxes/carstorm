@@ -18,9 +18,9 @@
 //  Startskärmen har bara en knapp, settings, övrig yta startar spelet.
 //  ..Vi ska _inte_ använda knappar i spelet, de ska ju inte synas.
 
-const PleaseLitterWithConsoleLogs = true;
+const buttonDoLogs = false;
 
-if (PleaseLitterWithConsoleLogs) 
+if (buttonDoLogs) 
   var Log = console.log;
 else 
   var Log = function(){};

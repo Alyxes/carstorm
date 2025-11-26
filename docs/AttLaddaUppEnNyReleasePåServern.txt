@@ -6,13 +6,14 @@ Steg 1:
   1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
   2. Checka in alla ändringar på github.
   3. Sätt PleaseLitterWithConsoleLogs till false i carstorm.js och service_worker.js. (Checka inte in det, onödigt.)
-  3. Kör uglifyjs på alla .js-filer så de hamnar i katalogen minified.
+  3b. Sätt buttonDoLogs i buttons.js till false!
+  4. Kör uglifyjs på alla .js-filer så de hamnar i katalogen minified.
       Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
       (carstorm/minified/*.js, inte carstorm/*.js)
-  4. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
-  5. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
+  5. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
+  6. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
 
-  Är du det minsta osäker, ta steg 5 istället för steg 4, så jäkla mycket filer rör det sig inte om. 
+  Är du det minsta osäker, ta steg 6 istället för steg 5, så jäkla mycket filer rör det sig inte om. 
 
   OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 

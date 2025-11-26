@@ -27,8 +27,6 @@ else
 
 // Set to false to remove debug-prints onscreen in the game.
 const ShowDebugStuff = false;
-
-// TODO: Ta in pauskod från nyare skärmsläckare.
   
 // See Resize().
 var ScreenWidth;
@@ -235,10 +233,9 @@ InputModeButtonLeft.src = "graphics/InputModeButtonLeft.png";
 var InputModeButtonRight = new Image();
 InputModeButtonRight.src = "graphics/InputModeButtonRight.png";
 var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
+var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
-var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
-var SettingsButtonSelectedInputMode = null; // Lessen att jag inte kunde komma på ett längre namn. :D
 
 const txtCARSTORM = "CARSTORM";
 const txtLastDriveScore = "last drive score: ";
@@ -373,13 +370,21 @@ function SetupCallbacks()
       // Multitouch you know. :)
       TouchClickEvent(e.touches[0].clientX, e.touches[0].clientY);
     });
-    
     document.addEventListener("touchend", (e) => {
       var x = e.touches[0].clientX;
 
       // Multitouch you know. :)
       ButtonsOnTouchEnd(e.touches[0].clientX, e.touches[0].clientY);
     });    
+    document.addEventListener("touchcancel", (e) => {
+      var x = e.touches[0].clientX;
+      
+      // Might happen for many reasons, maybe a phone call or you name it. 
+      Log("A touch cancel event happened!");
+
+      // Multitouch you know. :)
+      ButtonsOnTouchEnd(e.touches[0].clientX, e.touches[0].clientY);
+    });
   }
   else
   {
@@ -791,6 +796,8 @@ function SettingsButtonSwitchInputMode()
   
   if(SelectedInputMode > 2)
     SelectedInputMode = 0;
+
+  Log("SelectedInputMode: " + SelectedInputMode);
     
   return SelectedInputMode;
 }
@@ -798,7 +805,7 @@ function SettingsButtonSwitchInputMode()
 function CreateSettingsButtonSelectedInputMode()
 {
   var x = ScreenWidth / 10;
-  var y = ScreenHeight / 10;
+  var y = 2 * ScreenHeight / 10;
   
   // We want the button to be pretty big, take up a third of the screen width.
   var width = ScreenWidth / 3;
@@ -816,17 +823,14 @@ function CreateSettingsButtonSelectedInputMode()
   var selectedCornerRadius = cornerRadius + 10;
   var selectedShadowBlur = shadowBlur + 10;
 
-  //var images = null; 
-  var images = InputModeImages;
-
-  SettingsButtonSelectedInputMode = CreateButton(
+  var buttonSelectedInputMode = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, images, selectedStrokeStyle, 
+    fillStyle, shadowColor, InputModeImages, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode);
     
-  AllButtons.push(SettingsButtonSelectedInputMode);
+  AllButtons.push(buttonSelectedInputMode);
 }
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
