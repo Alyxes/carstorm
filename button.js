@@ -90,19 +90,22 @@ function CreateButton(
     },
     
     OnTouchEnd: function(x,y) {
-      if(x >= this.x && x <= this.x + this.w 
-        && y >= this.y && y <= this.y + this.h)
+      if(this.buttonPressed)
       {
-        Log("yey, a full click happened! Calling callbackFunction().");
-        this.selectedImage = this.callbackFunction();
-      }
-      else if(this.buttonPressed)
-      {
-        // Att släppa upp fingret utanför knappen är ofint, men cancellerar i varje fall klicket.
-        Log("Did you slide off?");
-      }
+        if(x >= this.x && x <= this.x + this.w 
+          && y >= this.y && y <= this.y + this.h)
+        {
+          Log("yey, a full click happened! Calling callbackFunction().");
+          this.selectedImage = this.callbackFunction();
+        }
+        else
+        {
+          // Att släppa upp fingret utanför knappen är ofint, men cancellerar i varje fall klicket.
+          Log("Did you slide off?");
+        }
 
-      this.buttonPressed = false;
+        this.buttonPressed = false;
+      }
     },
           
     Draw: function(ctx) {

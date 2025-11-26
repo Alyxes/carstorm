@@ -235,6 +235,9 @@ InputModeButtonRight.src = "graphics/InputModeButtonRight.png";
 var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
 var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 
+var BackButtonImage = new Image();
+BackButtonImage.src = "graphics/BackButton.png";
+
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
 
 const txtCARSTORM = "CARSTORM";
@@ -789,7 +792,11 @@ async function FetchOnlineStats()
   FetchOnlineStatsDone = true;
 }
 
-// Den här skickar vi med till knappen, som anropar denna funktion när man klickar på den.
+// De här skickar vi med till knapparna, som anropar denna funktion när man klickar på den.
+function SettingsBackButton()
+{
+  SetState(gsStartScreen);
+}
 function SettingsButtonSwitchInputMode()
 {
   SelectedInputMode++;
@@ -802,9 +809,40 @@ function SettingsButtonSwitchInputMode()
   return SelectedInputMode;
 }
 
-function CreateSettingsButtonSelectedInputMode()
+function CreateSettingsBackButton()
 {
   var x = ScreenWidth / 10;
+  var y = 2 * ScreenHeight / 10;
+  
+  // We want the button to be pretty big, take up a third of the screen width.
+  var width = ScreenWidth / 6;
+  var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
+
+  var cornerRadius = 10;
+  var fillingInset = 10;
+  var shadowBlur = 20;
+  var strokeStyle = "rgba(255,128,255,1.0)";
+  var fillStyle = "rgba(255,255,0,1.0)";
+  var shadowColor = "rgba(255,0,255,1.0)";
+
+  var selectedStrokeStyle = "rgba(255,0,0,1.0)";
+  var selectedShadowColor = "rgba(0,0,255,1.0)";
+  var selectedCornerRadius = cornerRadius + 10;
+  var selectedShadowBlur = shadowBlur + 10;
+
+  var buttonSelectedInputMode = CreateButton(
+    x, y, width, height,
+    ScreenWidth, ScreenHeight,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+    fillStyle, shadowColor, [BackButtonImage], selectedStrokeStyle, 
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton);
+    
+  AllButtons.push(buttonSelectedInputMode);
+}
+function CreateSettingsButtonSelectedInputMode()
+{
+  // Det här är mitt smådåliga sätt att placera knapparna på en rad efter varann. Se CreateSettingsBackButton() som kommer vänster om.
+  var x = ScreenWidth / 10 + ScreenWidth / 6 + ScreenWidth / 30;
   var y = 2 * ScreenHeight / 10;
   
   // We want the button to be pretty big, take up a third of the screen width.
@@ -832,6 +870,7 @@ function CreateSettingsButtonSelectedInputMode()
     
   AllButtons.push(buttonSelectedInputMode);
 }
+
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
 function CreateLevel()
@@ -1065,6 +1104,7 @@ function OnEnterStartScreen()
 function OnEnterSettings()
 {
   // Define buttons.
+  CreateSettingsBackButton();
   CreateSettingsButtonSelectedInputMode();
 }
 function OnExitSettings()
