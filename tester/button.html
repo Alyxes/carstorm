@@ -118,8 +118,19 @@
     
     // We want the button to be pretty big, take up a third of the screen width.
     var width = ScreenWidth / 3;
-    var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
+    var height = 1; 
   
+    var adaptToWidth = false; // Om false, så beror istället vidd på bildens höjd.
+    
+    if(adaptToWidth)
+    {
+      height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
+    }
+    else
+    {
+      height = ScreenHeight / 3; // adaptToWidth e false. Nu kommer knappens vidd att bero på denna angivna höjden istället.
+    }
+    
     var cornerRadius = 10;
     var fillingInset = 10;
     var shadowBlur = 20;
@@ -130,7 +141,7 @@
     var selectedStrokeStyle = "rgba(255,0,0,1.0)";
     var selectedShadowColor = "rgba(0,0,255,1.0)";
     var selectedCornerRadius = cornerRadius + 10;
-    var selectedShadowBlur = shadowBlur + 10;
+    var selectedShadowBlur = shadowBlur + 20;
 
     //var images = null; 
     var images = InputModeImages;
@@ -140,7 +151,8 @@
       ScreenWidth, ScreenHeight,
       cornerRadius, fillingInset, shadowBlur, strokeStyle, 
       fillStyle, shadowColor, images, selectedStrokeStyle, 
-      selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode);
+      selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode,
+      adaptToWidth);
   }
   
   function GameLoop()

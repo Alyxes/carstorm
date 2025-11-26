@@ -59,6 +59,9 @@ var screenwidthFifth;
 var screenwidthThird;
 var screenwidthHalf;
 
+var SafeWidthMargin; // Just a nice to have margin from the screen borders.
+var SafeHeightMargin;
+
 // If true, it starts in paused mode, and gets activated by the focus event.
 var screenSaverPaused = false;
 
@@ -540,6 +543,9 @@ function Resize()
   screenwidthThird = ScreenWidth/3;
   screenwidthHalf = ScreenWidth/2;
   
+  SafeWidthMargin = screenwidthThirteenth / 2;
+  SafeHeightMargin = ScreenHeight / 15;
+  
   lightWidth = ScreenWidth/23;
   lightHeight = ScreenHeight/20;
   orangeLightSize = ScreenWidth/370;
@@ -809,64 +815,57 @@ function SettingsButtonSwitchInputMode()
   return SelectedInputMode;
 }
 
+// Alla knapparna ska ha samma färger o margins.
+var cornerRadius = 10;
+var fillingInset = 10;
+var shadowBlur = 20;
+var strokeStyle = "rgba(136,136,136,1.0)";
+var fillStyle = "rgba(40,40,40,1.0)";
+var shadowColor = "rgba(255,255,0,1.0)";
+var selectedStrokeStyle = "rgba(180,180,180,1.0)";
+var selectedShadowColor = "rgba(0,0,255,1.0)";
+var selectedCornerRadius = cornerRadius + 10;
+var selectedShadowBlur = shadowBlur + 20;
+
 function CreateSettingsBackButton()
 {
-  var x = ScreenWidth / 10;
-  var y = 2 * ScreenHeight / 10;
+  var x = SafeWidthMargin;
+  var y = SafeHeightMargin;
   
-  // We want the button to be pretty big, take up a third of the screen width.
-  var width = ScreenWidth / 6;
-  var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
-
-  var cornerRadius = 10;
-  var fillingInset = 10;
-  var shadowBlur = 20;
-  var strokeStyle = "rgba(255,128,255,1.0)";
-  var fillStyle = "rgba(255,255,0,1.0)";
-  var shadowColor = "rgba(255,0,255,1.0)";
-
-  var selectedStrokeStyle = "rgba(255,0,0,1.0)";
-  var selectedShadowColor = "rgba(0,0,255,1.0)";
-  var selectedCornerRadius = cornerRadius + 10;
-  var selectedShadowBlur = shadowBlur + 10;
-
+  // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+  var width = 1;
+  var height = ScreenHeight / 5;
+  var adaptToWidth = false;
+  
   var buttonSelectedInputMode = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, [BackButtonImage], selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton);
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
+    adaptToWidth);
     
   AllButtons.push(buttonSelectedInputMode);
 }
 function CreateSettingsButtonSelectedInputMode()
 {
-  // Det här är mitt smådåliga sätt att placera knapparna på en rad efter varann. Se CreateSettingsBackButton() som kommer vänster om.
-  var x = ScreenWidth / 10 + ScreenWidth / 6 + ScreenWidth / 30;
-  var y = 2 * ScreenHeight / 10;
+  // Det här är mitt skitdåliga sätt att placera knapparna på en rad efter varann. Se CreateSettingsBackButton() som kommer vänster om.
+  var x = AllButtons[0].x + AllButtons[0].w + ScreenWidth / 20;
+  //var x = ScreenWidth / 10 + ScreenWidth / 6 + ScreenWidth / 30;
+  var y = SafeHeightMargin;
   
-  // We want the button to be pretty big, take up a third of the screen width.
-  var width = ScreenWidth / 3;
-  var height = 1; // whatev, så länge vi vill ha en knapp med en bild i så beror höjden på bredden.
-
-  var cornerRadius = 10;
-  var fillingInset = 10;
-  var shadowBlur = 20;
-  var strokeStyle = "rgba(255,128,255,1.0)";
-  var fillStyle = "rgba(255,255,0,1.0)";
-  var shadowColor = "rgba(255,0,255,1.0)";
-
-  var selectedStrokeStyle = "rgba(255,0,0,1.0)";
-  var selectedShadowColor = "rgba(0,0,255,1.0)";
-  var selectedCornerRadius = cornerRadius + 10;
-  var selectedShadowBlur = shadowBlur + 10;
-
+  // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+  var width = 1;
+  var height = ScreenHeight / 5;
+  var adaptToWidth = false;
+    
   var buttonSelectedInputMode = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, InputModeImages, selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode);
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode,
+    adaptToWidth);
     
   AllButtons.push(buttonSelectedInputMode);
 }
@@ -1502,8 +1501,8 @@ function GameLoopStartScreen()
   {
     // I want to see the resolution on phones, to see if there is browser or screen scaling there as well just like in Windows.
     // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
-    topctx.fillText("X: " + ScreenWidth, screenwidthThirteenth / 2, textTwentyRows * 16);
-    topctx.fillText("Y: " + ScreenHeight, screenwidthThirteenth / 2, textTwentyRows * 17);
+    topctx.fillText("X: " + ScreenWidth, SafeWidthMargin, textTwentyRows * 16);
+    topctx.fillText("Y: " + ScreenHeight, SafeWidthMargin, textTwentyRows * 17);
   }
     
   if (messageTimer == 0)
@@ -1522,14 +1521,14 @@ function GameLoopSettings()
   
   // The text and buttons are drawn here so they don't get smeared.
   topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-  
-  var width = ScreenWidth/2.7;
+    
+  DrawButtons();
+
+  var width = ScreenWidth/2;
   topctx.drawImage(
     MadSkullLogoImage, 
-    ScreenWidth * 0.015, ScreenHeight * 0.03, 
+    ScreenWidth / 2 - width / 2, 3 * ScreenHeight / 10, 
     width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
-  
-  DrawButtons();
   
   topctx.textAlign = "left";
   topctx.font = textTwentyRows + "px CarStormFont2";
@@ -1538,14 +1537,14 @@ function GameLoopSettings()
   {
     if(ShowDebugStuff)
     {
-      topctx.fillText("Server version: " + ServerVersion, screenwidthThirteenth / 2, textFifteenRows * 13);
+      topctx.fillText("Server version: " + ServerVersion, SafeWidthMargin, textFifteenRows * 13);
     }
     
-    topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, screenwidthThirteenth / 2, textFifteenRows * 14);
+    topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, SafeWidthMargin, textFifteenRows * 14);
   }
   else
   {
-    topctx.fillText(txtOffline, screenwidthThirteenth / 2, textFifteenRows * 14);
+    topctx.fillText(txtOffline, SafeWidthMargin, textFifteenRows * 14);
   }
 }
 function GameLoopIntroPlay()
@@ -2312,7 +2311,7 @@ function ButtonsResize()
   for(var i=0; i<AllButtons.length; i++)
   {
     AllButtons[i].Resize(ScreenWidth, ScreenHeight);
-  }  
+  }
 }
 function ButtonsOnTouchStart(x,y)
 {

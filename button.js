@@ -30,7 +30,8 @@ function CreateButton(
   screenWidth, screenHeight,
   cornerRadius, fillingInset, shadowBlur, strokeStyle, 
   fillStyle, shadowColor, imageArray, selectedStrokeStyle, 
-  selectedShadowColor, selectedCornerRadius, selectedShadowBlur, callbackFunction)
+  selectedShadowColor, selectedCornerRadius, selectedShadowBlur, callbackFunction,
+  adaptToWidth)
 {
   // fyfan vad tråkigt..
   var button = {
@@ -55,6 +56,7 @@ function CreateButton(
     selectedShadowBlur:selectedShadowBlur,
     imageArray:imageArray,
     callbackFunction:callbackFunction,
+    adaptToWidth:adaptToWidth,
     
     selectedImage:0,
     buttonPressed:false,
@@ -73,10 +75,17 @@ function CreateButton(
       this.y /= yPercentage;
       this.h /= yPercentage;
       
-      // If there is an image, the buttons h will depend on the given w and the height of the image.
+      // If there is an image, the buttons h will depend on the given w and the height of the image, or vice versa.
       if(this.imageArray != null)
       {
-        this.h = this.w * this.imageArray[0].height / this.imageArray[0].width;
+        if(this.adaptToWidth)
+        {
+          this.h = this.w * this.imageArray[0].height / this.imageArray[0].width;
+        }
+        else
+        {
+          this.w = this.h * this.imageArray[0].width / this.imageArray[0].height;
+        }
       }
     },
     
@@ -111,6 +120,8 @@ function CreateButton(
     Draw: function(ctx) {
       // bevel, round, miter. Bevel får mig att tänka på tintin. :)
       ctx.lineJoin = "round";   
+      
+      var cornerRadius = this.cornerRadius;
     
       if(this.buttonPressed)
       {
@@ -118,6 +129,8 @@ function CreateButton(
         ctx.lineWidth = this.selectedCornerRadius;
         ctx.shadowColor = this.selectedShadowColor;
         ctx.shadowBlur = this.selectedShadowBlur;
+        
+        cornerRadius = this.selectedCornerRadius;
       }
       else
       {
@@ -130,10 +143,10 @@ function CreateButton(
       }
     
       // Draw a "background" rectangle so the shadow properly gets drawn around it.
-      ctx.fillStyle = "white";
+      ctx.fillStyle = "black";
       ctx.fillRect(
-        this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2), 
-        this.w-this.cornerRadius, this.h-this.cornerRadius);
+        this.x+(cornerRadius/2), this.y+(cornerRadius/2), 
+        this.w-cornerRadius, this.h-cornerRadius);
         
       // Det finns faktiskt inga knappar utan bild i vårt spel, så man kan inte heller ändra bakgrundsfärg för en nertryckt knapp.
       ctx.fillStyle = this.fillStyle;
