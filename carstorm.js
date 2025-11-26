@@ -1530,9 +1530,14 @@ function GameLoopSettings()
     ScreenWidth / 2 - width / 2, 3 * ScreenHeight / 10, 
     width, width * MadSkullLogoImage.height / MadSkullLogoImage.width);
   
+  topctx.textAlign = "center";
+  topctx.font = textTwentyRows + "px CarStormFont1";
+  topctx.fillText("The creation of this game is a joint effort by", ScreenWidth / 2, textTwentyRows * 12);
+  topctx.fillText("Jon and Timothy Lennryd", ScreenWidth / 2, textTwentyRows * 14);
+
   topctx.textAlign = "left";
   topctx.font = textTwentyRows + "px CarStormFont2";
-  
+    
   if(GotResponseFromServer)
   {
     if(ShowDebugStuff)
