@@ -471,7 +471,17 @@ function TouchClickEvent(xPos, yPos)
       //SetState(gsStartScreen);
       break;
     case gsPlaying:
-      if(xPos < screenwidthHalf)
+      var cuttingCoordinate = screenwidthHalf;
+      if(SelectedInputMode == 1) // Left
+      {
+        cuttingCoordinate = screenwidthThird;
+      }
+      else if(SelectedInputMode == 2) // Right
+      {
+        cuttingCoordinate = 2 * screenwidthThird;
+      }
+      
+      if(xPos < cuttingCoordinate)
       {
         // Log("mousedown left");
         PlayerMove("left");
