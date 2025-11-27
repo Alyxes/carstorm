@@ -29,7 +29,7 @@ function CreateButton(
   x, y, w, h, 
   screenWidth, screenHeight,
   cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-  fillStyle, shadowColor, imageArray, selectedStrokeStyle, 
+  fillStyle, shadowColor, imageArray, selectedImage, selectedStrokeStyle, 
   selectedShadowColor, selectedCornerRadius, selectedShadowBlur, callbackFunction,
   adaptToWidth)
 {
@@ -58,7 +58,7 @@ function CreateButton(
     callbackFunction:callbackFunction,
     adaptToWidth:adaptToWidth,
     
-    selectedImage:0,
+    selectedImage:selectedImage,
     buttonPressed:false,
     
     // Resize screen event. 

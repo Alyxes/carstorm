@@ -241,6 +241,13 @@ var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 var BackButtonImage = new Image();
 BackButtonImage.src = "graphics/BackButton.png";
 
+var SpeakerOnButtonImage = new Image();
+SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png";
+var SpeakerOffButtonImage = new Image();
+SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png";
+var SpeakerImages = [SpeakerOffButtonImage,SpeakerOnButtonImage];
+var SpeakerOn = 1; // 0:Off,1:On
+
 var SettingsButtonImage = new Image();
 SettingsButtonImage.src = "graphics/SettingsButton.png";
 
@@ -823,6 +830,22 @@ function SettingsButtonSwitchInputMode()
     
   return SelectedInputMode;
 }
+function SettingsButtonSpeaker()
+{
+  if(SpeakerOn == 1)
+    SpeakerOn = 0;
+  else
+    SpeakerOn = 1;
+  Log("SpeakerOn: " + SpeakerOn);
+  
+  if(!SpeakerOn)
+  {
+    // TODO: Play break sound.
+  }
+  
+  // What image to show on button.
+  return SpeakerOn;
+}
 
 // Alla knapparna ska ha samma färger o margins.
 var cornerRadius = 10;
@@ -850,7 +873,7 @@ function CreateSettingsBackButton()
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [BackButtonImage], selectedStrokeStyle, 
+    fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
     adaptToWidth);
     
@@ -872,12 +895,33 @@ function CreateSettingsButtonSelectedInputMode()
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, InputModeImages, selectedStrokeStyle, 
+    fillStyle, shadowColor, InputModeImages, SelectedInputMode, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode,
     adaptToWidth);
     
   AllButtons.push(buttonSelectedInputMode);
 }
+function CreateSettingsSpeakerButton()
+{
+  var x = AllButtons[1].x + AllButtons[1].w + 2 * ScreenWidth / 20;
+  var y = SafeHeightMargin;
+  
+  // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+  var width = 1;
+  var height = ScreenHeight / 5;
+  var adaptToWidth = false;
+  
+  var buttonSpeaker = CreateButton(
+    x, y, width, height,
+    ScreenWidth, ScreenHeight,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+    fillStyle, shadowColor, SpeakerImages, SpeakerOn, selectedStrokeStyle, 
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSpeaker,
+    adaptToWidth);
+    
+  AllButtons.push(buttonSpeaker);
+}
+
 function CreateToSettingsButton()
 {
   // Which makes me wish for something like "rightAlignedButton"..
@@ -892,7 +936,7 @@ function CreateToSettingsButton()
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [SettingsButtonImage], selectedStrokeStyle, 
+    fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, StartScreenToSettingsButton,
     adaptToWidth);
     
@@ -1138,9 +1182,10 @@ function OnExitStartScreen()
 }
 function OnEnterSettings()
 {
-  // Define buttons.
+  // Define buttons. NOTE: Don't change the order here, due to my terrible hacks in them!
   CreateSettingsBackButton();
   CreateSettingsButtonSelectedInputMode();
+  CreateSettingsSpeakerButton();
 }
 function OnExitSettings()
 {
@@ -1153,7 +1198,7 @@ function TransitFromStartScreenToIntroPlay()
   player.RestartBlinkTimer = 0;
   audioIntroMelody.pause();
   audioIntroMelody.currentTime = 0;
-  audioStart.play();
+  PlaySound(audioStart);
   audioCurrentlyPlaying = audioStart;
 }
 function TransitFromIntroPlayToPlaying()
@@ -1178,7 +1223,7 @@ function TransitFromPlayingToCrashed()
   clearStreetTimer = 250;
 
   TimeToGoBackToPlay = Now + 3900;
-  audioCrash.play();
+  PlaySound(audioCrash);
 }
 function TransitFromCrashedToPlaying()
 {
@@ -1206,7 +1251,7 @@ function OnEnterPaused()
 }
 function OnEnterGameOver()
 {
-  audioGameOver.play();
+  PlaySound(audioGameOver);
   audioCurrentlyPlaying = audioGameOver;
   messageTimer = 5000; // Set for the txtTouchScreenToRestart message.
   
@@ -1218,7 +1263,7 @@ function OnEnterGameOver()
 function OnEnterWinGame()
 {
   // Start the wingame trudelutt.
-  audioEndingWin.play();
+  PlaySound(audioEndingWin);
   audioCurrentlyPlaying = audioEndingWin;
   messageTimer = 4000; // Set for the txtTouchScreenToPlayAgain message.
   
@@ -1228,6 +1273,15 @@ function OnEnterWinGame()
   
   SetScoreStatistics();
   EndGameVariableResets();
+}
+
+// Play sound only if the speaker is turned on.
+function PlaySound(sound)
+{
+  if(SpeakerOn)
+  {
+    sound.play();
+  }
 }
 
 // Starts at sound zero, if zero is not selected, continue at one, and so on until 
@@ -1251,7 +1305,7 @@ function PlayMoveSound(pos)
     }
     
     MoveSound.lastPlayed = audioMoveSounds[pos];
-    MoveSound.lastPlayed.play();
+    PlaySound(MoveSound.lastPlayed);
     
     // Move the selected sound to the end of the array.
     audioMoveSounds.splice(pos,1);
@@ -1270,7 +1324,7 @@ function PlayMoveSound(pos)
     {
       // We are on the end of the list, so just select the last sound. (again)
       MoveSound.lastPlayed = audioMoveSounds[audioMoveSounds.length - 1];
-      MoveSound.lastPlayed.play();
+      PlaySound(MoveSound.lastPlayed);
       
       Log("Boring! Make the list bigger!");
     }
@@ -1475,7 +1529,7 @@ function GameLoopStartScreen()
     // Interesting details to check if a sound is playing, downloaded or downloading etc.
     // https://stackoverflow.com/questions/9437228/how-to-check-if-an-audio-is-playing
     // 
-    audioIntroMelody.play();
+    PlaySound(audioIntroMelody);
     audioCurrentlyPlaying = audioIntroMelody;
     IntroMelodyPlayed = true;
   }
@@ -1828,7 +1882,7 @@ function GameTickTheCars(isPlaying)
   TickDownAllCarsOneRow();
   if (isPlaying)
   {
-    audioBlip.play();
+    PlaySound(audioBlip);
     
     CreateNewCars();
 
