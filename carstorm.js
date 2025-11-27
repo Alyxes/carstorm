@@ -61,6 +61,7 @@ var screenwidthHalf;
 
 var SafeWidthMargin; // Just a nice to have margin from the screen borders.
 var SafeHeightMargin;
+var ButtonWidthDistance;
 
 // If true, it starts in paused mode, and gets activated by the focus event.
 var screenSaverPaused = false;
@@ -567,6 +568,7 @@ function Resize()
   
   SafeWidthMargin = screenwidthThirteenth / 2;
   SafeHeightMargin = ScreenHeight / 15;
+  ButtonWidthDistance = ScreenWidth / 100;
   
   lightWidth = ScreenWidth/23;
   lightHeight = ScreenHeight/20;
@@ -875,11 +877,12 @@ function CreateSettingsBackButton()
   var y = SafeHeightMargin;
   
   // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+  // OBS: Detta är första knappen i en row, så den bestämmer alla andra knappars höjd och x- o yposition!
   var width = 1;
   var height = ScreenHeight / 5;
   var adaptToWidth = false;
   
-  var buttonSelectedInputMode = CreateButton(
+  var buttonBack = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
@@ -887,18 +890,16 @@ function CreateSettingsBackButton()
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
     adaptToWidth);
     
-  AllButtons.push(buttonSelectedInputMode);
+  AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
 }
 function CreateSettingsButtonSelectedInputMode()
 {
-  // Det här är mitt skitdåliga sätt att placera knapparna på en rad efter varann. Se CreateSettingsBackButton() som kommer vänster om.
-  var x = AllButtons[0].x + AllButtons[0].w + ScreenWidth / 20;
-  //var x = ScreenWidth / 10 + ScreenWidth / 6 + ScreenWidth / 30;
-  var y = SafeHeightMargin;
+  var x = 1;
+  var y = 1;
   
   // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
   var width = 1;
-  var height = ScreenHeight / 5;
+  var height = 1;
   var adaptToWidth = false;
     
   var buttonSelectedInputMode = CreateButton(
@@ -908,17 +909,17 @@ function CreateSettingsButtonSelectedInputMode()
     fillStyle, shadowColor, InputModeImages, SelectedInputMode, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode,
     adaptToWidth);
-    
-  AllButtons.push(buttonSelectedInputMode);
+  
+  AddButtonToRow(buttonSelectedInputMode, AllButtons, ButtonWidthDistance);
 }
 function CreateSettingsSpeakerButton()
 {
-  var x = AllButtons[1].x + AllButtons[1].w + 2 * ScreenWidth / 20;
-  var y = SafeHeightMargin;
+  var x = 1;
+  var y = 1;
   
   // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
   var width = 1;
-  var height = ScreenHeight / 5;
+  var height = 1;
   var adaptToWidth = false;
   
   var buttonSpeaker = CreateButton(
@@ -929,7 +930,7 @@ function CreateSettingsSpeakerButton()
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSpeaker,
     adaptToWidth);
     
-  AllButtons.push(buttonSpeaker);
+  AddButtonToRow(buttonSpeaker, AllButtons, ButtonWidthDistance);
 }
 
 function CreateToSettingsButton()
@@ -2415,10 +2416,7 @@ function DrawButtons()
 }
 function ButtonsResize()
 {
-  for(var i=0; i<AllButtons.length; i++)
-  {
-    AllButtons[i].Resize(ScreenWidth, ScreenHeight);
-  }
+  ResizeRow(AllButtons, ButtonWidthDistance, ScreenWidth, ScreenHeight);
 }
 function ButtonsOnTouchStart(x,y)
 {

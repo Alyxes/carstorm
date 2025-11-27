@@ -25,6 +25,51 @@ if (buttonDoLogs)
 else 
   var Log = function(){};
 
+// A row is a horizontal set of buttons. (A column is a vague future idea that don't exist)
+function AddButtonToRow(button, row, distance)
+{
+  if(row.length > 0)
+  {
+    // Put the new button after the last one. Also set it at the same height and make it the same height.
+    var lastBtn = row[row.length-1];
+    var x = lastBtn.x + lastBtn.w + distance;
+    
+    button.x = x;
+    button.y = lastBtn.y;
+    button.h = lastBtn.h;
+    
+    button.Resize(button.screenWidth, button.screenHeight);
+  }
+  else
+  {
+    // This is the first button in the row. We keep its x position.
+  }
+  
+  row.push(button);
+}
+function ResizeRow(row, distance, screenWidth, screenHeight)
+{
+  if(row.length > 0)
+  {
+    var firstBtn = row[0];
+    firstBtn.Resize(screenWidth, screenHeight);
+
+    var x = firstBtn.x + firstBtn.w + distance;
+    
+    for(var i=1;i<row.length;i++)
+    {
+      var button = row[i];
+      button.Resize(screenWidth, screenHeight);
+
+      button.x = x;
+      button.y = firstBtn.y;
+      button.h = firstBtn.h;
+      
+      x += button.w + distance;
+    }
+  }
+}
+
 function CreateButton(
   x, y, w, h, 
   screenWidth, screenHeight,
