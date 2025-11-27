@@ -241,6 +241,9 @@ var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 var BackButtonImage = new Image();
 BackButtonImage.src = "graphics/BackButton.png";
 
+var SettingsButtonImage = new Image();
+SettingsButtonImage.src = "graphics/SettingsButton.png";
+
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
 
 const txtCARSTORM = "CARSTORM";
@@ -447,12 +450,14 @@ function TouchClickEvent(xPos, yPos)
   {
     case gsStartScreen:
         // Clicking the start screen starts a new game.
-        //SetState(gsIntroPlay);
+        // This is also a terrible hack, but it works. :)
+        if(AllButtons[0].buttonPressed == false)
+        {
+          SetState(gsIntroPlay);
+        }
         
-        SetState(gsSettings);
       break;
     case gsSettings:
-      // TODO: Click the buttons. 
       // Buttons: Back. Sound switch. Input mode toggle.
       
       // Clicking the screen goes back to start screen right now.
@@ -799,6 +804,10 @@ async function FetchOnlineStats()
 }
 
 // De här skickar vi med till knapparna, som anropar denna funktion när man klickar på den.
+function StartScreenToSettingsButton()
+{
+  SetState(gsSettings);
+}
 function SettingsBackButton()
 {
   SetState(gsStartScreen);
@@ -869,7 +878,26 @@ function CreateSettingsButtonSelectedInputMode()
     
   AllButtons.push(buttonSelectedInputMode);
 }
-
+function CreateToSettingsButton()
+{
+  // Which makes me wish for something like "rightAlignedButton"..
+  var x = ScreenWidth - SafeWidthMargin * 3;
+  var y = SafeHeightMargin;
+  
+  var width = ScreenWidth / 15;
+  var height = 1;
+  var adaptToWidth = true;
+  
+  var buttonToSettings = CreateButton(
+    x, y, width, height,
+    ScreenWidth, ScreenHeight,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
+    fillStyle, shadowColor, [SettingsButtonImage], selectedStrokeStyle, 
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, StartScreenToSettingsButton,
+    adaptToWidth);
+    
+  AllButtons.push(buttonToSettings);
+}
 
 // Create a double array of this format: level[y][x], where each "cell" is an object.
 function CreateLevel()
@@ -1000,11 +1028,13 @@ function SetState(newState)
     case gsStartScreen:
       if(newState == gsIntroPlay)
       {
+        OnExitStartScreen();
         TransitFromStartScreenToIntroPlay();
         transitionCool = true;
       }
       else if(newState == gsSettings)
       {
+        OnExitStartScreen();
         OnEnterSettings();
         transitionCool = true;
       }
@@ -1099,6 +1129,12 @@ function OnEnterStartScreen()
   messageTimer = 3000; // Used for the message txtTouchScreenToDrive.
   IntroMelodyPlayed = false;
   FetchOnlineStats();
+  
+  CreateToSettingsButton();
+}
+function OnExitStartScreen()
+{
+  AllButtons.length = 0; // Clear the buttons!
 }
 function OnEnterSettings()
 {
@@ -1451,6 +1487,8 @@ function GameLoopStartScreen()
 
   // The cars and text are drawn here so they don't get smeared.
   topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+  DrawButtons();
   
   // We want to define width, but keep aspect ratio.
   // https://stackoverflow.com/questions/10841532/canvas-drawimage-scaling
