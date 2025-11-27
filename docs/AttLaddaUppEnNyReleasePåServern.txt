@@ -17,6 +17,26 @@ Steg 1:
 
   OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 
+  Filstruktur som ska laddas upp:
+    /fonts
+    /graphics
+    /private
+    /sound
+    app.webmanifest
+    button.js
+    carstorm.js
+    favicon.ico
+    index.html
+    version.php
+    service_worker.js
+
+  Filer som INTE ska eller behöver laddas upp:
+    /övriga kataloger
+    .gitignore
+    carstormKeystore.jks    (!!!)
+    package.json
+    web.config              (Är iis fil)
+
 Steg 2:
   1. Om du ökar $serverVersion i version.php av någon anledning, så MÅSTE du lägga in kod i FetchOnlineStats() som hanterar det !!
   2. Om du inte följer steg 1 kommer spelet att laddas om ett par gånger och sedan hamna i ett sur-läge där det inte bryr sig om att uppdatera på länge. Inte hyperallvarligt alltså, men skitdumt.

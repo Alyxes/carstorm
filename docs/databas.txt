@@ -18,3 +18,23 @@ Dude, här är allt din fungerande kod:
     
     Sen i någon phpfil i roten:
       include "private/settings.php";
+      
+---Queries---
+
+Den här queryn sammanfattar fint olika spelare. :)
+SELECT *, count(*) as nbr_of_entries FROM `user_stats` as us where us.created > '2025-11-19' group by us.remote_addr order by us.created;
+  <-När de byter ip-adress får du gå på samma high_score, det är enda sättet att identifiera dem på då http_user_agent ofta är samma!
+
+9 olika browsers: (Där "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36" är överlägset vanligast)
+SELECT *, count(*) FROM `user_stats` as us group by http_user_agent;
+
+Om du gör en sida med några olika bra vyer, och så länkar du varje cell i resultatet så du kan klicka på den, och så tar den och söker efter samtliga resultat där det värdet ingår, tex. remote_addr, http_user_agent eller high_score.
+  <-Det ger ett rätt intuitivt klicka runt läge utan att jag behöver koda ihjäl mig. :)
+  
+TODO: Bugg! Det verkar precis som om det skapas två jävla rader per request i databasen! 
+  SELECT * FROM `user_stats` as us where us.created > '2025-11-20';
+    <-Jodå, se denna queryn, det blir två, men inte alltid!
+      SELECT * from (SELECT *, count(*) as superCount FROM `user_stats` as us where us.created > '2025-11-20' group by us.created) as T where T.superCount > 1;
+    <-Dubbelkollade, det blir två rader med exakt samma klockslag, ibland. :-P
+      SELECT * FROM `user_stats` as us where us.created > '2025-11-20' order by us.created;
+

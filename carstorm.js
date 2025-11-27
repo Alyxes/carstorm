@@ -852,7 +852,7 @@ function SettingsButtonSpeaker()
   
   if(!SpeakerOn)
   {
-    // TODO: Play break sound.
+    audioMove3.play();
   }
   
   // What image to show on button.

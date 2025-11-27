@@ -8,5 +8,21 @@
         "type": "image/png",
         "sizes": "512x512"
      }
-  ]   
+  ],
+  "screenshots":[
+    {
+      "src": "graphics/webmanifest_screenshot.png",
+      "sizes": "1736x1034",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Application"
+    },
+    {
+      "src": "graphics/webmanifest_screenshot.png",
+      "sizes": "1736x1034",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Application"
+    }    
+  ]
 }

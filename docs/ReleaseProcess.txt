@@ -31,10 +31,6 @@ Gjort inlägg med länk till spelet på
 Aah, någon på google har faktiskt testat spelet! (19/11)
 104.132.17.62 är Google LLC
 
-Den här queryn sammanfattar fint olika spelare. :)
-SELECT *, count(*) as nbr_of_entries FROM `user_stats` as us where us.created > '2025-11-19' group by us.remote_addr order by us.created;
-  <-När de byter ip-adress får du gå på samma high_score, det är enda sättet att identifiera dem på då http_user_agent ofta är samma!
-
 -----------------
 
 Funkar så där: (Detta är DEN ENDA som fungerar efter en hel kväll av meckande)
