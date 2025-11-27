@@ -104,7 +104,8 @@ function CreateButton(
     adaptToWidth:adaptToWidth,
     
     selectedImage:selectedImage,
-    buttonPressed:false,
+    buttonPressed:false,          // Kan växla fram o tillbaka när användaren flyttar fingret, mellan OnTouchStart() och OnTouchEnd().
+    buttonGotTouchStart: false,   // Sätts i OnTouchStart() och rensas i OnTouchEnd().
     
     // Resize screen event. 
     Resize: function(screenWidth, screenHeight) {
@@ -138,28 +139,44 @@ function CreateButton(
       if(x >= this.x && x <= this.x + this.w 
         && y >= this.y && y <= this.y + this.h)
       {
+        this.buttonGotTouchStart = true;
         this.buttonPressed = true;
         Log("yey, someone's touching me!");
       }
     },
     
-    OnTouchEnd: function(x,y) {
-      if(this.buttonPressed)
+    OnTouchMove: function(x,y) {
+      if(this.buttonGotTouchStart)
       {
         if(x >= this.x && x <= this.x + this.w 
           && y >= this.y && y <= this.y + this.h)
         {
-          Log("yey, a full click happened! Calling callbackFunction().");
-          this.selectedImage = this.callbackFunction();
+          this.buttonPressed = true;
+          Log("yey, still touching me!");
         }
         else
         {
-          // Att släppa upp fingret utanför knappen är ofint, men cancellerar i varje fall klicket.
-          Log("Did you slide off?");
+          this.buttonPressed = false;
+          Log("Sliding off are you?");
         }
-
-        this.buttonPressed = false;
       }
+    },
+    
+    OnTouchEnd: function() {
+      // Somewhat logical, when a touch end happens, there are no coordinates. So OnTouchMove() has kept track of last finger position up until this event happened.
+      if(this.buttonPressed)
+      {
+        // OnTouchMove() kept track of the finger movement until the last moment where it was removed. 
+        Log("yey, a full click happened! Calling callbackFunction().");
+        this.selectedImage = this.callbackFunction();
+      }
+      else
+      {
+        // User slided finger outside of button in OnTouchMove(), or, this button has never been touched. 
+      }
+      
+      this.buttonGotTouchStart = false;
+      this.buttonPressed = false;
     },
           
     Draw: function(ctx) {

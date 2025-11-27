@@ -382,25 +382,22 @@ function SetupCallbacks()
     // Much cooler feeling when the car moves when you put your finger on the screen!
     // (Instead of when you lift your finger from the screen.)
     document.addEventListener("touchstart", (e) => {
-      var x = e.touches[0].clientX;
-
-      // Multitouch you know. :)
+      // Multitouch, so touches is an array of all the fingers touching right now.
       TouchClickEvent(e.touches[0].clientX, e.touches[0].clientY);
     });
+    document.addEventListener("touchmove", (e) => {
+      Log("A touch move event happened!");
+      ButtonsOnTouchMove(e.touches[0].clientX, e.touches[0].clientY);
+    });
     document.addEventListener("touchend", (e) => {
-      var x = e.touches[0].clientX;
-
-      // Multitouch you know. :)
-      ButtonsOnTouchEnd(e.touches[0].clientX, e.touches[0].clientY);
-    });    
+      Log("A touch end event happened!");
+      ButtonsOnTouchEnd();
+    });
     document.addEventListener("touchcancel", (e) => {
-      var x = e.touches[0].clientX;
-      
       // Might happen for many reasons, maybe a phone call or you name it. 
+      // TODO: Should have a ButtonsCancelTouch() or similar abort method.
       Log("A touch cancel event happened!");
-
-      // Multitouch you know. :)
-      ButtonsOnTouchEnd(e.touches[0].clientX, e.touches[0].clientY);
+      ButtonsOnTouchEnd();
     });
   }
   else
@@ -2425,10 +2422,17 @@ function ButtonsOnTouchStart(x,y)
     AllButtons[i].OnTouchStart(x,y);
   }
 }
-function ButtonsOnTouchEnd(x,y)
+function ButtonsOnTouchMove(x,y)
 {
   for(var i=0; i<AllButtons.length; i++)
   {
-    AllButtons[i].OnTouchEnd(x,y);
+    AllButtons[i].OnTouchMove(x,y);
+  }
+}
+function ButtonsOnTouchEnd()
+{
+  for(var i=0; i<AllButtons.length; i++)
+  {
+    AllButtons[i].OnTouchEnd();
   }
 }
