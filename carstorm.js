@@ -127,6 +127,7 @@ var carHeight = 0;
 var messageTimer = 0;       // Just a general timer used in several places.
 var TimeToGoBackToPlay = 0; // dito
 var clearStreetTimer = 0;   // Timer until the street gets cleared from other cars.
+var PlayStartTime = 0;      // Set to Now when a new play round starts.
 
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
@@ -230,6 +231,11 @@ Smoke1Image.src = "graphics/Smoke1.png";
 var Smoke2Image = new Image();
 Smoke2Image.src = "graphics/Smoke2.png";
 
+var ArrowLeftImage = new Image();
+ArrowLeftImage.src = "graphics/ArrowLeft.png";
+var ArrowRightImage = new Image();
+ArrowRightImage.src = "graphics/ArrowRight.png";
+
 var InputModeButtonNormal = new Image();
 InputModeButtonNormal.src = "graphics/InputModeButtonNormal.png";
 var InputModeButtonLeft = new Image();
@@ -238,6 +244,7 @@ var InputModeButtonRight = new Image();
 InputModeButtonRight.src = "graphics/InputModeButtonRight.png";
 var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
 var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
+var CuttingCoordinate = 0;
 
 var BackButtonImage = new Image();
 BackButtonImage.src = "graphics/BackButton.png";
@@ -469,17 +476,7 @@ function TouchClickEvent(xPos, yPos)
       //SetState(gsStartScreen);
       break;
     case gsPlaying:
-      var cuttingCoordinate = screenwidthHalf;
-      if(SelectedInputMode == 1) // Left
-      {
-        cuttingCoordinate = screenwidthThird;
-      }
-      else if(SelectedInputMode == 2) // Right
-      {
-        cuttingCoordinate = 2 * screenwidthThird;
-      }
-      
-      if(xPos < cuttingCoordinate)
+      if(xPos < CuttingCoordinate)
       {
         // Log("mousedown left");
         PlayerMove("left");
@@ -584,6 +581,7 @@ function Resize()
   
   ResizePlayer();
   ButtonsResize();
+  SetCuttingCoordinate();
   
   ctx.drawImage(StartBGImage, 0, 0, ScreenWidth, ScreenHeight);
   
@@ -819,6 +817,19 @@ async function FetchOnlineStats()
   FetchOnlineStatsDone = true;
 }
 
+function SetCuttingCoordinate()
+{
+  CuttingCoordinate = screenwidthHalf;
+  if(SelectedInputMode == 1) // Left
+  {
+    CuttingCoordinate = screenwidthThird;
+  }
+  else if(SelectedInputMode == 2) // Right
+  {
+    CuttingCoordinate = 2 * screenwidthThird;
+  }
+}
+
 // De här skickar vi med till knapparna, som anropar denna funktion när man klickar på den.
 function StartScreenToSettingsButton()
 {
@@ -835,6 +846,7 @@ function SettingsButtonSwitchInputMode()
   if(SelectedInputMode > 2)
     SelectedInputMode = 0;
 
+  SetCuttingCoordinate();
   Log("SelectedInputMode: " + SelectedInputMode);
     
   return SelectedInputMode;
@@ -1213,6 +1225,7 @@ function TransitFromStartScreenToIntroPlay()
 function TransitFromIntroPlayToPlaying()
 {
   messageTimer = 0; // Reset to be used for "SPEED INCREASE".
+  PlayStartTime = Now;
   player.CrashState = "None";
   explosionAnimFrameLength = 400;
   player.RestartBlinkTimer = 0;
@@ -1761,6 +1774,35 @@ function GameLoopPlaying()
   
   DrawSpeedIncreaseMessage();
 
+  var arrowAlpha = 0.5;
+  if(Now - PlayStartTime < 10000)
+  {
+    arrowAlpha = 1.0;
+  }
+  
+  topctx.globalAlpha = arrowAlpha;
+  {
+    var arrowSide = ScreenHeight / 4;
+    var y = ScreenHeight - arrowSide - SafeHeightMargin;
+    var xLeft = SafeWidthMargin * 2;
+    var xRight = ScreenWidth - arrowSide - SafeWidthMargin * 2;
+    
+    if(SelectedInputMode == 1) // Left
+    {
+      //xRight = xLeft + arrowSide + SafeWidthMargin * 4;
+      xRight = CuttingCoordinate;
+    }
+    else if(SelectedInputMode == 2) // Right
+    {
+      //xLeft = xRight - arrowSide - SafeWidthMargin * 4;
+      xLeft = CuttingCoordinate - arrowSide;
+    }
+    
+    topctx.drawImage(ArrowLeftImage, xLeft, y, arrowSide, arrowSide);
+    topctx.drawImage(ArrowRightImage, xRight, y, arrowSide, arrowSide);
+  }
+  topctx.globalAlpha = 1.0;
+  
   if (player.Score >= WinningScore)
   {
     SetState(gsWinGame);
