@@ -76,7 +76,7 @@ function CreateButton(
   cornerRadius, fillingInset, shadowBlur, strokeStyle, 
   fillStyle, shadowColor, imageArray, selectedImage, selectedStrokeStyle, 
   selectedShadowColor, selectedCornerRadius, selectedShadowBlur, callbackFunction,
-  adaptToWidth)
+  adaptToWidth, zoomAmount)
 {
   // fyfan vad tråkigt..
   var button = {
@@ -102,6 +102,7 @@ function CreateButton(
     imageArray:imageArray,
     callbackFunction:callbackFunction,
     adaptToWidth:adaptToWidth,
+    zoomAmount:zoomAmount,
     
     selectedImage:selectedImage,
     buttonPressed:false,          // Kan växla fram o tillbaka när användaren flyttar fingret, mellan OnTouchStart() och OnTouchEnd().
@@ -184,6 +185,11 @@ function CreateButton(
       ctx.lineJoin = "round";   
       
       var cornerRadius = this.cornerRadius;
+      
+      var x = this.x;
+      var y = this.y;
+      var w = this.w;
+      var h = this.h;
     
       if(this.buttonPressed)
       {
@@ -193,6 +199,12 @@ function CreateButton(
         ctx.shadowBlur = this.selectedShadowBlur;
         
         cornerRadius = this.selectedCornerRadius;
+        
+        // Zoom up the button when it is pressed.
+        x -= this.zoomAmount;
+        y -= this.zoomAmount;
+        w += this.zoomAmount * 2;
+        h += this.zoomAmount * 2;
       }
       else
       {
@@ -204,12 +216,15 @@ function CreateButton(
         ctx.shadowBlur = this.shadowBlur;
       }
     
-      // Draw a "background" rectangle so the shadow properly gets drawn around it.
-      ctx.fillStyle = "black";
-      ctx.fillRect(
-        this.x+(cornerRadius/2), this.y+(cornerRadius/2), 
-        this.w-cornerRadius, this.h-cornerRadius);
-        
+      if(this.shadowBlur > 0)
+      {
+        // Draw a "background" rectangle so the shadow properly gets drawn around it.
+        ctx.fillStyle = "black";
+        ctx.fillRect(
+          x+(cornerRadius/2), y+(cornerRadius/2), 
+          w-cornerRadius, h-cornerRadius);
+      }
+      
       // Det finns faktiskt inga knappar utan bild i vårt spel, så man kan inte heller ändra bakgrundsfärg för en nertryckt knapp.
       ctx.fillStyle = this.fillStyle;
       
@@ -221,33 +236,36 @@ function CreateButton(
         this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2), 
         this.w-this.cornerRadius, this.h-this.cornerRadius);*/
 
-      // Ändarna på linjer så heter det lineCap, lineJoin är jointen mellan två linjer.
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
-      ctx.lineTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2));
-      ctx.lineTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2));
-      ctx.stroke();
+      if(this.cornerRadius > 0)
+      {
+        // Ändarna på linjer så heter det lineCap, lineJoin är jointen mellan två linjer.
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(x+(this.cornerRadius/2), y+(this.cornerRadius/2)+h-this.cornerRadius);
+        ctx.lineTo(x+(this.cornerRadius/2), y+(this.cornerRadius/2));
+        ctx.lineTo(x+(this.cornerRadius/2)+w-this.cornerRadius, y+(this.cornerRadius/2));
+        ctx.stroke();
 
-      ctx.beginPath();
-      ctx.moveTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2));
-      ctx.lineTo(this.x+(this.cornerRadius/2)+this.w-this.cornerRadius, this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
-      ctx.lineTo(this.x+(this.cornerRadius/2), this.y+(this.cornerRadius/2)+this.h-this.cornerRadius);
-      ctx.stroke();
-
-      // The filling should be _inside_ the stroked outline, so move it down a bit and a bit smaller. 
-      // ..Fast nu tyckte jag det blev snyggare om den gick över en bit. 
-      ctx.fillRect(
-        this.x+(this.fillingInset), this.y+(this.fillingInset), 
-        this.w-this.fillingInset * 2, this.h-this.fillingInset * 2);
+        ctx.beginPath();
+        ctx.moveTo(x+(this.cornerRadius/2)+w-this.cornerRadius, y+(this.cornerRadius/2));
+        ctx.lineTo(x+(this.cornerRadius/2)+w-this.cornerRadius, y+(this.cornerRadius/2)+h-this.cornerRadius);
+        ctx.lineTo(x+(this.cornerRadius/2), y+(this.cornerRadius/2)+h-this.cornerRadius);
+        ctx.stroke();
+        
+        // The filling should be _inside_ the stroked outline, so move it down a bit and a bit smaller. 
+        // ..Fast nu tyckte jag det blev snyggare om den gick över en bit. 
+        ctx.fillRect(
+          x+(this.fillingInset), y+(this.fillingInset), 
+          w-this.fillingInset * 2, h-this.fillingInset * 2);
+      }
 
       if(this.imageArray != null)
       {
         // The image should have the size of the filling rectangle.
         ctx.drawImage(
           this.imageArray[this.selectedImage], 
-          this.x+(this.fillingInset), this.y+(this.fillingInset), 
-          this.w-this.fillingInset * 2, this.h-this.fillingInset * 2);
+          x+(this.fillingInset), y+(this.fillingInset), 
+          w-this.fillingInset * 2, h-this.fillingInset * 2);
       }
     },
   };

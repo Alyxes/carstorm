@@ -857,16 +857,17 @@ function SettingsButtonSpeaker()
 }
 
 // Alla knapparna ska ha samma färger o margins.
-var cornerRadius = 10;
-var fillingInset = 10;
-var shadowBlur = 20;
+var cornerRadius = 0; // Sätter man cornerRadius till noll ritas ingen border ut.
+var fillingInset = 0;
+var shadowBlur = 0; 
 var strokeStyle = "rgba(136,136,136,1.0)";
 var fillStyle = "rgba(40,40,40,1.0)";
 var shadowColor = "rgba(255,255,0,1.0)";
 var selectedStrokeStyle = "rgba(180,180,180,1.0)";
 var selectedShadowColor = "rgba(0,0,255,1.0)";
-var selectedCornerRadius = cornerRadius + 10;
-var selectedShadowBlur = shadowBlur + 20;
+var selectedCornerRadius = cornerRadius + 0;
+var selectedShadowBlur = shadowBlur + 0;
+var zoomAmount = 20;
 
 function CreateSettingsBackButton()
 {
@@ -885,7 +886,7 @@ function CreateSettingsBackButton()
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
-    adaptToWidth);
+    adaptToWidth, zoomAmount);
     
   AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
 }
@@ -905,7 +906,7 @@ function CreateSettingsButtonSelectedInputMode()
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, InputModeImages, SelectedInputMode, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSwitchInputMode,
-    adaptToWidth);
+    adaptToWidth, zoomAmount);
   
   AddButtonToRow(buttonSelectedInputMode, AllButtons, ButtonWidthDistance);
 }
@@ -925,7 +926,7 @@ function CreateSettingsSpeakerButton()
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, SpeakerImages, SpeakerOn, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSpeaker,
-    adaptToWidth);
+    adaptToWidth, zoomAmount);
     
   AddButtonToRow(buttonSpeaker, AllButtons, ButtonWidthDistance);
 }
@@ -946,7 +947,7 @@ function CreateToSettingsButton()
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
     fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, StartScreenToSettingsButton,
-    adaptToWidth);
+    adaptToWidth, zoomAmount);
     
   AllButtons.push(buttonToSettings);
 }
