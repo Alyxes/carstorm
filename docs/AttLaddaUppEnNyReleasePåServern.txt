@@ -9,6 +9,7 @@ Steg 0:
       chrome://inspect/#devices
       <-Mer detaljer i pwa.txt!
   3. Sådär, nu har du i varje fall sett att samtliga filer är rätt minifierade och ligger uppe på carstorm-dev samt kör utan några vidriga fel och varningar. 
+  (OBS: Tänk på att dev-sajten använder samma databas som den skarpa sajten.)
   
 Steg 1:
   1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 

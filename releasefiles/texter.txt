@@ -3,7 +3,7 @@
 
 Release name: 
   8 (Second public release)
-  <-Det syns faktiskt ingenstans på app store, endast internt på app glurg. 
+  <-Det syns faktiskt ingenstans på app store, endast internt på app glurg console. 
   
 Release notes:
 <en-GB>

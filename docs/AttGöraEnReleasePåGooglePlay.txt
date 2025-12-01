@@ -5,6 +5,7 @@
     a. .gitignore
     b. carstormKeystore.jks !!
     c. chrome.exe - Shortcut
+  * WELL, Följ stegen i AttLaddaUppEnNyReleasePåServern.txt minituöst.
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
   a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 8
@@ -19,13 +20,21 @@
       * Nu hamnar allting under app/release/app-release.aab.
 4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
-6. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
+   Eller, nu när du släpper nya versioner: 
+      Test and release, Production, Create new release.
+6. 
+  a. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
     <-Numera bubblewrap_buildfiles/app/release/app-release.aab istället!
-7. Publicera. Nu ska en ny version strax finnas uppe för nedladdning.
+  b. Release name: "8 (Second public release)"
+  c. Jag skriver alla release-detaljer i releasefiles/texter.txt, följ dem!
+7. Publicera. 
+  a. Publishing overview visar en "Running quick checks" som du kan låta köra färdigt.
+  b. Klicka sen på "Send x changes for review".
+  c1. ENDAST I INTERNAL TESTING: Nu ska en ny version strax finnas uppe för nedladdning.
+  c2. Vid en public release ska allt gå genom googles review process, kan ta dagar.
 8. Klicka på fliken Testers. Klicka Copy link. Ge den här länken till alla i testgruppen. 
 
-
-Stegen för att göra en open testing istället för en internal testing:
+Använd inte det här: Stegen för att göra en open testing istället för en internal testing:
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
   <-Jag har gått vidare till open testing, så alla som har utvecklarkonto får testa appen.
     (men de hittar den ju knappast)
@@ -38,6 +47,8 @@ Stegen för att göra en open testing istället för en internal testing:
 --------------------
 
 ATT TESTA EN RELEASE PÅ TELEFONEN
+
+Bättre: Kolla i AttLaddaUppEnNyReleasePåServern.txt.
 
 1. Eftersom chrome används för att köra pwa-appar, så är det också chrome-cachen vi har att bråka med.
 2. Om appen inte vill ladda senaste filerna, öppna då carstorm.madskullcreations.com i browsern. 
