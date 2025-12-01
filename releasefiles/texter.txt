@@ -1,3 +1,20 @@
+-----SECOND RELEASE-----
+  TODO: Den här gången, tagga releasen i github, så vi lätt kan backa till releasens exakta kod. 
+
+Release name: 
+  8 (Second public release)
+  <-Det syns faktiskt ingenstans på app store, endast internt på app glurg. 
+  
+Release notes:
+<en-GB>
+* This release includes a batch of fixes, both visual and code-wise, along with some minor new functionality.
+* You can choose left or right hand only drive mode now!
+
+This is a classical arcade game, or maybe more of a game-n-watch. Drive and avoid the meeting traffic! 
+
+Beat your highscore while waiting for the bus or explain to your kids they have to get 5000 points before they get any candy. This is a nice to have game.
+</en-GB>
+
 -----FIRST RELEASE------
   -Sent for review 18/11 2025!
 
@@ -12,6 +29,13 @@ Beat your highscore while waiting for the bus or explain to your kids they have 
 </en-GB>
 
 --------------
+
+TODO: När ny release släppts: 
+  1. facebook-inlägg: (MÅNDAG KL 10, gör ett nytt inlägg på Madskull Creations!)
+  -Ta bort det gamla kanske..
+  -Lägg upp på din egen igen också.
+  2. Sök på "mobile games" så dyker hundramiljoner grupper upp. :)
+  3. "game review sites" på duckduckgo ska du också titta mer på.
 
 Youtube video: 
 https://www.youtube.com/watch?v=FrzXQn58eQc
@@ -28,10 +52,6 @@ DONE: instagram video slork: (DU MÅSTE SKAPA INLÄGGET PÅ MÅNDAG KL 10, går 
 
 DONE: linkedin-inlägg: (MÅNDAG KL 13, gör ett nytt inlägg!)
 
-TODO: facebook-inlägg: (MÅNDAG KL 10, gör ett nytt inlägg på Madskull Creations!)
-  -Ta bort det gamla kanske..
-  -Lägg upp på din egen igen också.
-
 Tags på app store: (Max 5 st, och bara välja bland deras..)
   Action, Arcade, Car racing, Casual, Racing
 
@@ -47,13 +67,15 @@ carstorm,arcade,arcadegame,mobilegames,mobile,singleplayer,timewaste,musica,song
 
 Gjorde en piratgrej och postade här: (21/11)
   https://www.facebook.com/groups/180526295645638/
+    <-De brydde sig aldrig om att godkänna eller avböja mitt inlägg..
     <-Sök på "mobile games" så dyker hundramiljoner grupper upp. :)
     
   "game review sites" på duckduckgo ska du också titta mer på.
   
 Not sure it's ok to post this here, but we released a simple feel-good game with vibes from the 80s. We call it Carstorm! It's for android, free and well worth five minutes of your time. :) 
 
-https://play.google.com/store/apps/details?id=com.mask.carstorm
+Länk till spelet på app store:
+  https://play.google.com/store/apps/details?id=com.mask.carstorm
 
 --------------
 
