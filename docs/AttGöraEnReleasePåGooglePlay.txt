@@ -44,6 +44,9 @@ Använd inte det här: Stegen för att göra en open testing istället för en i
 9. Send 1 change for review. (Running checks kan du låta vara, de kör först ändå)
 10. Nu kan det här ta en hel del tid! Upp till sju dar. Så det är inget vi ska använda för våra tester.
 
+Sist, gör en tag i git. "Release-2" döpte jag den senaste till, glöm inte pusha den (klicka i "tags too" eller vad det heter)
+  <-Så vi kan ta ner den versionen en regnig dag. 
+
 --------------------
 
 ATT TESTA EN RELEASE PÅ TELEFONEN

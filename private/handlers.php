@@ -1,17 +1,19 @@
 <?php
-require 'private/MySqlConnection.php';
+require_once __DIR__.'/MySqlConnection.php';
 
 // Saker som gör att man bara hatar php: 
 //  1. include säger inte till om filjävelen inte finns.. (Så använd require, då får man error 500 i varje fall)
 //  2. Var? VAR ÄR VI? Jo, i __DIR__, men vem fan i helvete kunde veta det? 
 // 
 // require __DIR__.'/../some/darn/path/tofile.php';
-//  3. require 'private/MySqlConnection.php';
+//  3. require __DIR__'/MySqlConnection.php';
 //     INTE
 //     require 'MySqlConnection.php';
 //     ÄVEN OM FILEN LIGGER I SAMMA KATALOG. Jag tror orsaken är att den "startande" filen är
 //     version.php i roten, och då tycker require helt jätte-intelligent att det är där vi är,
 //     oavsett vilken fil vi sen är i.
+//     Litet tillägg: __DIR__ ger _denna_ filens dir, på det viset kan man inkludera de filer som 
+//     ligger på samma nivå, och relativt till var denna ligger.
 
 // Used by the other classes to write debug into json-array, and various safe-checks.
 class HandlerHelper
@@ -65,7 +67,7 @@ class HandlerHelper
     // Creates a new file every hour, and append each entry to it.
     // Format: j = 1-31 days, n = 1-12 month, Y = 2025, H = 00-23 hour
     //  log_3.11.2025_19.00.txt
-    file_put_contents('./logs/log_'.date("j.n.Y_H.00").'.txt', $log, FILE_APPEND);
+    file_put_contents(__DIR__.'/../logs/log_'.date("j.n.Y_H.00").'.txt', $log, FILE_APPEND);
   }
     
   public static function StringIsSafe($str)

@@ -9,7 +9,7 @@ class DBSettings
 
   // Append 'debug' entry to any json_encode()d result array returned to calle.
   // TODO: Turn off! 
-  public static $debug = true;
+  public static $debug = false;
   
   // Write errors to servers debug log in folder logs/. 
   public static $debugLogOnly = true;

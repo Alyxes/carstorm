@@ -1,5 +1,5 @@
 -----SECOND RELEASE-----
-  TODO: Den här gången, tagga releasen i github, så vi lätt kan backa till releasens exakta kod. 
+  DONE: Den här gången, tagga releasen i github, så vi lätt kan backa till releasens exakta kod. "Release-2" heter den.
 
 Release name: 
   8 (Second public release)

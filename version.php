@@ -1,5 +1,5 @@
 <?php
-require "private/handlers.php";
+require_once "private/handlers.php";
 
 // Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 

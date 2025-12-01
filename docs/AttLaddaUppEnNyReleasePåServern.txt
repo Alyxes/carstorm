@@ -18,6 +18,7 @@ Steg 1:
       carstorm.js och 
       service_worker.js.
   3b. Sätt buttonDoLogs i buttons.js till false!
+  3c. Sätt DBSettings.$debug till false i settings.php!
   4. Kör uglifyjs på alla .js-filer så de hamnar i katalogen minified.
     Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
     (carstorm/minified/*.js, inte carstorm/*.js)

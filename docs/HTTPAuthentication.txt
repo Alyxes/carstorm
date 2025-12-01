@@ -1,0 +1,18 @@
+Tufft ju, var ju superenkelt ett sätta upp "HTTP authentication" i slutändan.
+
+Lite bakgrundsinfo: 
+  https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication
+  
+Howto:
+  * cPanel->Filer->Katalogsekretess
+  * Klicka carstorm, sedan katalogen admin. (Som jag skapat i förväg med en index.html i)
+  * Klicka redigera. 
+  * Lösenordsskydda katalogen, skapa en användare med ett lösenord enligt nedan. 
+  * Tadaa, det dyker upp en http inloggningsruta!
+  
+Adress:
+  https://carstorm.madskullcreations.com/admin/
+  
+Användaren:
+  admen
+  RolfPärsSlaneRullarSlappt
