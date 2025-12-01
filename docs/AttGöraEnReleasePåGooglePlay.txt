@@ -7,11 +7,20 @@
     c. chrome.exe - Shortcut
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
-  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 7
+  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 8
   b. Följ stegen 7 och 8 i den filen jävligt noga.
+  c. NYTT 28/11: (För att ta bort POST_NOTIFICATIONS!!)
+      * Öppna app/src/main/AndroidManifest.xml.
+      * Radera denna raden: 
+      <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+      * Spara.
+      * Starta Android Studio, öppna projektet, klicka Assemble o allt annat den möjligen vill uppdatera.
+      * Build->Generate Signed App Bundle or APK, välj Android App Bundle.
+      * Nu hamnar allting under app/release/app-release.aab.
 4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
 6. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
+    <-Numera bubblewrap_buildfiles/app/release/app-release.aab istället!
 7. Publicera. Nu ska en ny version strax finnas uppe för nedladdning.
 8. Klicka på fliken Testers. Klicka Copy link. Ge den här länken till alla i testgruppen. 
 

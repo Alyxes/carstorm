@@ -3,7 +3,6 @@ JUST NU: Det mesta e färdigt här. Gå igenom igen senare, det finns bra mycket
 
 Visa anslutna telefoner, och starta mjonklapjärer härifrån o debugga chrome-browsern i telefonen!
   chrome://inspect/#devices
-
   https://developer.chrome.com/docs/devtools/remote-debugging
   
   :'-D HELA jävla telefon-emulatorn kraschar när jag öppnar chrome i den och sedan öppnar carstorms hemsida. 

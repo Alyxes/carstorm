@@ -2,14 +2,31 @@
 Hur man gör en release av en ny version på servern!
   -Ingen har sagt att det är enkelt!!
   
+Steg 0: 
+  1. Gör Steg 1, fast på carstorm-dev.madskullcreations.com!! 
+  2. Testa sajten på mobilen i browsern!
+     Visa anslutna telefoner, och starta mjonklapjärer härifrån o debugga chrome-browsern i telefonen!
+      chrome://inspect/#devices
+      <-Mer detaljer i pwa.txt!
+  3. Sådär, nu har du i varje fall sett att samtliga filer är rätt minifierade och ligger uppe på carstorm-dev samt kör utan några vidriga fel och varningar. 
+  
 Steg 1:
   1. ÖKA ServiceWorkerVersion i service_worker.js med ett. ALLTID. 
   2. Checka in alla ändringar på github.
-  3. Sätt PleaseLitterWithConsoleLogs till false i carstorm.js och service_worker.js. (Checka inte in det, onödigt.)
+  3. Sätt PleaseLitterWithConsoleLogs till false i 
+      carstorm.js och 
+      service_worker.js.
   3b. Sätt buttonDoLogs i buttons.js till false!
   4. Kör uglifyjs på alla .js-filer så de hamnar i katalogen minified.
-      Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
-      (carstorm/minified/*.js, inte carstorm/*.js)
+    Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
+    (carstorm/minified/*.js, inte carstorm/*.js)
+
+    uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
+    uglifyjs service_worker.js -c -m --mangle-props --v8 -o minified\service_worker.js 
+    NO!!! uglifyjs button.js -c -m --mangle-props --v8 -o minified\button.js 
+      <-Den minimerar _interna_ funktionsnamn, utan att fundera på om de används i andra filer! Så .Draw() heter plötsligt a() eller liknande, varpå carstorm.js givetvis kraschar...
+      <-TODO: Leta upp nån open source som plockar bort kommentarer, mellanslag och retur. Det räcker. 
+      
   5. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
   6. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
 

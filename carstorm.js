@@ -132,7 +132,7 @@ var PlayStartTime = 0;      // Set to Now when a new play round starts.
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
-var GameVersion = 1;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+var GameVersion = 2;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
 
 var IntroMelodyPlayed = false;
 
@@ -631,6 +631,10 @@ function ReadStuff()
     WinCount = parseInt(localStorage.getItem("WinCount"));
     PlayCount = parseInt(localStorage.getItem("PlayCount"));
     ReloadCount = parseInt(localStorage.getItem("ReloadCount"));
+  }
+  if(GameVersion >= 2)
+  {
+    // Yeah! We released a second version! No changes here though, the upping of the game version is just for stats on the server.
   }
   if(GameVersion >= 31)
   {

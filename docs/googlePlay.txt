@@ -38,7 +38,7 @@ Setup bubblewrap:
       ? Application name: carstorm
       ? Short name: carstorm
       ? Application ID: com.mask.carstorm
-      ? Starting version code for the new app version: 7 (OBS: Öka för varje release!)
+      ? Starting version code for the new app version: 8 (OBS: Öka för varje release!)
       ? Display mode: fullscreen
       ? Orientation: landscape
       ? Status bar color: #FFFFFF     
