@@ -1,4 +1,25 @@
-  
+
+---Länkar---
+  https://www.reddit.com/r/gamedev/comments/1hyglre/advice_for_marketing_a_game_on_the_google_play/
+    -En hård värld. Bra läsning. 
+    -Fakta: 
+      f2p - free to play.
+      iap - in app purchases.
+      <-Kort sagt: 
+          * Man får något väsentligt för att göra ett köp i spelet.
+          * Ads kan absolut fungera säger han. Var ihärdig! Sprid spelet i flera forum, plötsligt kan det "smälla" och lossna och så får man flera hundratusen downloads.
+
+  https://play.google.com/console/about/guides/featuring/
+    If your title exceeds Google Play’s bad behavior threshold on specific phones or tablets, we will not promote your title to users on those devices.
+      <-Bland mycket annat. Men viktigt här är att jag nu förstår vad "bad behaviour treshold" är för nåt i graferna!
+    Submit regular updates with fresh and compelling benefits to maximize your discoverability on Google Play.
+      <-Som alltid, bra att släppa updates!!
+
+  https://www.quora.com/How-do-I-market-my-first-mobile-game-on-Google-Play
+    <-"Add a subscription" - fick mig att tänka på monthly subscriptions. Om jag i lugn o ro  lägger till spelet där får vi väl en slags andel eller?  
+    <-"Run an A/B test in the Google Console. It gives you insight into what attracts users more." - Vad är det för nåt? 
+    <-Update. Alltid en bra grej att göra då o då.
+    
 ---Custom Store Listings---
 
 Man kan ha olika "app stores" med olika presentationer för nästan vad man vill:
