@@ -16,7 +16,18 @@ Att debugga WPA-appen på din telefon!!
   3. Klicka på inspect på Carstorm! Det är ju WPA-appen som så tacksamt ligger och finns där. 
   4. Inspect kommer fram, dessutom MED en realtids skärmdump/video av telefonens skärm. 
   5. Kolla allt. :-) Du kan ju se service workern o att alla filer laddas från cache o såna finfina saker. 
+
+---------
+
+TWA är mycket av vad PWA är, den här videon e bra:
+  https://developer.chrome.com/docs/android/trusted-web-activity
+
+Hittade den här länken i videon:
+  https://github.com/GoogleChromeLabs/svgomg-twa  
+  <-Jag tror de har kodexempel vad som händer när man tex har airplane mode på.
   
+"lighthouse" är en chrome browser extension som ska hjälpa mig få rätt på pwan.
+      
 ----------------
 
 PWA

@@ -821,6 +821,22 @@ async function FetchOnlineStats()
   FetchOnlineStatsDone = true;
 }
 
+// Fumbling together 32 characters by random should always be unique.
+// In javascript, random is seeded with the current time stamp, so should be unique at all times. ;)
+function CreateUniqueId()
+{
+  var characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+  var id = "";
+  
+  for(var i=0;i<32;i++)
+  {
+    var pos = Math.floor(Math.random() * characters.length);
+    id += characters.charAt(pos);
+  }
+  
+  return id;
+}
+
 function SetCuttingCoordinate()
 {
   CuttingCoordinate = screenwidthHalf;

@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <title>Random ID!</title>
+    <meta charset="utf-8" />        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+<style>
+  html, body
+  {
+    -webkit-user-select:none;
+    background-color: #005500;
+    overscroll-behavior-y: contain;
+      
+    touch-action: pan-x pan-y;
+  }
+  @font-face
+  {
+    font-family: 'CarStormFont1';
+    src: url('../fonts/Again.ttf');
+    
+  }  
+  #random_id
+  {
+    font-family: CarStormFont1;
+    font-size: 21px;
+    background-color: white;
+  }
+  
+</style>
+<body>
+	<p id="random_id"></p>
+  
+  <script>
+    // Om du vill testa, så sätt ner från 32 till 5, så ser du att det börjar dyka upp duplikat 
+    // efter en tid. 
+  
+    // Fumbling together 32 characters by random should always be unique.
+    // In javascript, random is seeded with the current time stamp, so should be unique at all times. ;)
+    function CreateUniqueId()
+    {
+      var characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+      var id = "";
+      
+      for(var i=0;i<32;i++)
+      {
+        var pos = Math.floor(Math.random() * characters.length);
+        id += characters.charAt(pos);
+      }
+      
+      return id;
+    }
+    
+    var ri = document.getElementById("random_id");
+    var allIds = [];
+    
+    // sätt till false för att låta den skapa en massa id och kolla att alla är unika!
+    var goVisual = true; 
+    
+    if(goVisual)
+    {
+      setInterval(() => {
+        var id = CreateUniqueId();
+        allIds.push(id);
+        ri.innerHTML += id + "<br>";
+      }, 50);
+    }
+    else
+    {
+      ri.innerHTML = "starting";
+      
+      // Skapa några stycken id. :)
+      for(var i=0;i<1000 * 10;i++)
+      {
+        var id = CreateUniqueId();
+        allIds.push(id);
+      }
+      
+      ri.innerHTML = "done. Count: " + allIds.length + " Starting compare.<br>";
+      
+      var duplicateCount = 0;
+      while(allIds.length > 0)
+      {
+        var id = allIds.pop();
+        var pos = allIds.indexOf(id);
+        
+        if(pos != -1)
+        {
+          ri.innerHTML += id + " is a duplicate!<br>";
+          duplicateCount++;
+        }
+      }
+      
+      ri.innerHTML += duplicateCount + " duplicates found!<br>";
+    }
+  </script>
+</body>
+</html>
