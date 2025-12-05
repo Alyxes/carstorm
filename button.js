@@ -85,7 +85,7 @@ function CreateButton(
     w:w,
     h:h,
     
-    screenWidth:screenWidth,
+    screenWidth:screenWidth,      // So it can compare "last" screen size to new when a Resize() event happens.
     screenHeight:screenHeight,
     
     cornerRadius:cornerRadius,
@@ -101,8 +101,8 @@ function CreateButton(
     selectedShadowBlur:selectedShadowBlur,
     imageArray:imageArray,
     callbackFunction:callbackFunction,
-    adaptToWidth:adaptToWidth,
-    zoomAmount:zoomAmount,
+    adaptToWidth:adaptToWidth,                    // If this is true, adapt height to width of button. (Otherwise adapt width to height.) (If there is an image.)
+    zoomAmount:zoomAmount,                        // Amount to zoom up button when pressed, in pixels.
     
     selectedImage:selectedImage,
     buttonPressed:false,          // Kan växla fram o tillbaka när användaren flyttar fingret, mellan OnTouchStart() och OnTouchEnd().
@@ -122,6 +122,10 @@ function CreateButton(
       this.y /= yPercentage;
       this.h /= yPercentage;
       
+      this.AdaptToImage();
+    },
+    
+    AdaptToImage() {
       // If there is an image, the buttons h will depend on the given w and the height of the image, or vice versa.
       if(this.imageArray != null)
       {
@@ -179,7 +183,7 @@ function CreateButton(
       this.buttonGotTouchStart = false;
       this.buttonPressed = false;
     },
-          
+
     Draw: function(ctx) {
       // bevel, round, miter. Bevel får mig att tänka på tintin. :)
       ctx.lineJoin = "round";   
@@ -201,10 +205,34 @@ function CreateButton(
         cornerRadius = this.selectedCornerRadius;
         
         // Zoom up the button when it is pressed.
-        x -= this.zoomAmount;
-        y -= this.zoomAmount;
-        w += this.zoomAmount * 2;
-        h += this.zoomAmount * 2;
+        if(this.imageArray != null)
+        {
+          // The zoom must be a percentage of the width or height to keep the image dimensions.
+          if(this.adaptToWidth)
+          {
+            var percentage = this.imageArray[0].height / this.imageArray[0].width;
+            x -= this.zoomAmount;
+            y -= this.zoomAmount * percentage;
+            w += this.zoomAmount * 2;
+            h += this.zoomAmount * 2 * percentage;        
+          }
+          else
+          {
+            var percentage = this.imageArray[0].width / this.imageArray[0].height;
+            x -= this.zoomAmount * percentage;
+            y -= this.zoomAmount;
+            w += this.zoomAmount * 2 * percentage;
+            h += this.zoomAmount * 2;        
+          }
+        }
+        else
+        {
+          x -= this.zoomAmount;
+          y -= this.zoomAmount;
+          w += this.zoomAmount * 2;
+          h += this.zoomAmount * 2;        
+        }
+        
       }
       else
       {

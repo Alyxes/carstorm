@@ -562,7 +562,7 @@ function Resize()
   
   SafeWidthMargin = screenwidthThirteenth / 2;
   SafeHeightMargin = ScreenHeight / 15;
-  ButtonWidthDistance = ScreenWidth / 100;
+  ButtonWidthDistance = ScreenWidth / 40;
   
   lightWidth = ScreenWidth/23;
   lightHeight = ScreenHeight/20;

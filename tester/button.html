@@ -113,8 +113,8 @@
   
   function CreateSettingsButtonSelectedInputMode()
   {
-    var x = 50;
-    var y = 50;
+    var x = 200;
+    var y = 100;
     
     // We want the button to be pretty big, take up a third of the screen width.
     var width = ScreenWidth / 3;
@@ -145,6 +145,7 @@
 
     //var images = null; 
     var images = InputModeImages;
+    var zoomAmount = 60;
 
     button = CreateButton(
       x, y, width, height,
@@ -152,7 +153,7 @@
       cornerRadius, fillingInset, shadowBlur, strokeStyle, 
       fillStyle, shadowColor, images, 0, selectedStrokeStyle, 
       selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SwitchInputMode,
-      adaptToWidth, 7);
+      adaptToWidth, zoomAmount);
   }
   
   function GameLoop()
