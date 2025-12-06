@@ -15,6 +15,10 @@ Min lokala mysql-installation:
 // The utf8mb3 character set is deprecated. So use utf8mb4
 // INT(10) är bullshit uråldrigt "hjälp editorn se bra ut", dvs. den talar om att vidden på kolumnen borde vara 10 tecken. Men en INT är alltid en INT. Så ta bort.
 
+// From server_version 3.
+ALTER TABLE user_stats ADD random_id VARCHAR(32) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci' AFTER game_version;
+
+// Up to server_version 2.
 CREATE TABLE user_stats (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     server_version INT UNSIGNED NOT NULL,

@@ -132,7 +132,8 @@ var PlayStartTime = 0;      // Set to Now when a new play round starts.
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
-var GameVersion = 2;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+var GameVersion = 3;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+var RandomId = "";      // The "unique" (probably unique) id for this game app installation. Sent to server to identify the user. Created in FetchOnlineStats().
 
 var IntroMelodyPlayed = false;
 
@@ -608,23 +609,34 @@ function StoreStuff()
   localStorage.setItem("WinCount", WinCount);
   localStorage.setItem("PlayCount", PlayCount);
   localStorage.setItem("ReloadCount", ReloadCount);
+  
+  // From serverVersion 3 the random_id is expected.
+  localStorage.setItem("RandomId", RandomId);
 }
 
 function ReadStuff()
 {
-  var pleaseLetThereBeAGameVersionAtAllHere = parseInt(localStorage.getItem("GameVersion"));
+  var GameVersionInLocalStorage = parseInt(localStorage.getItem("GameVersion"));
   
-  if(!pleaseLetThereBeAGameVersionAtAllHere)
+  if(!GameVersionInLocalStorage)
   {
     // There is no local storage at all at the moment.
     return;
   }
   
-  GameVersion = pleaseLetThereBeAGameVersionAtAllHere;
+  // FIXED BUG 7/12 2025: Du skriver över GameVersion här! Den är satt till 3 nu, men går ner till 1. 
+  //  <-Var svår att hitta eftersom en clean installation uppgraderade allting i ett go. 
+  //    GameVersionInLocalStorage var false ovan eftersom localstorage var helt tom, och denna koden kördes inte första sidladdningen.
+  //    Sedan, efter uppdateringen, sparades localstorage ner, med 3 som GameVersion. Såg jättefint ut. :-O
+  //  <-Men en uppgradering från 2 till 3, där finns ju localstorage. Då körs denna koden, och raden nedan sätter GameVersion till 1. 
+  //    Fixen? Eftersom FetchOnlineStats() uppgraderar allting korrekt och sedan anropar StoreStuff(), så ska vi helt kort anta att om grejer skiljer sig här
+  //    inte ska uppdateras här, och vi ska INTE uppdatera GameVersion från localstorage utan betrakta den som readonly.
+  //    
+  // GameVersion = GameVersionInLocalStorage;
   
-  if(GameVersion >= 1)
+  if(GameVersionInLocalStorage >= 1)
   {
-    // Just means that GameVersion == 1 OR BIGGER expects these variables to exist.
+    // Just means that GameVersionInLocalStorage == 1 OR BIGGER expects these variables to exist.
     ServerVersion = parseInt(localStorage.getItem("ServerVersion"));
     LastDriveScore = parseInt(localStorage.getItem("LastDriveScore"));
     HighScore = parseInt(localStorage.getItem("HighScore"));
@@ -632,26 +644,37 @@ function ReadStuff()
     PlayCount = parseInt(localStorage.getItem("PlayCount"));
     ReloadCount = parseInt(localStorage.getItem("ReloadCount"));
   }
-  if(GameVersion >= 2)
+  if(GameVersionInLocalStorage >= 2)
   {
     // Yeah! We released a second version! No changes here though, the upping of the game version is just for stats on the server.
   }
-  if(GameVersion >= 31)
+  if(GameVersionInLocalStorage >= 3)
+  {
+    // The third version is not "released" on the app store, we just uploaded it to the server. It expects the field random_id to be sent along from the client.
+    RandomId = localStorage.getItem("RandomId");
+  }
+  
+  if(GameVersionInLocalStorage >= 31)
   {
     // Never happens yet. The number 31 instead of expected 2 just means
     // that the localStorage structure has not changed at all in the 
     // previous 30 versions. But in version 31 we decided to add the fancy
-    // Smurf-field. And since we just read in GameVersion and it says 
+    // Smurf-field. And since we just read in GameVersionInLocalStorage and it says 
     // the version of the localStorage is 31 or greater, the Smurf-field
     // should exist.
     // 
     // Smurf = parseInt(localStorage.getItem("Smurf"));
   }
+  
+  if(GameVersion != GameVersionInLocalStorage)
+  {
+    Log("GameVersion " + GameVersion + " does not equal localstorage version " + GameVersionInLocalStorage + ". Expects FetchOnlineStats() to fix this.");
+  }
 }
 
 // async means calling code is _not_ waiting for this function to complete, it happens "meanwhile" in the background.
 // Fetch, and push your stats to server.
-async function FetchOnlineStats() 
+async function FetchOnlineStats()
 {
   FetchOnlineStatsDone = false;
   if(TimeToFetchOnlineStats > Now)
@@ -673,7 +696,8 @@ async function FetchOnlineStats()
     url += "win_count="+WinCount+"&";
     url += "high_score="+HighScore+"&";
     url += "play_count="+PlayCount+"&"; 
-    url += "reload_count="+ReloadCount+"&"; 
+    url += "reload_count="+ReloadCount+"&";
+    url += "random_id="+RandomId+"&";
     url += "cache_killer="+Math.random();// Last param omit the &.
     
     const response = await fetch(url);
@@ -709,7 +733,7 @@ async function FetchOnlineStats()
           ServerVersion = 1;
         }
 
-        // First version has these variables: server_version and players_now
+        // First server version returns these variables: server_version and players_now
         PlayersPlayingNow = OnlineStats.players_now;
       }
       if(OnlineStats.server_version >= 2)
@@ -733,6 +757,29 @@ async function FetchOnlineStats()
         // the new stuff a newer game knows about. 
         
         // If version 2 would have added a new field to download for example, we would store it in localstorage here.
+      }
+      if(OnlineStats.server_version >= 3)
+      {
+        if(ServerVersion < 3 && OnlineStats.server_version >= 3)
+        {
+          // 'Our' ServerVersion is smaller than 3, but we have this code for updating localstorage to version 3, 
+          // so we have the latest version of the code.
+          // The localstorage must be updated to version 3 though. 
+          GotUpdated = true;
+
+          // Server version 3 expects random_id to be sent along, so we should create one now and save to localstorage.
+          RandomId = CreateUniqueId();
+          
+          Log("Updating localstorage from version " + ServerVersion + " to version " + 3);
+          ServerVersion = 3;
+        }
+        
+        // Next if-statement will also run. 
+        // Why? Because newer versions MUST NOT break old game versions!
+        // This just means an old game version should keep working, but not be aware of
+        // the new stuff a newer game knows about. 
+        
+        // Server version 3 expect a random_id to exist and be sent along in the url params, it is stored in localstorage further down.
       }
       
       // Now we have two cases:
@@ -802,7 +849,7 @@ async function FetchOnlineStats()
       }
       else
       {
-        // All cool, reset ReloadCount, store any changes and keep going.
+        // All cool, reset ReloadCount, store any changes and keep going. (Note that a successful update further up the code ends up here as well!)
         ReloadCount = 0;
         StoreStuff();
       }

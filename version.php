@@ -4,10 +4,10 @@ require_once "private/handlers.php";
 // Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 
 // Increase version when server expect the given data to have a new format.
-$serverVersion = 2;
+$serverVersion = 3;
 
 //TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp. Har dubbelkollat med appen, funkar likaslurt.
-// $serverVersion = 3;
+// $serverVersion = $serverVersion + 1;
 
 // FetchString() is friendly and returns empty string if there is no value given from the user.
 // intval() is friendly too, and returns 0 on empty string.
@@ -18,6 +18,10 @@ $winCount = intval(HandlerHelper::FetchString($_GET, 'win_count'));
 $highScore = intval(HandlerHelper::FetchString($_GET, 'high_score'));
 $playCount = intval(HandlerHelper::FetchString($_GET, 'play_count'));
 $reloadCount = intval(HandlerHelper::FetchString($_GET, 'reload_count'));
+
+// From serverVersion 3 the random_id is expected.
+$randomId = HandlerHelper::FetchString($_GET, 'random_id');
+
 
 $ush = new UserStatsHandler();
 
@@ -48,7 +52,8 @@ $id = $ush->AddUserStats(
         $playCount, 
         $reloadCount, 
         $remoteAddr, 
-        $httpUserAgent);
+        $httpUserAgent,
+        $randomId);
 
 $arr = array(
   'server_version' => $serverVersion, 
@@ -62,7 +67,7 @@ if(rand(0,30) == 0)
   $ush->PurgeOld();
 }
 
-// NOTE: Should not be here on sharp server after release!
+// In release mode the debug is only written to the log files on the server, not returned to user. (DBSettings::$debugLogOnly is true while DBSettings::$debug is false.)
 HandlerHelper::AppendDebug($arr);
 
 echo json_encode($arr);

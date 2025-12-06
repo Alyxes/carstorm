@@ -274,21 +274,22 @@ class UserStatsHandler
     MySqlConnection::Connect();
   }
   
-  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $remoteAddr, $httpUserAgent)
+  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $remoteAddr, $httpUserAgent, $randomId)
   {
     if(HandlerHelper::ValueIsMySqlSafe(array(
-        $serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount)) == false)
+        $serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $randomId)) == false)
     {
       // Någon av parametrarna är skumliga, abort!!
       return -1;
     }
     
     // $remoteAddr är kontrollerad av apache, så innehåller endast säkra värden.
-    // $httpUserAgent däremot är sänt från klienten, så en hacker kan trolla den. Måste vi kontrollera.
+    // $httpUserAgent och $randomId däremot är sänt från klienten, så en hacker kan trolla den. Måste vi kontrollera.
     
     // Maxlängden.
     $remoteAddr = substr($remoteAddr, 0, 46);
     $httpUserAgent = substr($httpUserAgent, 0, 256);
+    $randomId = substr($randomId, 0, 32);
     
     // $httpUserAgent kan ha detta format, men standard verkar saknas: (Kort sagt, ej pålitliga värden! https://en.wikipedia.org/wiki/User-Agent_header)
     // Mozilla/[version] ([system and browser information]) [platform] ([platform details]) [extensions]
@@ -298,11 +299,15 @@ class UserStatsHandler
     // 
     $httpUserAgent = MySqlConnection::MakeStringMySqlSafe($httpUserAgent);
     
+    $randomId = MySqlConnection::MakeStringMySqlSafe($randomId);
+    
     $now = date("Y-m-d H:i:s");
     
     // Yikes. Håll reda på ordningen. Håll reda på var du sätter fnuttar, alltså '. Testa noga. 
-    $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, reload_count, remote_addr, http_user_agent, created)".
-             " values (".$serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",".$reloadCount.",'".$remoteAddr."','".$httpUserAgent."','".$now."');";
+    $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, reload_count, remote_addr, http_user_agent, random_id, created)".
+             " values (".
+             $serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",".$reloadCount.",'".$remoteAddr."','".$httpUserAgent."','".$randomId."','".$now.
+             "');";
     HandlerHelper::Debug($query);
 
     $rowId = MySqlConnection::Insert($query);
@@ -314,6 +319,7 @@ class UserStatsHandler
   {
     $anHourAgo = date("Y-m-d H:i:s", time() - 3600);
         
+    // TODO: group by random_id, http_user_agent. (user_agent för att random_id e null före 6/12 2025)
     $query = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."';";
     
     $res = MySqlConnection::Select($query);
