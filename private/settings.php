@@ -8,7 +8,7 @@ class DBSettings
   public static $encoding = "utf8";
 
   // Append 'debug' entry to any json_encode()d result array returned to calle.
-  // TODO: Turn off! 
+  // ALWAYS: Turn off! 
   public static $debug = false;
   
   // Write errors to servers debug log in folder logs/. 

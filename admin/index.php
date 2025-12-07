@@ -186,6 +186,7 @@ MySqlConnection::Disconnect();
     remote_addr: "string",
     http_user_agent: "string",
     created: "string",
+    random_id: "string",
   };
   $(function(){
     jqLotsOfRows = $("#LotsOfRows");

@@ -318,16 +318,36 @@ class UserStatsHandler
   public function CountOnlineUsers()
   {
     $anHourAgo = date("Y-m-d H:i:s", time() - 3600);
-        
-    // TODO: group by random_id, http_user_agent. (user_agent för att random_id e null före 6/12 2025)
-    $query = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."';";
+
+    // Den gamla queryn var ju finare eftersom den ökade efterhand som en spelare spelade om. :)
+    //$query = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."';";
+    //$res = MySqlConnection::Select($query);
+    //$row = $res->fetch_object();
+    //return $row->HappyCount;
+
+    // Older rows has no random_id, so let's group by remote_addr. (Not perfect since same user change ip every now and then) (random_id e ju null före 6/12 2025)
+    $query1 = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."' and (random_id = '' OR random_id IS NULL) group by remote_addr;";
+
+    // Rows with a random_id is much better, group by it to get number of unique users.
+    $query2 = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$anHourAgo."' and LENGTH(random_id) > 0 group by random_id;";
+
+    // Both queries are lazy, I must use the number of rows returned, not the COUNT(*) from each row to get correct result.
+    $count = 0;
+    $res = MySqlConnection::Select($query1);    
+    while ($row = $res->fetch_array(MYSQLI_ASSOC)) 
+    {
+      $count++;
+    }
+
+    $res = MySqlConnection::Select($query2);
+    while ($row = $res->fetch_array(MYSQLI_ASSOC)) 
+    {
+      $count++;
+    }
     
-    $res = MySqlConnection::Select($query);
-    $row = $res->fetch_object();
-    HandlerHelper::Debug($query);
-    HandlerHelper::Debug($row);
-    
-    return $row->HappyCount;
+    HandlerHelper::Debug($query1);
+    HandlerHelper::Debug($query2);
+    return $count;
   }
   
   public function PurgeOld()
