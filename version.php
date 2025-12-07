@@ -62,6 +62,7 @@ $arr = array(
 
 // Purge could be done after result is echoed, but as we want the Debug() to be added to the result right now we keep this here.
 // Don't purge on every call, just every now and then, when the sun shines.
+
 if(rand(0,30) == 0)
 {
   $ush->PurgeOld();

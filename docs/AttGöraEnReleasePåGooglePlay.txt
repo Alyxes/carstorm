@@ -46,6 +46,8 @@ Använd inte det här: Stegen för att göra en open testing istället för en i
 
 Sist, gör en tag i git. "Release-2" döpte jag den senaste till, glöm inte pusha den (klicka i "tags too" eller vad det heter)
   <-Så vi kan ta ner den versionen en regnig dag. 
+  
+För releaser som jag "bara" lägger upp på servern, tagga som "ServRel-3" och öka numret med den andra taggen, så det blir 3,4,5, men omväxlande Release och ServRel. 
 
 --------------------
 

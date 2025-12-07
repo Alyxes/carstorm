@@ -355,13 +355,15 @@ class UserStatsHandler
     // Purge rows older than a week.
     $thePast = date("Y-m-d H:i:s", time() - 3600 * 24 * 7); // A week ago.
     
-    $query = "DELETE FROM user_stats AS US WHERE US.created < '".$thePast."';";
+    // NOTE: AS is not working in MariaDB on the server! It should, but its not.
+    $query = "DELETE FROM user_stats WHERE created < '".$thePast."';";
     
     // Test to delete a specific row.
     //$query = "DELETE FROM user_stats AS US WHERE US.created < '2025-11-03 21:16:08';";
     
     $count = MySqlConnection::DeleteFrom($query);
     
+    HandlerHelper::Debug($query);    
     HandlerHelper::Debug("Purge count: ".$count);    
   }
 }
