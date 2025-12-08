@@ -3,7 +3,7 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "55";
+const ServiceWorkerVersion = "56";
 
 const PleaseLitterWithConsoleLogs = false;
 const cacheName = "carstorm-madskullcreations-com";
@@ -42,23 +42,51 @@ self.addEventListener("activate", event => {
 const fetchAndCache = async (request) => {
   return fetch(request).then(networkResponse => {
     Log(networkResponse);
-    Log("opening cache: " + cacheName + " to put to cache: " + request.url);
     
-    const responseClone = networkResponse.clone();
-    
-    caches.open(cacheName).then(cache => {
-      // TODO: This error happens when a file is partially downloaded. 
-      //   <-Solution: "Look at the outgoing request for a Range header." ..
-      // https://stackoverflow.com/questions/15787380/what-does-the-http-206-partial-content-status-message-mean-and-how-do-i-fully-lo
-      // 
-      // Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Partial response (status code 206) is unsupported
-      cache.put(request.url, responseClone);
-    });
+    // If status is 206 "partial downloaded", it often happens that sound files actually are downloaded
+    // entirely. If so, change status to 200. Source:
+    // https://github.com/GoogleChrome/workbox/issues/1644
+    if(networkResponse.status === 206 && !networkResponse.headers.get('content-encoding'))
+    {
+      const contentLength = parseInt(networkResponse.headers.get('content-length'));
+      const expectedString = `bytes 0-${contentLength - 1}/${contentLength}`;
       
-    /*caches.open(request.url).then(cache => {
-      Log("putting to cache.");
-      cache.put(request, responseClone);
-    });*/
+      if(expectedString === networkResponse.headers.get('content-range'))
+      {
+        Log("Wrong status code, entire file is downloaded! " + expectedString + ", " + request.url);
+        
+        // Must create a new response from the old one. 
+        networkResponse = new Response(networkResponse.body, { status: 200, headers: networkResponse.headers });
+      }
+    }
+    
+    // To avoid 206 "partially downloaded" files. 
+    // Sometimes the file _is_ downloaded but has 206 anyway. We can live with this,
+    // the next time the file is requested it will probably be cached.
+    // 
+    if(networkResponse.status === 200)
+    {
+      Log("Putting " + request.url + " to cache '" + cacheName + "'");
+      const responseClone = networkResponse.clone();
+      
+      caches.open(cacheName).then(cache => {
+        // FIXED: (See status check and fix above) This error happens when a file is partially downloaded:
+        // 
+        // Uncaught (in promise) TypeError: Failed to execute 'put' on 'Cache': Partial response (status code 206) is unsupported
+        // 
+        // More good reading: https://developer.mozilla.org/en-US/docs/Web/API/Cache
+        cache.put(request.url, responseClone);
+      });
+    }
+    else
+    {
+      // This should not happen for 206 anymore, as long as the file is not truly "partially downloaded".
+      Log("Status is " + networkResponse.status + ", we skip caching that for now. Url: " + request.url);
+      
+      Log("content-range: " + networkResponse.headers.get('content-range'));
+      Log("content-length: " + networkResponse.headers.get('content-length'));
+      Log("content-encoding: " + networkResponse.headers.get('content-encoding'));
+    }
     
     return networkResponse;
   }).catch(function (reason) {

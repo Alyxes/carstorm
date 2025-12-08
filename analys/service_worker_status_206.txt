@@ -1,0 +1,52 @@
+Observera att browsern INTE behåller alla ljuden i minnet, utan frekvent frågar efter filerna, så att service_worker måste gå in och hämta den från cachen. Så även om vi "laddar" dem i vårt javascript, så är det egentligen bara en "placeholder" till ljudfilen, som ofta/ibland laddas från cache första gången vi spelar upp ljudet! Det kan se helt hysteriskt ut när loggen e på i console. 
+
+Gissa vad jag gjort i spelet! :D 
+  fetch https://carstorm-dev.madskullcreations.com/sound/crash.mp3, loading from cache!
+  fetch https://carstorm-dev.madskullcreations.com/sound/gameover.mp3, loading from cache!
+  fetch https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3, loading from cache!
+  fetch https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3, loading from cache!
+
+  <-Intressant att den frågar efter intro_melody två gånger på startskärmen.. :-|
+    Händer i GameLoopStartScreen(), orsaken kan ju vara att vi faktiskt gör lite underliga saker där.
+  
+----------
+
+Service worker installed. Version: 55
+service_worker.js:23 Deleting cache: carstorm-madskullcreations-com
+service_worker.js:30 Service worker activated
+
+  <-Funkar fint som en klocka på dev-servern. Det här hände när jag laddade upp en fint fungerande service_worker.js. :-) 
+    Däremot! Så har inte en enda fil laddats om ännu. Det sker först när jag laddar om sidan igen. 
+    Det är detta som carstorm.js ska göra. Jag är dock inte helt övertygad om att den faktiskt gör det...
+
+----------------
+
+Nu fixar den status 206 om filen faktiskt är helt nerladdad!  Här är flödet för det:
+  1. Request {method: 'GET', url: 'https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3', headers: Headers, destination: 'audio', referrer: 'https://carstorm-dev.madskullcreations.com/', …}  
+  2. Service worker: fetch https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3, loading fresh!
+  3. Response {type: 'basic', url: 'https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3', redirected: false, status: 206, ok: true, …}
+  4. Wrong status code, entire file is downloaded! bytes 0-82734/82735, https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3
+  5. Putting https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3 to cache 'carstorm-madskullcreations-com'
+  <-Och bangboom så är den cachad, och spar e jäkla massa omladdningar av samma fil från servern sen.
+  <-Steg 4 sker alltså inte om filen är korrekt med status 200 o allt.
+
+--GAMLA FLÖDET--
+  
+Så här ser ett flöde ut för en fil med status 206 nu: 
+  1. Request {method: 'GET', url: 'https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3', headers: Headers, destination: 'audio', referrer: 'https://carstorm-dev.madskullcreations.com/', …}
+
+  2. Service worker: fetch https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3, loading fresh!
+
+  3. Response {type: 'basic', url: 'https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3', redirected: false, status: 206, ok: true, …}
+
+  4. Status is 206, we skip caching that for now. Url: https://carstorm-dev.madskullcreations.com/sound/intro_melody.mp3
+  
+  <-Det intressanta är att filen går att spela upp ändå, kanske det kommer fler bytes senare..?
+    De nämner här att de gjort en workaround, vissa gånger är faktiskt hela filen nerladdad,
+    de jmfr m filens storlek vs. det som laddats ner, ändrar till 200 ifall hela e nere.
+    https://github.com/GoogleChrome/workbox/issues/1644
+    
+  Yep! Fortsätter jag scrolla i console, kommer det senare en request till! Observera att stegen nedan är samma som ovan, så kanske just denna filen beter sig skumligt? 
+    <-Neee, blip.mp3 har också gjort precis det här vet jag. 
+  
+  Anyway, filen laddas alltså färsk från servern varje gång, men bara denna filen, bara just denna gången. Så det kanske är värt att se ifall man kan följa deras exempel för o fixa 206 till 200 ifall filen faktiskt är helt nerladdad? 
