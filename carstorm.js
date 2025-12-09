@@ -71,6 +71,9 @@ var ctx = null;       // The rotating sliding towards the screen snowstorm.
 var streetctx = null; // The street and car shadows, also sliding along but not rotating.
 var topctx = null;    // Score, cars and stuff.
 
+var hiddenCanvas = null;
+var hiddenCtx = null; // Used for ctx & streetctx for zooming in.
+
 var r=0;
 var g=0;
 var b=0;
@@ -150,9 +153,6 @@ var TimeToFetchOnlineStats = 0;
 var ReloadCount = 0;        // Stored in storage so we don't reload page more than twice! 
 
 var roadWidth = 0;
-
-var hiddenCanvas = document.createElement('canvas');
-var hiddenCtx = hiddenCanvas.getContext("2d");
 
 var roadStartLeft;
 
@@ -309,6 +309,8 @@ function init()
   var c = document.getElementById("canvas");
   var sc = document.getElementById("street_canvas");
   var tc = document.getElementById("top_canvas");
+
+  hiddenCanvas = document.createElement('canvas');
   
   // Not sure it makes a difference right here, but scaling up gets pixelated, not softened. 
   c.style.imageRendering = "pixelated";
@@ -321,9 +323,17 @@ function init()
   
   // Setting willReadFrequently to true might increase speed as we are reading the entire image and redrawing it every frame.
   // https://stackoverflow.com/questions/74101155/chrome-warning-willreadfrequently-attribute-set-to-true
+  // 
+  // This guy says, set it to false! Reason: All hardware acceleration on graphic cards are gone setting it to true.
+  // https://www.schiener.io/2024-08-02/canvas-willreadfrequently
+  //  <-But in our case we need it to be true since we call getImageData() every loop.
+  // 
   ctx = c.getContext("2d", { willReadFrequently: true });
   streetctx = sc.getContext("2d", { willReadFrequently: true });
-  topctx = tc.getContext("2d", { willReadFrequently: true });
+  
+  // Neither of these need willReadFrequently as we don't call getImageData() on them.
+  topctx = tc.getContext("2d");//, { willReadFrequently: true });
+  hiddenCtx = hiddenCanvas.getContext("2d");//, { willReadFrequently: true });
     
   explosionAnim[0] = Explosion1Image;
   explosionAnim[1] = Explosion2Image;
