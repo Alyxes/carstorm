@@ -802,7 +802,7 @@ async function FetchOnlineStats()
       {
         // Looks like server has a newer version that our code know nothing about. 
         Log("We seem to be running an old version of the game!");
-              
+
         ReloadCount++;
         
         // Store the ReloadCount!
@@ -822,12 +822,20 @@ async function FetchOnlineStats()
         //   6. Nästa gång steg 1 till 4 körs så ska ServerVersion vara samma
         //      som serverns.
         
-        if(ReloadCount <= 2)
+        if(ReloadCount <= 3)
         {
           // Enforce a reload of the game files from server.
           // Please note we might do this twice! 
           Log("Reloading!");
           
+          // This is the procedure:
+          // 1. Browser detects that service_worker.js is different from server and throws away cache.
+          // 2. Since files probably has been loading already, we are in a state of flux, old files.
+          // 3. So we ask browser to reload this window. ReloadCount is now 1.
+          // 4. For incredible reasons service_worker might still larv around with old files.
+          // 5. So we might need to reload again. ReloadCount is now 2.
+          // 6. And for the fun of the hell, lets try one more time. ReloadCount is now 3.
+          //   <-TODO: Försök förstå varför det är så här jävla komplicerat....
           window.location.reload();
         }
         else
@@ -1369,7 +1377,24 @@ function PlaySound(sound)
 {
   if(SpeakerOn)
   {
-    sound.play();
+    var promise = sound.play();
+
+    if(promise !== undefined)
+    {
+      // play() returns a Promise, and sooner or later it gets fulfilled or rejected. 
+      // All we do here is to Log(), in order to understand some oddities better.
+      promise.then(() => {
+        // fulfilled, sound is playing.
+        Log("Listen to the beatiful sound.");
+      }, (value) => {
+        // rejected, sound is not playing.
+        Log("Sound was rejected to play! Reason:");
+        Log(value);
+      })
+      .catch((err) => {
+        Log(err);
+      });
+    }
   }
 }
 
@@ -1612,6 +1637,8 @@ function GameLoopStartScreen()
       IntroMelodyPlayed == false && 
       (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
   {
+    Log("Playing intro melody.");
+    
     // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
     // We just wait until it has done it's job before starting the sound.
     // 
