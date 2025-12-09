@@ -7,9 +7,6 @@ require_once __DIR__."/../private/admin_handlers.php";
 // Since it should be false by default. :-)
 DBSettings::$debug = true;
 
-$ush = new UserStatsHandler();
-$playersNow = $ush->CountOnlineUsers();
-
 $ah = new AdminHandler();
 $output = $ah->GetColumnNames("user_stats");
 

@@ -7,21 +7,14 @@ class AdminHandler
   {
     MySqlConnection::Connect();
   }
-  
-  public function Yorgh()
-  {
-    $now = date("Y-m-d H:i:s");
     
-    return $rowId;
-  }
-  
   public function GetColumnNames($tableName)
   {
     $query = "SELECT `COLUMN_NAME` 
       FROM `INFORMATION_SCHEMA`.`COLUMNS` 
       WHERE `TABLE_NAME`='".$tableName."';";
       
-    $res = MySqlConnection::Select($query);      
+    $res = MySqlConnection::Select($query);
     
     HandlerHelper::Debug($query);
     return $res;
@@ -45,31 +38,18 @@ class AdminHandler
     return $res;
   }
   
-  public function CountOnlineUsers($since)
+  public function GetCountryCodeForIP($ip)
   {
-    //$anHourAgo = date("Y-m-d H:i:s", time() - 3600);
-        
-    $query = "SELECT COUNT(*) AS HappyCount FROM user_stats AS US WHERE US.created > '".$since."';";
-    
+    $query = "SELECT country_code FROM ip_to_country_atonized WHERE INET_ATON('".$ip."') BETWEEN ip_start AND ip_to;";    
     $res = MySqlConnection::Select($query);
-    $row = $res->fetch_object();
     HandlerHelper::Debug($query);
     
-    return $row->HappyCount;
-  }
-  
-  public function PurgeOld()
-  {
-    // Purge rows older than a week.
-    $thePast = date("Y-m-d H:i:s", time() - 3600 * 24 * 7); // A week ago.
+    $countryCode = "";
+    while ($row = $res->fetch_array(MYSQLI_NUM)) 
+    {
+      $countryCode .= $row[0];
+    }
     
-    $query = "DELETE FROM user_stats AS US WHERE US.created < '".$thePast."';";
-    
-    // Test to delete a specific row.
-    //$query = "DELETE FROM user_stats AS US WHERE US.created < '2025-11-03 21:16:08';";
-    
-    $count = MySqlConnection::DeleteFrom($query);
-    
-    HandlerHelper::Debug("Purge count: ".$count);    
+    return $countryCode;
   }
 }
