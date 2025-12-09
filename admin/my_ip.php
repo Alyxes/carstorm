@@ -11,6 +11,10 @@ $remoteAddr = HandlerHelper::FetchString($_SERVER, 'REMOTE_ADDR');
 $ah = new AdminHandler();
 $countryCode = $ah->GetCountryCodeForIP($remoteAddr);
 
+$arr = array("Debug stuff!");
+HandlerHelper::AppendDebug($arr);
+$json = json_encode($arr);
+
 // Måste alltid koppla ner från databasen sist.
 MySqlConnection::Disconnect();
 ?>
@@ -92,6 +96,13 @@ MySqlConnection::Disconnect();
     <p class="button large" id="RowCount">Your ip: <?= $remoteAddr ?></p>
     <p class="button large" id="RowCount">Your country code: <?= $countryCode ?></p>
   </div>
+  
+  <div>
+    <?php
+      echo $json;
+    ?>
+  </div>
+  
 <script>
 
 </script>

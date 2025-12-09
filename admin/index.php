@@ -27,6 +27,8 @@ while ($row = $output->fetch_array(MYSQLI_NUM))
     //print_r($row); // Array([0] => 'a_row_name')
 }
 
+array_push($colNames, 'country_code');
+
 $allRows = array();
 $output = $ah->FetchAllUserStats("");
 while ($row = $output->fetch_array(MYSQLI_ASSOC)) 
@@ -184,6 +186,7 @@ MySqlConnection::Disconnect();
     http_user_agent: "string",
     created: "string",
     random_id: "string",
+    country_code: "string",
   };
   $(function(){
     jqLotsOfRows = $("#LotsOfRows");

@@ -23,17 +23,22 @@ class AdminHandler
   // $where can be "nr_of_stinks=12" for example, or empty to get the full result.
   public function FetchAllUserStats($where)
   {
-    $query = "SELECT * FROM user_stats";
+    $query = "SELECT *, IPC.country_code AS country_code FROM user_stats AS UST";
+    
+    // Left join since it is possible there is no match in the ip_to_country_atonized table.
+    $query .= " LEFT JOIN ip_to_country_atonized AS IPC ON INET_ATON(UST.remote_addr) BETWEEN ip_start AND ip_to";
     
     if(strlen($where) > 0)
     {
       $query .= " WHERE ".$where;
     }
-    
+        
     $query .= ";";
-    
-    $res = MySqlConnection::Select($query);
+
+    //echo $query;
+
     HandlerHelper::Debug($query);
+    $res = MySqlConnection::Select($query);
     
     return $res;
   }
