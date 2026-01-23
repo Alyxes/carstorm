@@ -2,32 +2,22 @@
 "use strict";
   
 /**
- * This javascript has been designed to run with the app "Your Own Screen Saver". 
- * It is open source and free to use. Please leave these lines as a reference in code if you modify it. 
- * Programmer: Jon and Timothy Lennryd 2025.
- * 
-  * See more code examples at http://app.madskullcreations.com/yoss to get a better understanding about events and how to use the screen saver in different ways!
- *
- * What's this? 
+ * Programmer: Jon and Timothy Lennryd 2025, 2026.
  *  This is inspired from an old handheld car racing game from the '80ies! You can move the car left and right with the keyboard arrows.
- * 
- *  This is using the canvas functions getImageData() and putImageData() with the drawImage() to copy the central part of the image, 
- *  and in the next frame draw it back, this time a tiny bit stretched to the edges of the screen, giving the effect of zooming in.
- * 
  */
 
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
 const PleaseLitterWithConsoleLogs = false;
 
-if (PleaseLitterWithConsoleLogs) 
+if (PleaseLitterWithConsoleLogs)
   var Log = console.log;
 else 
   var Log = function(){};
 
 // Set to false to remove debug-prints onscreen in the game.
 const ShowDebugStuff = false;
-  
+
 // See Resize().
 var ScreenWidth;
 var ScreenHeight;
@@ -365,6 +355,24 @@ function init()
 
 function SetupCallbacks()
 {
+  // Add a fake browse history. This way the app is not closed when user presses the back button.
+  window.history.pushState({}, '');
+
+  // As soon as back button is pressed, this event happens. We just add a fake browse history again! 
+  // NOTE: Double-clicking back button in windows chrome kind of override this and let the user go back anyway.
+  //   <-More specifically, if there is no user interaction with the page, any browse history modifications are ignored!
+  //     This is to protect against terrible scripts. In effect, a double-click on the back browser cannot be intercepted,
+  //     since 
+  //     1. the user click once, this popstate happens properly, 
+  //     2. and the second click happens without any user interaction with the page!
+  //     3. so the default happens, which is going back in browse history. (ignoring the fake browse history adding)
+  //      <-There is no way around this, at least not by using fake browse history.
+  // 
+  window.addEventListener('popstate', function() {
+    window.history.pushState({}, '');
+    Log("Ät en hamster.");
+  });
+  
   // The onresize, visibilitychange, blur and focus events makes sure the javascript detects when the 
   // screen saver app gets minimized and maximized.
   window.onresize = function() {

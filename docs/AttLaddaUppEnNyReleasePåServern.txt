@@ -23,6 +23,7 @@ Steg 1:
     Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
     (carstorm/minified/*.js, inte carstorm/*.js)
 
+TODO: Ta bort --mangle-props !! Det räcker ju för att INTE mangla sönder dem. Då blir de kvar, och du kan minimera även button.js, men testa först!!
     uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
     uglifyjs service_worker.js -c -m --mangle-props --v8 -o minified\service_worker.js 
     NO!!! uglifyjs button.js -c -m --mangle-props --v8 -o minified\button.js 
