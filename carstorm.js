@@ -1353,14 +1353,12 @@ function TransitFromPausedToPlaying()
 function TransitFromGameOverToStartScreen()
 {
   ResetGameVariables();
-  StoreStuff();
 }
 function TransitFromWinGameToStartScreen()
 {
   audioEndingWin.pause();
   audioEndingWin.currentTime = 0;
   ResetGameVariables();
-  StoreStuff();
 }
 function OnEnterPaused()
 {
@@ -1376,6 +1374,8 @@ function OnEnterGameOver()
   
   SetScoreStatistics();
   EndGameVariableResets();
+
+  StoreStuff();
 }
 function OnEnterWinGame()
 {
@@ -1390,6 +1390,8 @@ function OnEnterWinGame()
   
   SetScoreStatistics();
   EndGameVariableResets();
+
+  StoreStuff();
 }
 
 // Play sound only if the speaker is turned on.
