@@ -157,12 +157,14 @@ var explosionAnimFrameCounter = 0;
 const audioIntroMelody = new Audio("sound/intro_melody.mp3");
 const audioStart = new Audio("sound/start.mp3");
 const audioBlip = new Audio("sound/blip.mp3");
+const audioHonkHonk = new Audio("sound/honk_honk.mp3");
 const audioMove1 = new Audio("sound/move1.mp3");
 const audioMove2 = new Audio("sound/move2.mp3");
 const audioMove3 = new Audio("sound/move3.mp3");
 const audioMove4 = new Audio("sound/move4.mp3");
 const audioMove5 = new Audio("sound/move5.mp3");
 const audioCrash = new Audio("sound/crash.mp3");
+const audioSpeedUp = new Audio("sound/chime.mp3");
 const audioGameOver = new Audio("sound/gameover.mp3");
 const audioEndingWin = new Audio("sound/ending_win.mp3");
 
@@ -915,11 +917,11 @@ function SetCuttingCoordinate()
   CuttingCoordinate = screenwidthHalf;
   if(SelectedInputMode == 1) // Left
   {
-    CuttingCoordinate = screenwidthThird;
+      CuttingCoordinate = screenwidthSeventh;
   }
   else if(SelectedInputMode == 2) // Right
   {
-    CuttingCoordinate = 2 * screenwidthThird;
+      CuttingCoordinate = 6 * screenwidthSeventh;
   }
 }
 
@@ -952,11 +954,11 @@ function SettingsButtonSpeaker()
     SpeakerOn = 1;
   Log("SpeakerOn: " + SpeakerOn);
   
-  if(!SpeakerOn)
-  {
-    audioMove3.play();
-  }
-  
+    if (SpeakerOn)
+        audioHonkHonk.play();
+    else
+        audioMove3.play();
+        
   // What image to show on button.
   return SpeakerOn;
 }
@@ -1896,18 +1898,20 @@ function GameLoopPlaying()
   {
     var arrowSide = ScreenHeight / 4;
     var y = ScreenHeight - arrowSide - SafeHeightMargin;
-    var xLeft = SafeWidthMargin * 2;
-    var xRight = ScreenWidth - arrowSide - SafeWidthMargin * 2;
+    var xLeft = SafeWidthMargin;
+    var xRight = ScreenWidth - arrowSide - SafeWidthMargin;
     
     if(SelectedInputMode == 1) // Left
     {
       //xRight = xLeft + arrowSide + SafeWidthMargin * 4;
-      xRight = CuttingCoordinate;
+        xRight = CuttingCoordinate;
+        xLeft = SafeWidthMargin/3;
     }
     else if(SelectedInputMode == 2) // Right
     {
       //xLeft = xRight - arrowSide - SafeWidthMargin * 4;
-      xLeft = CuttingCoordinate - arrowSide;
+        xLeft = CuttingCoordinate - arrowSide;
+        xRight = ScreenWidth - arrowSide - SafeWidthMargin/3;
     }
     
     topctx.drawImage(ArrowLeftImage, xLeft, y, arrowSide, arrowSide);
@@ -2403,24 +2407,26 @@ function DrawPlayerScore()
   topctx.font = textTenRows + "px CarStormFont2";
   topctx.fillText(player.Score, ScreenWidth - screenwidthSeventh, textTwentyRows * 3);
 }
+
+var speedIncreaseSoundPlaying = false;
 function DrawSpeedIncreaseMessage()
 {
   if (messageTimer != 0 && messageTimer%600 > 300)
   {
     var SIimageWidth = screenwidthHalf;
-    topctx.drawImage(SpeedIncreaseImage, screenwidthHalf - SIimageWidth/2, ScreenHeight/2 - ScreenHeight/7, SIimageWidth, SIimageWidth * 0.076);
-    
-    // Try to create the red and blue effect with text only. Possible, but not as good looking. Can't make only intersecting colors turn black...
-    // topctx.textAlign = "center";
-    // topctx.font = touchMessageFontSize + "px CarStormFont1";
-    // // topctx.globalAlpha = 0.5;
-    // topctx.fillStyle = "rgba(236,72,50,0.7)";
-    // topctx.fillText("SPEED INCREASE", screenwidthHalf - carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
-    // topctx.fillStyle = "rgba(0,154,255,0.7)";
-    // topctx.fillText("SPEED INCREASE", screenwidthHalf + carWidth/4.5, ScreenHeight/2 - ScreenHeight/7);
-    // // topctx.globalAlpha = 1;
-    // topctx.fillStyle = "black";
-    // topctx.fillText("SPEED INCREASE", screenwidthHalf, ScreenHeight/2 - ScreenHeight/7);
+    topctx.drawImage(SpeedIncreaseImage, screenwidthHalf - SIimageWidth / 2, ScreenHeight / 2 - ScreenHeight / 7, SIimageWidth, SIimageWidth * 0.076);
+
+    if (!speedIncreaseSoundPlaying)
+    {
+        audioSpeedUp.pause();
+        audioSpeedUp.currentTime = 0;
+        audioSpeedUp.play();
+        speedIncreaseSoundPlaying = true;
+    }
+  }
+  else
+  {
+    speedIncreaseSoundPlaying = false;
   }
 }
 
