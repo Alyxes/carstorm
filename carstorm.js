@@ -1750,11 +1750,7 @@ function GameLoopStartScreen()
       (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
   {
     Log("Playing intro melody.");
-    
-    // Fantastiskt. Den vägrar spela ljudet. 
-    // NotSupportedError: The element has no supported sources.
-    // ...Det kvittar om jag byter ut ljudfilen till en annan...
-    
+        
     // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
     // We just wait until it has done it's job before starting the sound.
     // 
