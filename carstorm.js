@@ -8,7 +8,7 @@
 
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
-const PleaseLitterWithConsoleLogs = false;
+const PleaseLitterWithConsoleLogs = true;
 
 if (PleaseLitterWithConsoleLogs)
   var Log = console.log;
@@ -125,8 +125,12 @@ var PlayStartTime = 0;      // Set to Now when a new play round starts.
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
-var GameVersion = 3;    // Should be increased each time we do a change in game code. (only for our knowledge of which version users are running)
+var GameVersion = 4;    // Should be increased each time we do a change in game code, and always be equal to the $serverHasGameVersion in version.php!
 var RandomId = "";      // The "unique" (probably unique) id for this game app installation. Sent to server to identify the user. Created in FetchOnlineStats().
+
+// Each time a new version (of this file) is downloaded, the cache_killer in each file url below should 
+// make sure all files are downloaded anew.
+var CacheKiller = GameVersion;
 
 var IntroMelodyPlayed = false;
 
@@ -154,19 +158,19 @@ var explosionAnimFrameLength = 0;
 var explosionAnimTimer = 0;
 var explosionAnimFrameCounter = 0;
 
-const audioIntroMelody = new Audio("sound/intro_melody.mp3");
-const audioStart = new Audio("sound/start.mp3");
-const audioBlip = new Audio("sound/blip.mp3");
-const audioHonkHonk = new Audio("sound/honk_honk.mp3");
-const audioMove1 = new Audio("sound/move1.mp3");
-const audioMove2 = new Audio("sound/move2.mp3");
-const audioMove3 = new Audio("sound/move3.mp3");
-const audioMove4 = new Audio("sound/move4.mp3");
-const audioMove5 = new Audio("sound/move5.mp3");
-const audioCrash = new Audio("sound/crash.mp3");
-const audioSpeedUp = new Audio("sound/chime.mp3");
-const audioGameOver = new Audio("sound/gameover.mp3");
-const audioEndingWin = new Audio("sound/ending_win.mp3");
+const audioIntroMelody = new Audio("sound/intro_melody.mp3" + "?cache_killer=" + CacheKiller);
+const audioStart = new Audio("sound/start.mp3" + "?cache_killer=" + CacheKiller);
+const audioBlip = new Audio("sound/blip.mp3" + "?cache_killer=" + CacheKiller);
+const audioHonkHonk = new Audio("sound/honk_honk.mp3" + "?cache_killer=" + CacheKiller);
+const audioMove1 = new Audio("sound/move1.mp3" + "?cache_killer=" + CacheKiller);
+const audioMove2 = new Audio("sound/move2.mp3" + "?cache_killer=" + CacheKiller);
+const audioMove3 = new Audio("sound/move3.mp3" + "?cache_killer=" + CacheKiller);
+const audioMove4 = new Audio("sound/move4.mp3" + "?cache_killer=" + CacheKiller);
+const audioMove5 = new Audio("sound/move5.mp3" + "?cache_killer=" + CacheKiller);
+const audioCrash = new Audio("sound/crash.mp3" + "?cache_killer=" + CacheKiller);
+const audioSpeedUp = new Audio("sound/chime.mp3" + "?cache_killer=" + CacheKiller);
+const audioGameOver = new Audio("sound/gameover.mp3" + "?cache_killer=" + CacheKiller);
+const audioEndingWin = new Audio("sound/ending_win.mp3" + "?cache_killer=" + CacheKiller);
 
 const audioMoveSounds = [audioMove1,audioMove2,audioMove3,audioMove4,audioMove5];
 
@@ -178,79 +182,79 @@ var MoveSound = {
 };
 
 var StartBGImage = new Image();
-StartBGImage.src = "graphics/StartBackground.png";
+StartBGImage.src = "graphics/StartBackground.png" + "?cache_killer=" + CacheKiller;
 var MadSkullLogoImage = new Image();
-MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png";
+MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png" + "?cache_killer=" + CacheKiller;
 
 var SnowPuffImage1 = new Image();
-SnowPuffImage1.src = "graphics/SnowPuff1.png";
+SnowPuffImage1.src = "graphics/SnowPuff1.png" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage2 = new Image();
-SnowPuffImage2.src = "graphics/SnowPuff2.png";
+SnowPuffImage2.src = "graphics/SnowPuff2.png" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage3 = new Image();
-SnowPuffImage3.src = "graphics/SnowPuff3.png";
+SnowPuffImage3.src = "graphics/SnowPuff3.png" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage4 = new Image();
-SnowPuffImage4.src = "graphics/SnowPuff4.png";
+SnowPuffImage4.src = "graphics/SnowPuff4.png" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage5 = new Image();
-SnowPuffImage5.src = "graphics/SnowPuff5.png";
+SnowPuffImage5.src = "graphics/SnowPuff5.png" + "?cache_killer=" + CacheKiller;
 
 var PlayerCarImage = new Image();
-PlayerCarImage.src = "graphics/PlayerCar.png";
+PlayerCarImage.src = "graphics/PlayerCar.png" + "?cache_killer=" + CacheKiller;
 var PlayerLifeImage = new Image();
-PlayerLifeImage.src = "graphics/PlayerLife.png";
+PlayerLifeImage.src = "graphics/PlayerLife.png" + "?cache_killer=" + CacheKiller;
 
 var EnemyCar1Image = new Image();
-EnemyCar1Image.src = "graphics/EnemyCar1.png";
+EnemyCar1Image.src = "graphics/EnemyCar1.png" + "?cache_killer=" + CacheKiller;
 var EnemyCar2Image = new Image();
-EnemyCar2Image.src = "graphics/EnemyCar2.png";
+EnemyCar2Image.src = "graphics/EnemyCar2.png" + "?cache_killer=" + CacheKiller;
 var EnemyCar3Image = new Image();
-EnemyCar3Image.src = "graphics/EnemyCar3.png";
+EnemyCar3Image.src = "graphics/EnemyCar3.png" + "?cache_killer=" + CacheKiller;
 
 var EnemyCarShadowImage = new Image();
-EnemyCarShadowImage.src = "graphics/EnemyCarShadow.png";
+EnemyCarShadowImage.src = "graphics/EnemyCarShadow.png" + "?cache_killer=" + CacheKiller;
 var PlayerCarShadowImage = new Image();
-PlayerCarShadowImage.src = "graphics/PlayerCarShadow.png";
+PlayerCarShadowImage.src = "graphics/PlayerCarShadow.png" + "?cache_killer=" + CacheKiller;
 
 var SpeedIncreaseImage = new Image();
-SpeedIncreaseImage.src = "graphics/SpeedIncreaseMessage.png";
+SpeedIncreaseImage.src = "graphics/SpeedIncreaseMessage.png" + "?cache_killer=" + CacheKiller;
 
 var Explosion1Image = new Image();
-Explosion1Image.src = "graphics/Explosion1.png";
+Explosion1Image.src = "graphics/Explosion1.png" + "?cache_killer=" + CacheKiller;
 var Explosion2Image = new Image();
-Explosion2Image.src = "graphics/Explosion2.png";
+Explosion2Image.src = "graphics/Explosion2.png" + "?cache_killer=" + CacheKiller;
 var Explosion3Image = new Image();
-Explosion3Image.src = "graphics/Explosion3.png";
+Explosion3Image.src = "graphics/Explosion3.png" + "?cache_killer=" + CacheKiller;
 var Smoke1Image = new Image();
-Smoke1Image.src = "graphics/Smoke1.png";
+Smoke1Image.src = "graphics/Smoke1.png" + "?cache_killer=" + CacheKiller;
 var Smoke2Image = new Image();
-Smoke2Image.src = "graphics/Smoke2.png";
+Smoke2Image.src = "graphics/Smoke2.png" + "?cache_killer=" + CacheKiller;
 
 var ArrowLeftImage = new Image();
-ArrowLeftImage.src = "graphics/ArrowLeft.png";
+ArrowLeftImage.src = "graphics/ArrowLeft.png" + "?cache_killer=" + CacheKiller;
 var ArrowRightImage = new Image();
-ArrowRightImage.src = "graphics/ArrowRight.png";
+ArrowRightImage.src = "graphics/ArrowRight.png" + "?cache_killer=" + CacheKiller;
 
 var InputModeButtonNormal = new Image();
-InputModeButtonNormal.src = "graphics/InputModeButtonNormal.png";
+InputModeButtonNormal.src = "graphics/InputModeButtonNormal.png" + "?cache_killer=" + CacheKiller;
 var InputModeButtonLeft = new Image();
-InputModeButtonLeft.src = "graphics/InputModeButtonLeft.png";
+InputModeButtonLeft.src = "graphics/InputModeButtonLeft.png" + "?cache_killer=" + CacheKiller;
 var InputModeButtonRight = new Image();
-InputModeButtonRight.src = "graphics/InputModeButtonRight.png";
+InputModeButtonRight.src = "graphics/InputModeButtonRight.png" + "?cache_killer=" + CacheKiller;
 var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
 var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 var CuttingCoordinate = 0;
 
 var BackButtonImage = new Image();
-BackButtonImage.src = "graphics/BackButton.png";
+BackButtonImage.src = "graphics/BackButton.png" + "?cache_killer=" + CacheKiller;
 
 var SpeakerOnButtonImage = new Image();
-SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png";
+SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png" + "?cache_killer=" + CacheKiller;
 var SpeakerOffButtonImage = new Image();
-SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png";
+SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png" + "?cache_killer=" + CacheKiller;
 var SpeakerImages = [SpeakerOffButtonImage,SpeakerOnButtonImage];
 var SpeakerOn = 1; // 0:Off,1:On
 
 var SettingsButtonImage = new Image();
-SettingsButtonImage.src = "graphics/SettingsButton.png";
+SettingsButtonImage.src = "graphics/SettingsButton.png" + "?cache_killer=" + CacheKiller;
 
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
 
@@ -622,6 +626,7 @@ function Resize()
 
 function StoreStuff()
 {
+  localStorage.setItem("GameVersionToDownload", GameVersion);
   localStorage.setItem("GameVersion", GameVersion);
   localStorage.setItem("ServerVersion", ServerVersion);
   localStorage.setItem("LastDriveScore", LastDriveScore);
@@ -673,6 +678,12 @@ function ReadStuff()
     // The third version is not "released" on the app store, we just uploaded it to the server. It expects the field random_id to be sent along from the client.
     RandomId = localStorage.getItem("RandomId");
   }
+  if(GameVersionInLocalStorage >= 4)
+  {
+    // The third version introduces a fix where each file except index.html uses the cache_killer to make sure 
+    // new versions of the file(s) are downloaded. 
+    GameVersionToDownload = parseInt(localStorage.getItem("GameVersionToDownload"));
+  }
   
   if(GameVersionInLocalStorage >= 31)
   {
@@ -708,6 +719,14 @@ async function FetchOnlineStats()
   
   GotResponseFromServer = false;
   
+  // For statistics and debugging, let's send GameVersionToDownload, it's read by index.html. 
+  // Caching might serve us a new js file (this) but an old index.html, so lets assume GameVersionToDownload is not defined.
+  var gvtd = GameVersion;
+  if (typeof GameVersionToDownload !== 'undefined')
+  {
+    gvtd = GameVersionToDownload;
+  }
+  
   try
   {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
@@ -718,6 +737,7 @@ async function FetchOnlineStats()
     url += "play_count="+PlayCount+"&"; 
     url += "reload_count="+ReloadCount+"&";
     url += "random_id="+RandomId+"&";
+    url += "game_version_to_download="+gvtd+"&";
     url += "cache_killer="+Math.random();// Last param omit the &.
     
     const response = await fetch(url);
@@ -738,6 +758,9 @@ async function FetchOnlineStats()
       var RunningSameAsServer = (ServerVersion == OnlineStats.server_version);
       var GotUpdated = false;
       var FromVersion = ServerVersion;
+      
+      // True if server has new game version. (New game files, js, images, sounds, etc)
+      var ServerHasNewGameVersion = (GameVersion == OnlineStats.server_has_game_version);
       
       // Idea: If this is an old version of carstorm.js, it does not know about
       // any other versions than stated below. It should keep working!
@@ -801,6 +824,23 @@ async function FetchOnlineStats()
         
         // Server version 3 expect a random_id to exist and be sent along in the url params, it is stored in localstorage further down.
       }
+      if(OnlineStats.server_version >= 4)
+      {
+        if(ServerVersion < 4 && OnlineStats.server_version >= 4)
+        {
+          // 'Our' ServerVersion is smaller than 4, but we have this code for updating localstorage to version 4, 
+          // so we have the latest version of the code.
+          // The localstorage must be updated to version 4 though. 
+          GotUpdated = true;
+
+          Log("Updating localstorage from version " + ServerVersion + " to version " + 4);
+          ServerVersion = 4;
+        }
+        
+        // Server version 4 will appreciate game_version_to_download to exist in the url params, 
+        // which is mainly for my future debugging of why people's game are not working/updating properly.
+        // it is stored in localstorage further down.
+      }
       
       // Now we have two cases:
       // 1. GotUpdated is true. This means we have the latest code, and the localstorage structure is updated in the code above. Store the changes by calling StoreStuff().
@@ -818,17 +858,24 @@ async function FetchOnlineStats()
       //       after that the game don't care anymore and will run with whatever mix of versions it has.
       // 4. And finally, if the user is offline, nothing of this ever happens and the game runs fine with its cached files.
       
-      if(!RunningSameAsServer && !GotUpdated)
+      // And apart from all the logic above, we have a somewhat simpler case:
+      //  1. ServerHasNewGameVersion is true, meaning server reports it has a newer version of the game than we are running. 
+      //  2. This is simple, just store the GameVersionToDownload in localstorage,
+      //  3. and reload the game. Voila, index.html and all cache_killer's should make sure we get the latest
+      //     version of any file. 
+      
+      if(!RunningSameAsServer && !GotUpdated || !ServerHasNewGameVersion)
       {
         // Looks like server has a newer version that our code know nothing about. 
         Log("We seem to be running an old version of the game!");
 
         ReloadCount++;
         
-        // Store the ReloadCount!
+        // Store the ReloadCount! Also, store GameVersionToDownload !!
         StoreStuff();
         
         // Store the ReloadCount.
+        // Store GameVersionToDownload!
         // Store the ServerVersion!
         //   <-Det här är ännu viktigare. Så här måste det vara:
         // 
@@ -856,6 +903,15 @@ async function FetchOnlineStats()
           // 5. So we might need to reload again. ReloadCount is now 2.
           // 6. And for the fun of the hell, lets try one more time. ReloadCount is now 3.
           //   <-TODO: Försök förstå varför det är så här jävla komplicerat....
+          
+          // Now, much later, this is the better procedure, not replacing the above but hopefully works better:
+          // 1. All files has the cache_killer in it's url. 
+          // 2. index.html make sure GameVersionToDownload is read from local storage first up, 
+          // 3. THEN all js-files are loaded. So they can expect GameVersionToDownload to exist and 
+          // 4. use it as their cache_killer. 
+          // 5. voila, we get the latest version of _all_ files (except index.html) from the server. 
+          // 6. Of course, we must reload everything anyway, and keep using the service_worker as before.
+          
           window.location.reload();
         }
         else
@@ -2598,4 +2654,10 @@ function ButtonsOnTouchEnd()
   {
     AllButtons[i].OnTouchEnd();
   }
+}
+
+// Always at the end of the file. See index.html.
+if (typeof IncreaseReadyCount !== 'undefined')
+{
+  IncreaseReadyCount();
 }

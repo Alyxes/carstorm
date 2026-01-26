@@ -4,10 +4,13 @@ require_once "private/handlers.php";
 // Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 
 // Increase version when server expect the given data to have a new format.
-$serverVersion = 3;
+$serverVersion = 4;
 
 //TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp. Har dubbelkollat med appen, funkar likaslurt.
 // $serverVersion = $serverVersion + 1;
+
+// Increase version when we want the game/localhost to download a new set of the game's files.
+$serverHasGameVersion = 4;
 
 // FetchString() is friendly and returns empty string if there is no value given from the user.
 // intval() is friendly too, and returns 0 on empty string.
@@ -22,6 +25,8 @@ $reloadCount = intval(HandlerHelper::FetchString($_GET, 'reload_count'));
 // From serverVersion 3 the random_id is expected.
 $randomId = HandlerHelper::FetchString($_GET, 'random_id');
 
+// From serverVersion 4 the game_version_to_download is expected.
+$gameVersionToDownload = intval(HandlerHelper::FetchString($_GET, 'game_version_to_download'));
 
 $ush = new UserStatsHandler();
 
@@ -56,7 +61,8 @@ $id = $ush->AddUserStats(
         $randomId);
 
 $arr = array(
-  'server_version' => $serverVersion, 
+  'server_version' => $serverVersion,
+  'server_has_game_version' => $serverHasGameVersion,
   'players_now' => $playersNow + 1 // Including yourself. 
   );
 

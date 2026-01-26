@@ -303,3 +303,9 @@ function CreateButton(
   
   return button;
 }
+
+// Always at the end of the file. See index.html.
+if (typeof IncreaseReadyCount !== 'undefined')
+{
+  IncreaseReadyCount();
+}
