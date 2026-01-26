@@ -1696,7 +1696,7 @@ function ScorePassedCars()
     
     nextLevel += 300 * gamespeed;
 
-    messageTimer = 3000;
+    messageTimer = 2600;
     speedIncreaseSoundPlaying = false;
   }
 }
@@ -2506,7 +2506,7 @@ function DrawSpeedIncreaseMessage()
 {
     if (messageTimer != 0)
     {
-        if (messageTimer % 600 > 300)
+        if (messageTimer % 650 > 250)
         {
             topctx.drawImage(SpeedIncreaseImage,
                 screenwidthHalf - screenwidthHalf / 2, ScreenHeight / 2 - ScreenHeight / 7,
