@@ -254,7 +254,7 @@ SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png" + "?cache_killer=" + C
 var SpeakerOffButtonImage = new Image();
 SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png" + "?cache_killer=" + CacheKiller;
 var SpeakerImages = [SpeakerOffButtonImage,SpeakerOnButtonImage];
-var SpeakerOn = 1; // 0:Off,1:On
+var SpeakerOn = true; // Made it into a boolean, and uses Number(SpeakerOn) for all places where it needs to be 0 or 1.
 
 var SettingsButtonImage = new Image();
 SettingsButtonImage.src = "graphics/SettingsButton.png" + "?cache_killer=" + CacheKiller;
@@ -1014,10 +1014,7 @@ function SettingsButtonSwitchInputMode()
 }
 function SettingsButtonSpeaker()
 {
-  if(SpeakerOn == 1)
-    SpeakerOn = 0;
-  else
-    SpeakerOn = 1;
+  SpeakerOn = !SpeakerOn;
   
   Log("SpeakerOn: " + SpeakerOn);
   
@@ -1027,7 +1024,7 @@ function SettingsButtonSpeaker()
         audioMove3.play();
         
   // What image to show on button.
-  return SpeakerOn;
+  return Number(SpeakerOn);
 }
 
 // Alla knapparna ska ha samma färger o margins.
@@ -1098,7 +1095,7 @@ function CreateSettingsSpeakerButton()
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, SpeakerImages, SpeakerOn, selectedStrokeStyle, 
+    fillStyle, shadowColor, SpeakerImages, Number(SpeakerOn), selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSpeaker,
     adaptToWidth, zoomAmount);
     
