@@ -99,14 +99,15 @@ function CreateButton(
     selectedShadowColor:selectedShadowColor,
     selectedCornerRadius:selectedCornerRadius,
     selectedShadowBlur:selectedShadowBlur,
-    imageArray:imageArray,
+    imageArray:imageArray,                        // Might be several images if button can switch between several modes. (Modes like On, Off, Maybe, Why not, etc.)
     callbackFunction:callbackFunction,
     adaptToWidth:adaptToWidth,                    // If this is true, adapt height to width of button. (Otherwise adapt width to height.) (If there is an image.)
     zoomAmount:zoomAmount,                        // Amount to zoom up button when pressed, in pixels.
     
-    selectedImage:selectedImage,
+    selectedImage:selectedImage,  // selectedImage in imageArray, decided by the return value of the callbackFunction.
     buttonPressed:false,          // Kan växla fram o tillbaka när användaren flyttar fingret, mellan OnTouchStart() och OnTouchEnd().
     buttonGotTouchStart: false,   // Sätts i OnTouchStart() och rensas i OnTouchEnd().
+    pressTime: 0.0,               // Sätts till Now så fort knappen pressas ner. 
     
     // Resize screen event. 
     Resize: function(screenWidth, screenHeight) {
@@ -140,12 +141,13 @@ function CreateButton(
       }
     },
     
-    OnTouchStart: function(x,y) {
+    OnTouchStart: function(x,y, time) {
       if(x >= this.x && x <= this.x + this.w 
         && y >= this.y && y <= this.y + this.h)
       {
         this.buttonGotTouchStart = true;
         this.buttonPressed = true;
+        this.pressTime = time;
         Log("yey, someone's touching me!");
       }
     },
@@ -167,21 +169,38 @@ function CreateButton(
       }
     },
     
-    OnTouchEnd: function() {
+    OnTouchEnd: function(time) {
       // Somewhat logical, when a touch end happens, there are no coordinates. So OnTouchMove() has kept track of last finger position up until this event happened.
       if(this.buttonPressed)
       {
         // OnTouchMove() kept track of the finger movement until the last moment where it was removed. 
         Log("yey, a full click happened! Calling callbackFunction().");
         this.selectedImage = this.callbackFunction();
+        
+        var minTimeToShow = 150;
+        if(this.pressTime + minTimeToShow > time)
+        {
+          Log("Starting a timer for the poor button. Time left to show it: " + ((this.pressTime + minTimeToShow) - time));
+          
+          // Quickly pressing the button might render it pressed less than one frame, appear like it was not pressed. 
+          // Start a timer for the remaining time.
+          setTimeout(() => {
+            Log("Releasing button after a while.");
+            this.buttonPressed = false;
+          }, (this.pressTime + minTimeToShow) - time);
+        }
+        else
+        {
+          this.buttonPressed = false;
+        }
       }
       else
       {
         // User slided finger outside of button in OnTouchMove(), or, this button has never been touched. 
+        this.buttonPressed = false;
       }
       
       this.buttonGotTouchStart = false;
-      this.buttonPressed = false;
     },
 
     Draw: function(ctx) {

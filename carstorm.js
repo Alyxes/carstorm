@@ -987,10 +987,14 @@ function SetCuttingCoordinate()
 function StartScreenToSettingsButton()
 {
   SetState(gsSettings);
+  
+  return 0;
 }
 function SettingsBackButton()
 {
   SetState(gsStartScreen);
+  
+  return 0;
 }
 function SettingsButtonSwitchInputMode()
 {
@@ -2646,7 +2650,7 @@ function ButtonsOnTouchStart(x,y)
 {
   for(var i=0; i<AllButtons.length; i++)
   {
-    AllButtons[i].OnTouchStart(x,y);
+    AllButtons[i].OnTouchStart(x,y, Now);
   }
 }
 function ButtonsOnTouchMove(x,y)
@@ -2660,7 +2664,7 @@ function ButtonsOnTouchEnd()
 {
   for(var i=0; i<AllButtons.length; i++)
   {
-    AllButtons[i].OnTouchEnd();
+    AllButtons[i].OnTouchEnd(Now);
   }
 }
 
