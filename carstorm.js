@@ -1018,6 +1018,7 @@ function SettingsButtonSpeaker()
     SpeakerOn = 0;
   else
     SpeakerOn = 1;
+  
   Log("SpeakerOn: " + SpeakerOn);
   
     if (SpeakerOn)
@@ -2515,7 +2516,7 @@ function DrawSpeedIncreaseMessage()
             {
                 audioSpeedUp.pause();
                 audioSpeedUp.currentTime = 0;
-                audioSpeedUp.play();
+                PlaySound(audioSpeedUp);
                 speedIncreaseSoundPlaying = true;
             }
         }
