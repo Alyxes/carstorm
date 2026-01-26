@@ -1,5 +1,6 @@
 {
   "name": "carstorm",
+  "background_color": "#777799",
   "display":"standalone",
   "start_url":"/",   
   "icons": [
