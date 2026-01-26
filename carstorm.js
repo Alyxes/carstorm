@@ -308,11 +308,13 @@ function init()
 
   hiddenCanvas = document.createElement('canvas');
   
-  // Not sure it makes a difference right here, but scaling up gets pixelated, not softened. 
-  c.style.imageRendering = "pixelated";
-  sc.style.imageRendering = "pixelated";
-  tc.style.imageRendering = "pixelated";
-  hiddenCanvas.style.imageRendering = "pixelated";
+  // Not sure it makes a difference right here, but scaling up gets pixelated, not softened.
+  // Tim-comment: I changed it to softened and it looks better as long as the scaling isn't right. Can stay as softened as it won't matter either way when
+  // the scaling issue is fixed.
+  c.style.imageRendering = "softened";
+  sc.style.imageRendering = "softened";
+  tc.style.imageRendering = "softened";
+  hiddenCanvas.style.imageRendering = "softened";
   
   // A winterstorm background should be almost white, not green. :)
   c.style.backgroundColor = "#eee";
@@ -1671,8 +1673,9 @@ function ScorePassedCars()
     gamespeedMS = 1000/gamespeed;
     
     nextLevel += 300 * gamespeed;
-    
+
     messageTimer = 3000;
+    speedIncreaseSoundPlaying = false;
   }
 }
 function CheckLivesBlinkTimer()
@@ -2469,23 +2472,28 @@ function DrawPlayerScore()
 var speedIncreaseSoundPlaying = false;
 function DrawSpeedIncreaseMessage()
 {
-  if (messageTimer != 0 && messageTimer%600 > 300)
-  {
-    var SIimageWidth = screenwidthHalf;
-    topctx.drawImage(SpeedIncreaseImage, screenwidthHalf - SIimageWidth / 2, ScreenHeight / 2 - ScreenHeight / 7, SIimageWidth, SIimageWidth * 0.076);
-
-    if (!speedIncreaseSoundPlaying)
+    if (messageTimer != 0)
     {
-        audioSpeedUp.pause();
-        audioSpeedUp.currentTime = 0;
-        audioSpeedUp.play();
-        speedIncreaseSoundPlaying = true;
+        if (messageTimer % 600 > 300)
+        {
+            topctx.drawImage(SpeedIncreaseImage,
+                screenwidthHalf - screenwidthHalf / 2, ScreenHeight / 2 - ScreenHeight / 7,
+                screenwidthHalf, screenwidthHalf * 0.076);
+
+            if (!speedIncreaseSoundPlaying)
+            {
+                audioSpeedUp.pause();
+                audioSpeedUp.currentTime = 0;
+                audioSpeedUp.play();
+                speedIncreaseSoundPlaying = true;
+            }
+        }
+        else
+        {
+            if (speedIncreaseSoundPlaying)
+                speedIncreaseSoundPlaying = false;
+        }
     }
-  }
-  else
-  {
-    speedIncreaseSoundPlaying = false;
-  }
 }
 
 var stormRotationDegrees = 0;
