@@ -79,6 +79,7 @@ var fpsInterval = 1000 / fps; // milliseconds.
 
 // Let the name and string be the same to avoid confusion. 
 var gsNothing = "Nothing";
+var gsSplashScreen = "SplashScreen";
 var gsStartScreen = "StartScreen";
 var gsSettings = "Settings";
 var gsIntroPlay = "IntroPlay";
@@ -89,7 +90,7 @@ var gsGameOver = "GameOver";
 var gsWinGame = "WinGame";
 
 // This was really fun to do, but lets SetState() check if the given parameter is an actual state or a syntax error.
-var gameStates = [ gsNothing, gsStartScreen, gsSettings, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
+var gameStates = [ gsNothing, gsSplashScreen, gsStartScreen, gsSettings, gsIntroPlay, gsPlaying, gsCrashed, gsPaused, gsGameOver, gsWinGame ];
 
 // Then we set the state like this, to avoid spelling errors.
 var gameState = gsNothing;
@@ -181,6 +182,8 @@ var MoveSound = {
   lastPlayed: null,
 };
 
+var AppIconImage = new Image();
+AppIconImage.src = "graphics/AppIcon.png" + "?cache_killer=" + CacheKiller;
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png" + "?cache_killer=" + CacheKiller;
 var MadSkullLogoImage = new Image();
@@ -354,8 +357,8 @@ function init()
   // Read back any data from localstorage.
   ReadStuff();
   
-  // We enter the game with the loading screen visible.
-  SetState(gsStartScreen);
+  // We enter the game with the splash screen visible.
+  SetState(gsSplashScreen);
       
   // Start the game loop!
   GameLoop();
@@ -487,20 +490,21 @@ function TouchClickEvent(xPos, yPos)
   // Eeh, ugly but works. Spreading out game state checks this way is error prone.
   switch(gameState)
   {
+    case gsSplashScreen:
+      // Splash screen just goes on to the start screen.
+      SetState(gsStartScreen);
+      break;    
     case gsStartScreen:
-        // Clicking the start screen starts a new game.
-        // This is also a terrible hack, but it works. :)
-        if(AllButtons[0].buttonPressed == false)
-        {
-          SetState(gsIntroPlay);
-        }
+      // Clicking the start screen starts a new game.
+      // This is also a terrible hack, but it works. :)
+      if(AllButtons[0].buttonPressed == false)
+      {
+        SetState(gsIntroPlay);
+      }
         
       break;
     case gsSettings:
       // Buttons: Back. Sound switch. Input mode toggle.
-      
-      // Clicking the screen goes back to start screen right now.
-      //SetState(gsStartScreen);
       break;
     case gsPlaying:
       if(xPos < CuttingCoordinate)
@@ -1241,6 +1245,12 @@ function SetState(newState)
   switch(gameState)
   {
     case gsNothing:
+      if(newState == gsSplashScreen)
+      {
+        transitionCool = true;
+      }
+      break;
+    case gsSplashScreen:
       if(newState == gsStartScreen)
       {
         OnEnterStartScreen();
@@ -1350,6 +1360,9 @@ function OnEnterStartScreen()
 {
   messageTimer = 3000; // Used for the message txtTouchScreenToDrive.
   IntroMelodyPlayed = false;
+  audioIntroMelody.pause();
+  audioIntroMelody.currentTime = 0;  
+  
   FetchOnlineStats();
   
   CreateToSettingsButton();
@@ -1587,6 +1600,10 @@ function GameLoop()
       case gsNothing:
         // This should never happen.
         break;
+      case gsSplashScreen:
+        // Draw the splash screen! Look for a touch/click meaning user want to go on to the start screen!
+        GameLoopSplashScreen();
+        break;
       case gsStartScreen:
         // Draw the start screen! Look for a touch/click meaning user want to start a new game!
         GameLoopStartScreen();
@@ -1716,6 +1733,16 @@ function CheckExplosionAnimTimer()
   }
 }
 
+function GameLoopSplashScreen()
+{
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  
+  var width = ScreenWidth/2.7;
+  topctx.drawImage(
+    AppIconImage, 
+    ScreenWidth * 0.015, ScreenHeight * 0.03, 
+    width, width * AppIconImage.height / AppIconImage.width);  
+}
 function GameLoopStartScreen()
 {
   if(FetchOnlineStatsDone && 
@@ -1723,6 +1750,10 @@ function GameLoopStartScreen()
       (audioIntroMelody.paused || audioIntroMelody.currentTime == 0))
   {
     Log("Playing intro melody.");
+    
+    // Fantastiskt. Den vägrar spela ljudet. 
+    // NotSupportedError: The element has no supported sources.
+    // ...Det kvittar om jag byter ut ljudfilen till en annan...
     
     // Online stats might want to reload all files from time to time, which would make the sound stutter as it is restarted.
     // We just wait until it has done it's job before starting the sound.

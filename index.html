@@ -66,7 +66,23 @@
   }
 </style>
 <body onLoad="Setup();">
+  <p id="offline_message">If nothing shows up, please make sure you are online the first time you start the game!</p>
+	<canvas id="canvas"></canvas>
+  <canvas id="street_canvas"></canvas>
+  <canvas id="top_canvas"></canvas>
+  
   <script>
+    if (navigator.userActivation.isActive)
+    {
+      // I det här läget är den aldrig active, användaren har inte hunnit klicka nånstans.
+      console.log("is active");
+    }
+    else
+    {
+      // Så denna körs alltid.
+      console.log("not active");
+    }
+    
     var GameVersionToDownload = 0;
     var scripts = ["button.js","carstorm.js"];
     var readyCount = 0;
@@ -147,13 +163,7 @@
         init();
       }
     }
-  </script>
-  <p id="offline_message">If nothing shows up, please make sure you are online the first time you start the game!</p>
-	<canvas id="canvas"></canvas>
-  <canvas id="street_canvas"></canvas>
-  <canvas id="top_canvas"></canvas>
-  
-  <script>
+    
     setTimeout(() => {
       // Nothing has been loaded for some time, are we offline?
       var om = document.getElementById("offline_message");
