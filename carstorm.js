@@ -31,6 +31,7 @@ var Height4K = 2160;
 // textFiveRows is simply ScreenHeight / 5, so we can easily put large text on five rows.
 var textFourRows;
 var textFiveRows;
+var textSevenRows;
 var textTenRows;
 var textTwelveRows;
 var textThirteenRows;
@@ -575,6 +576,7 @@ function Resize()
   
   textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
+  textSevenRows = ScreenHeight / 7;
   textTenRows = ScreenHeight / 10;
   textTwelveRows = ScreenHeight / 12;
   textThirteenRows = ScreenHeight / 13;
@@ -2088,6 +2090,8 @@ function GameLoopPaused()
       
   topctx.fillStyle = "black";
   topctx.textAlign = "center";
+  topctx.font = textSevenRows + "px CarStormFont2";
+  topctx.fillText("GAME PAUSED", screenwidthHalf, textFifteenRows * 6);
   topctx.font = textFifteenRows + "px CarStormFont1";
   topctx.fillText(txtTouchScreenToContinue, screenwidthHalf, textFifteenRows * 8);
 }
