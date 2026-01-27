@@ -1023,19 +1023,31 @@ function SettingsButtonSpeaker()
   
   Log("SpeakerOn: " + SpeakerOn);
   
-    if (SpeakerOn)
-        audioHonkHonk.play();
-    else
-        audioMove3.play();
+  if (SpeakerOn)
+    audioHonkHonk.play();
+  else
+    audioMove3.play();
         
   // What image to show on button.
   return Number(SpeakerOn);
 }
 function PlayingToPauseButton()
 {
-    SetState(gsPaused);
+  SetState(gsPaused);
 
-    return 0;
+  return 0;
+}
+function PauseScreenContinueButton()
+{
+  SetState(gsPlaying);
+
+  return 0;
+}
+function PauseScreenRestartButton()
+{
+  SetState(gsIntroPlay);
+
+  return 0;
 }
 
 // Alla knapparna ska ha samma färger o margins.
@@ -1053,24 +1065,38 @@ var zoomAmount = 20;
 
 function CreateSettingsBackButton()
 {
-  var x = SafeWidthMargin;
   var y = SafeHeightMargin;
-  
-  // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
-  // OBS: Detta är första knappen i en row, så den bestämmer alla andra knappars höjd och x- o yposition!
-  var width = 1;
-  var height = ScreenHeight / 5;
-  var adaptToWidth = false;
-  
-  var buttonBack = CreateButton(
-    x, y, width, height,
-    ScreenWidth, ScreenHeight,
-    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
-    adaptToWidth, zoomAmount);
-    
-  AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
+  var settingsBackButtonCallBack = SettingsBackButton;
+
+  CreateBackButton(y, settingsBackButtonCallBack);
+}
+function CreatePauseRestartButton()
+{
+  var y = SafeHeightMargin + textFourRows;
+  var settingsBackButtonCallBack = PauseScreenRestartButton;
+
+  CreateBackButton(y, settingsBackButtonCallBack);
+}
+function CreateBackButton(backButtonYpos, backButtonCallBack)
+{
+    var x = SafeWidthMargin;
+    var y = backButtonYpos;
+
+    // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+    // OBS: Detta är första knappen i en row, så den bestämmer alla andra knappars höjd och x- o yposition!
+    var width = 1;
+    var height = ScreenHeight / 5;
+    var adaptToWidth = false;
+
+    var buttonBack = CreateButton(
+        x, y, width, height,
+        ScreenWidth, ScreenHeight,
+        cornerRadius, fillingInset, shadowBlur, strokeStyle,
+        fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle,
+        selectedShadowColor, selectedCornerRadius, selectedShadowBlur, backButtonCallBack,
+        adaptToWidth, zoomAmount);
+
+    AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
 }
 function CreateSettingsButtonSelectedInputMode()
 {
@@ -1356,6 +1382,12 @@ function SetState(newState)
         TransitFromPausedToPlaying();
         transitionCool = true;
       }
+      else if(newState == gsStartScreen)
+      {
+        ResetGameVariables();
+        TransitFromPauseScreenToIntroPlay();
+        transitionCool = true;
+      }
       break;
     case gsGameOver:
       // After a timer, player can click/touch screen to go back to the start screen.
@@ -1477,6 +1509,14 @@ function TransitFromCrashedToPaused()
     player.CrashState = "None";
     player.HasCollided = false;
     explosionAnimTimer = 0;
+}
+function TransitFromPauseScreenToIntroPlay()
+{
+    TimeToGoBackToPlay = Now + 2500;
+    player.CrashState = "Restarting";
+    player.RestartBlinkTimer = 0;
+    PlaySound(audioStart);
+    audioCurrentlyPlaying = audioStart;
 }
 function TransitFromPausedToPlaying()
 {
@@ -2087,6 +2127,7 @@ function GameLoopPaused()
   DrawPlayerCar(false);
   DrawPlayerLives();
   DrawPlayerScore();
+  // DrawButtons();
       
   topctx.fillStyle = "black";
   topctx.textAlign = "center";
