@@ -1072,7 +1072,7 @@ function CreateSettingsBackButton()
 }
 function CreatePauseRestartButton()
 {
-  var y = SafeHeightMargin + textFourRows;
+  var y = textTenRows * 4;
   var settingsBackButtonCallBack = PauseScreenRestartButton;
 
   CreateBackButton(y, settingsBackButtonCallBack);
@@ -1366,7 +1366,8 @@ function SetState(newState)
       }
       if (newState == gsPaused)
       {
-          TransitFromCrashedToPaused();
+        TransitFromCrashedToPaused();
+        OnEnterPaused();
         transitionCool = true;
       }
       else if(newState == gsGameOver)
@@ -1379,11 +1380,13 @@ function SetState(newState)
       // To keep stuff simple, there is no restart or abort game button in pause mode.
       if(newState == gsPlaying)
       {
+        OnExitPaused();
         TransitFromPausedToPlaying();
         transitionCool = true;
       }
       else if(newState == gsStartScreen)
       {
+        OnExitPaused();
         ResetGameVariables();
         TransitFromPauseScreenToIntroPlay();
         transitionCool = true;
@@ -1495,17 +1498,12 @@ function TransitFromCrashedToPlaying()
 }
 function TransitFromCrashedToPaused()
 {
-  // audioCrash.pause();
-  // audioCrash.currentTime = 0;
     player.RestartBlinkTimer = 0;
     player.RoadPos = 2;
     player.Xposition = screenwidthFifth * (player.RoadPos + 1);
     player.LivesBlinkTimer = 0;
-
     player.Lives = playerlivesCrashCheck - 1;
-
     explosionAnimFrameCounter = 0;
-
     player.CrashState = "None";
     player.HasCollided = false;
     explosionAnimTimer = 0;
@@ -1520,7 +1518,7 @@ function TransitFromPauseScreenToIntroPlay()
 }
 function TransitFromPausedToPlaying()
 {
-  // Resume playing. I guess here will happen nothing.
+  CreatePauseGameButton();
 }
 function TransitFromGameOverToStartScreen()
 {
@@ -1535,6 +1533,12 @@ function TransitFromWinGameToStartScreen()
 function OnEnterPaused()
 {
   // Start a pause sound. (Lets see what happens when the app gets minimized..)
+  AllButtons.length = 0; // Clear the buttons!
+  CreatePauseRestartButton();
+}
+function OnExitPaused()
+{
+  AllButtons.length = 0; // Clear the buttons!
 }
 function OnEnterGameOver()
 {
@@ -2127,7 +2131,7 @@ function GameLoopPaused()
   DrawPlayerCar(false);
   DrawPlayerLives();
   DrawPlayerScore();
-  // DrawButtons();
+  DrawButtons();
       
   topctx.fillStyle = "black";
   topctx.textAlign = "center";
