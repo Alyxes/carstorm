@@ -507,15 +507,18 @@ function TouchClickEvent(xPos, yPos)
       // Buttons: Back. Sound switch. Input mode toggle.
       break;
     case gsPlaying:
-      if(xPos < CuttingCoordinate)
+      if (yPos > ScreenHeight / 2)
       {
-        // Log("mousedown left");
-        PlayerMove("left");
-      }
-      else
-      {
-        // Log("mousedown right");
-        PlayerMove("right");
+        if (xPos < CuttingCoordinate)
+        {
+          // Log("mousedown left");
+          PlayerMove("left");
+        }
+        else
+        {
+          // Log("mousedown right");
+          PlayerMove("right");
+        }
       }
       break;
     case gsPaused:
@@ -1026,6 +1029,12 @@ function SettingsButtonSpeaker()
   // What image to show on button.
   return Number(SpeakerOn);
 }
+function PlayingToPauseButton()
+{
+    SetState(gsPaused);
+
+    return 0;
+}
 
 // Alla knapparna ska ha samma färger o margins.
 var cornerRadius = 0; // Sätter man cornerRadius till noll ritas ingen border ut.
@@ -1104,22 +1113,42 @@ function CreateSettingsSpeakerButton()
 
 function CreateToSettingsButton()
 {
-  // Which makes me wish for something like "rightAlignedButton"..
-  var x = ScreenWidth - SafeWidthMargin * 3;
+  var x = ScreenWidth - SafeWidthMargin * 4;
   var y = SafeHeightMargin;
-  
+  var width = ScreenWidth / 12;
+  var callBack = StartScreenToSettingsButton;
+
+  CreateCogButton(x, y, width, callBack);
+}
+
+function CreatePauseGameButton()
+{
+  var x = ScreenWidth - SafeWidthMargin * 3.5;
+  var y = textFiveRows;
   var width = ScreenWidth / 15;
+  var callBack = PlayingToPauseButton;
+
+  CreateCogButton(x, y, width, callBack);
+}
+
+function CreateCogButton(cogButtonXpos, cogButtonYpos, cogButtonImgWidth, cogButtonCallBack)
+{
+  // Which makes me wish for something like "rightAlignedButton"..
+  var x = cogButtonXpos;
+  var y = cogButtonYpos;
+
+  var width = cogButtonImgWidth;
   var height = 1;
   var adaptToWidth = true;
-  
+
   var buttonToSettings = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
-    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, StartScreenToSettingsButton,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle,
+    fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle,
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, cogButtonCallBack,
     adaptToWidth, zoomAmount);
-    
+
   AllButtons.push(buttonToSettings);
 }
 
@@ -1276,7 +1305,7 @@ function SetState(newState)
         OnEnterStartScreen();
         transitionCool = true;
       }
-      break;    
+      break;
     case gsIntroPlay:
       if(newState == gsPlaying)
       {
@@ -1305,6 +1334,11 @@ function SetState(newState)
       if(newState == gsPlaying)
       {
         TransitFromCrashedToPlaying();
+        transitionCool = true;
+      }
+      if (newState == gsPaused)
+      {
+          TransitFromCrashedToPaused();
         transitionCool = true;
       }
       else if(newState == gsGameOver)
@@ -1397,14 +1431,19 @@ function TransitFromIntroPlayToPlaying()
   player.CrashState = "None";
   explosionAnimFrameLength = 400;
   player.RestartBlinkTimer = 0;
+  playerlivesCrashCheck = 0;
+  CreatePauseGameButton();
 }
+
+var playerlivesCrashCheck = 0; // Only used to store player lives when crashing, to avoid losing multiple lives on one crash, or no lives...
 function TransitFromPlayingToCrashed()
 {
-  // Crashing into a car! Draw some explosion, make a sound. 
+  // Crashing into a car! Draw some explosion, make a sound.
+  playerlivesCrashCheck = player.Lives;
+
   player.HasCollided = true;
   player.LivesBlinkTimer = 600;
   player.CrashState = "Exploding";
-  // player.RestartBlinkTimer = 3800;
   
   currentExplosionFrameIndex = randomizeNumber(3);
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -1417,7 +1456,25 @@ function TransitFromPlayingToCrashed()
 }
 function TransitFromCrashedToPlaying()
 {
-  player.RestartBlinkTimer = 0;
+    player.RestartBlinkTimer = 0;
+    playerlivesCrashCheck = 0;
+}
+function TransitFromCrashedToPaused()
+{
+  // audioCrash.pause();
+  // audioCrash.currentTime = 0;
+    player.RestartBlinkTimer = 0;
+    player.RoadPos = 2;
+    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    player.LivesBlinkTimer = 0;
+
+    player.Lives = playerlivesCrashCheck - 1;
+
+    explosionAnimFrameCounter = 0;
+
+    player.CrashState = "None";
+    player.HasCollided = false;
+    explosionAnimTimer = 0;
 }
 function TransitFromPausedToPlaying()
 {
@@ -1449,6 +1506,8 @@ function OnEnterGameOver()
   EndGameVariableResets();
 
   StoreStuff();
+
+  AllButtons.length = 0; // Clear the buttons!
 }
 function OnEnterWinGame()
 {
@@ -1465,6 +1524,8 @@ function OnEnterWinGame()
   EndGameVariableResets();
 
   StoreStuff();
+
+  AllButtons.length = 0; // Clear the buttons!
 }
 
 // Play sound only if the speaker is turned on.
@@ -1699,7 +1760,7 @@ function ScorePassedCars()
 }
 function CheckLivesBlinkTimer()
 {
-  if (player.LivesBlinkTimer > 0)
+  if (player.LivesBlinkTimer > 0 && player.CrashState != "None")
   {
     player.LivesBlinkTimer -= ElapsedTime;
     
@@ -1885,6 +1946,7 @@ function GameLoopIntroPlay()
   DrawPlayerCar(true);    
   DrawPlayerLives();
   DrawPlayerScore();
+  DrawButtons();
   
   if(Now > TimeToGoBackToPlay)
   {
@@ -1912,7 +1974,8 @@ function GameLoopCrashed()
   DrawPlayerCar(true);    
   DrawPlayerLives();
   DrawPlayerScore();
-  
+  DrawButtons();
+
   DrawSpeedIncreaseMessage();
   
   // Placed this timer function below all draw functions to avoid having the explosion changing frame just before the blinking, which was a bit ugly. This fixes it.
@@ -1975,6 +2038,7 @@ function GameLoopPlaying()
   DrawPlayerCar(true);
   DrawPlayerLives();
   DrawPlayerScore();
+  DrawButtons();
   
   DrawSpeedIncreaseMessage();
 
@@ -2145,6 +2209,10 @@ function GameTickTheCars(isPlaying)
 
     if(CheckIfPlayerCollidesWithOtherCars())
     {
+      if (player.Lives -1 <= 0)
+      {
+        AllButtons.length = 0; // Make sure that the pause button is removed on game over.
+      }
       SetState(gsCrashed);
     }
     else
