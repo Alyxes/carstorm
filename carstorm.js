@@ -163,6 +163,7 @@ var explosionAnimFrameCounter = 0;
 const audioIntroMelody = new Audio("sound/intro_melody.mp3" + "?cache_killer=" + CacheKiller);
 const audioStart = new Audio("sound/start.mp3" + "?cache_killer=" + CacheKiller);
 const audioBlip = new Audio("sound/blip.mp3" + "?cache_killer=" + CacheKiller);
+const audioButtonClick = new Audio("sound/click.mp3" + "?cache_killer=" + CacheKiller);
 const audioHonkHonk = new Audio("sound/honk_honk.mp3" + "?cache_killer=" + CacheKiller);
 const audioMove1 = new Audio("sound/move1.mp3" + "?cache_killer=" + CacheKiller);
 const audioMove2 = new Audio("sound/move2.mp3" + "?cache_killer=" + CacheKiller);
