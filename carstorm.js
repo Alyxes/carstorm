@@ -366,6 +366,8 @@ function init()
   GameLoop();
 }
 
+var mouseButtonDown = false;
+
 function SetupCallbacks()
 {
   // Add a fake browse history. This way the app is not closed when user presses the back button.
@@ -447,6 +449,7 @@ function SetupCallbacks()
       
       if(e.button == 0) // Most of the time the left button
       {
+        mouseButtonDown = true;
         // Log("mousedown: " + e.button);
         TouchClickEvent(e.clientX, e.clientY);
       }
@@ -456,16 +459,19 @@ function SetupCallbacks()
       
       if(e.button == 0) // Most of the time the left button
       {
+        mouseButtonDown = false;
         ButtonsOnTouchEnd(e.clientX, e.clientY);
       }
     });
     
-    // Det här stinker så klart eftersom den anropas även när ingen musknapp är nertryckt. 
     document.addEventListener("mousemove", (e) => {
       e = e || window.event;
       
-      Log("A mouse move event happened!");
-      ButtonsOnTouchMove(e.clientX, e.clientY);
+      if(mouseButtonDown)
+      {
+        // Log("A mouse move event happened!");
+        ButtonsOnTouchMove(e.clientX, e.clientY);
+      }
     });
     
     // And keep the keydown events for old times sake.
