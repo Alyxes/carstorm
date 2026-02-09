@@ -460,6 +460,14 @@ function SetupCallbacks()
       }
     });
     
+    // Det här stinker så klart eftersom den anropas även när ingen musknapp är nertryckt. 
+    document.addEventListener("mousemove", (e) => {
+      e = e || window.event;
+      
+      Log("A mouse move event happened!");
+      ButtonsOnTouchMove(e.clientX, e.clientY);
+    });
+    
     // And keep the keydown events for old times sake.
     document.addEventListener("keydown", (e) => {
       e = e || window.event;
