@@ -563,7 +563,6 @@ function Resize()
     SetState(gsPaused);
   }
 
-  // Behåll som kommentar, kul att veta.  
   ScreenScale = window.devicePixelRatio;
   // window.visualViewport.scale
   // We should read this article. I don't have time tonight...
@@ -573,8 +572,13 @@ function Resize()
   // realScreenHeight = Math.floor(window.innerHeight * ScreenScale);
   ScreenWidth = window.innerWidth;
   ScreenHeight = window.innerHeight;
-    
-  var cs = document.getElementById('canvas');
+  
+  ResizeCanvas(document.getElementById('canvas'), true);
+  ResizeCanvas(document.getElementById('street_canvas'), false);
+  ResizeCanvas(document.getElementById('top_canvas'), false);
+  ResizeCanvas(hiddenCanvas, false);
+
+  /*var cs = document.getElementById('canvas');
   cs.height = ScreenHeight;
   cs.width = ScreenWidth;
 
@@ -587,7 +591,7 @@ function Resize()
   topcs.width = ScreenWidth;
   
   hiddenCanvas.height = ScreenHeight;
-  hiddenCanvas.width = ScreenWidth;
+  hiddenCanvas.width = ScreenWidth;*/
   
   textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
@@ -648,6 +652,26 @@ function Resize()
   // Så vi tar skillnaden mellan toppenpositionen och bottenpositionen, halfRoadWidthDiffTopToBottom.
   // 
   // Sen för att placera bilarna på rätt x-pos på respektive rad, så multiplicerar vi halfRoadWidthDiffTopToBottom med tex. 0.5.
+}
+
+// Det här fixar upplösningen! 
+// https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+// 1. Sätt canvas elementets css style vidd och höjd till hela skärmen. 
+// 2. I minnet, skapa en canvas som är 3x3 ggr större än vad skärmen tillåter! (3 om devicePixelRatio är det)
+// 3. Skala sedan alla utritningar med 3!! All vår utritning är ju baserad på ScreenWidth o height, som ju är 1/3 av de faktiskta pixlarna. 
+// 
+function ResizeCanvas(canvas, willReadFrequently)
+{
+  Log("W: " + ScreenWidth + ", H: " + ScreenHeight + ", Scale: " + ScreenScale);
+  
+  canvas.style.width = ScreenWidth + "px";
+  canvas.style.height = ScreenHeight + "px";
+  canvas.width = Math.floor(ScreenWidth * ScreenScale); 
+  canvas.height = Math.floor(ScreenHeight * ScreenScale);
+  
+  var daContext = canvas.getContext("2d", { willReadFrequently: willReadFrequently });
+  
+  daContext.scale(ScreenScale, ScreenScale);
 }
 
 function StoreStuff()
