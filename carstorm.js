@@ -31,6 +31,7 @@ var Height4K = 2160;
 // textFiveRows is simply ScreenHeight / 5, so we can easily put large text on five rows.
 var textFourRows;
 var textFiveRows;
+var textSevenRows;
 var textTenRows;
 var textTwelveRows;
 var textThirteenRows;
@@ -162,6 +163,7 @@ var explosionAnimFrameCounter = 0;
 const audioIntroMelody = new Audio("sound/intro_melody.mp3" + "?cache_killer=" + CacheKiller);
 const audioStart = new Audio("sound/start.mp3" + "?cache_killer=" + CacheKiller);
 const audioBlip = new Audio("sound/blip.mp3" + "?cache_killer=" + CacheKiller);
+const audioButtonClick = new Audio("sound/click.mp3" + "?cache_killer=" + CacheKiller);
 const audioHonkHonk = new Audio("sound/honk_honk.mp3" + "?cache_killer=" + CacheKiller);
 const audioMove1 = new Audio("sound/move1.mp3" + "?cache_killer=" + CacheKiller);
 const audioMove2 = new Audio("sound/move2.mp3" + "?cache_killer=" + CacheKiller);
@@ -254,7 +256,7 @@ SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png" + "?cache_killer=" + C
 var SpeakerOffButtonImage = new Image();
 SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png" + "?cache_killer=" + CacheKiller;
 var SpeakerImages = [SpeakerOffButtonImage,SpeakerOnButtonImage];
-var SpeakerOn = 1; // 0:Off,1:On
+var SpeakerOn = true; // Made it into a boolean, and uses Number(SpeakerOn) for all places where it needs to be 0 or 1.
 
 var SettingsButtonImage = new Image();
 SettingsButtonImage.src = "graphics/SettingsButton.png" + "?cache_killer=" + CacheKiller;
@@ -507,15 +509,18 @@ function TouchClickEvent(xPos, yPos)
       // Buttons: Back. Sound switch. Input mode toggle.
       break;
     case gsPlaying:
-      if(xPos < CuttingCoordinate)
+      if (yPos > ScreenHeight / 2)
       {
-        // Log("mousedown left");
-        PlayerMove("left");
-      }
-      else
-      {
-        // Log("mousedown right");
-        PlayerMove("right");
+        if (xPos < CuttingCoordinate)
+        {
+          // Log("mousedown left");
+          PlayerMove("left");
+        }
+        else
+        {
+          // Log("mousedown right");
+          PlayerMove("right");
+        }
       }
       break;
     case gsPaused:
@@ -572,6 +577,7 @@ function Resize()
   
   textFourRows = ScreenHeight / 4;
   textFiveRows = ScreenHeight / 5;
+  textSevenRows = ScreenHeight / 7;
   textTenRows = ScreenHeight / 10;
   textTwelveRows = ScreenHeight / 12;
   textThirteenRows = ScreenHeight / 13;
@@ -1014,19 +1020,35 @@ function SettingsButtonSwitchInputMode()
 }
 function SettingsButtonSpeaker()
 {
-  if(SpeakerOn == 1)
-    SpeakerOn = 0;
-  else
-    SpeakerOn = 1;
+  SpeakerOn = !SpeakerOn;
+  
   Log("SpeakerOn: " + SpeakerOn);
   
-    if (SpeakerOn)
-        audioHonkHonk.play();
-    else
-        audioMove3.play();
+  if (SpeakerOn)
+    audioHonkHonk.play();
+  else
+    audioMove3.play();
         
   // What image to show on button.
-  return SpeakerOn;
+  return Number(SpeakerOn);
+}
+function PlayingToPauseButton()
+{
+  SetState(gsPaused);
+
+  return 0;
+}
+function PauseScreenContinueButton()
+{
+  SetState(gsPlaying);
+
+  return 0;
+}
+function PauseScreenRestartButton()
+{
+  SetState(gsIntroPlay);
+
+  return 0;
 }
 
 // Alla knapparna ska ha samma färger o margins.
@@ -1044,24 +1066,38 @@ var zoomAmount = 20;
 
 function CreateSettingsBackButton()
 {
-  var x = SafeWidthMargin;
   var y = SafeHeightMargin;
-  
-  // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
-  // OBS: Detta är första knappen i en row, så den bestämmer alla andra knappars höjd och x- o yposition!
-  var width = 1;
-  var height = ScreenHeight / 5;
-  var adaptToWidth = false;
-  
-  var buttonBack = CreateButton(
-    x, y, width, height,
-    ScreenWidth, ScreenHeight,
-    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsBackButton,
-    adaptToWidth, zoomAmount);
-    
-  AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
+  var settingsBackButtonCallBack = SettingsBackButton;
+
+  CreateBackButton(y, settingsBackButtonCallBack);
+}
+function CreatePauseRestartButton()
+{
+  var y = textTenRows * 4;
+  var settingsBackButtonCallBack = PauseScreenRestartButton;
+
+  CreateBackButton(y, settingsBackButtonCallBack);
+}
+function CreateBackButton(backButtonYpos, backButtonCallBack)
+{
+    var x = SafeWidthMargin;
+    var y = backButtonYpos;
+
+    // Knapparna ska ligga på en rad, så det är viktigt att de är lika höga. Så vi sätter adaptToWidth till false.
+    // OBS: Detta är första knappen i en row, så den bestämmer alla andra knappars höjd och x- o yposition!
+    var width = 1;
+    var height = ScreenHeight / 5;
+    var adaptToWidth = false;
+
+    var buttonBack = CreateButton(
+        x, y, width, height,
+        ScreenWidth, ScreenHeight,
+        cornerRadius, fillingInset, shadowBlur, strokeStyle,
+        fillStyle, shadowColor, [BackButtonImage], 0, selectedStrokeStyle,
+        selectedShadowColor, selectedCornerRadius, selectedShadowBlur, backButtonCallBack,
+        adaptToWidth, zoomAmount);
+
+    AddButtonToRow(buttonBack, AllButtons, ButtonWidthDistance);
 }
 function CreateSettingsButtonSelectedInputMode()
 {
@@ -1097,7 +1133,7 @@ function CreateSettingsSpeakerButton()
     x, y, width, height,
     ScreenWidth, ScreenHeight,
     cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, SpeakerImages, SpeakerOn, selectedStrokeStyle, 
+    fillStyle, shadowColor, SpeakerImages, Number(SpeakerOn), selectedStrokeStyle, 
     selectedShadowColor, selectedCornerRadius, selectedShadowBlur, SettingsButtonSpeaker,
     adaptToWidth, zoomAmount);
     
@@ -1106,22 +1142,42 @@ function CreateSettingsSpeakerButton()
 
 function CreateToSettingsButton()
 {
-  // Which makes me wish for something like "rightAlignedButton"..
-  var x = ScreenWidth - SafeWidthMargin * 3;
+  var x = ScreenWidth - SafeWidthMargin * 4;
   var y = SafeHeightMargin;
-  
+  var width = ScreenWidth / 12;
+  var callBack = StartScreenToSettingsButton;
+
+  CreateCogButton(x, y, width, callBack);
+}
+
+function CreatePauseGameButton()
+{
+  var x = ScreenWidth - SafeWidthMargin * 3.5;
+  var y = textFiveRows;
   var width = ScreenWidth / 15;
+  var callBack = PlayingToPauseButton;
+
+  CreateCogButton(x, y, width, callBack);
+}
+
+function CreateCogButton(cogButtonXpos, cogButtonYpos, cogButtonImgWidth, cogButtonCallBack)
+{
+  // Which makes me wish for something like "rightAlignedButton"..
+  var x = cogButtonXpos;
+  var y = cogButtonYpos;
+
+  var width = cogButtonImgWidth;
   var height = 1;
   var adaptToWidth = true;
-  
+
   var buttonToSettings = CreateButton(
     x, y, width, height,
     ScreenWidth, ScreenHeight,
-    cornerRadius, fillingInset, shadowBlur, strokeStyle, 
-    fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle, 
-    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, StartScreenToSettingsButton,
+    cornerRadius, fillingInset, shadowBlur, strokeStyle,
+    fillStyle, shadowColor, [SettingsButtonImage], 0, selectedStrokeStyle,
+    selectedShadowColor, selectedCornerRadius, selectedShadowBlur, cogButtonCallBack,
     adaptToWidth, zoomAmount);
-    
+
   AllButtons.push(buttonToSettings);
 }
 
@@ -1278,7 +1334,7 @@ function SetState(newState)
         OnEnterStartScreen();
         transitionCool = true;
       }
-      break;    
+      break;
     case gsIntroPlay:
       if(newState == gsPlaying)
       {
@@ -1309,6 +1365,12 @@ function SetState(newState)
         TransitFromCrashedToPlaying();
         transitionCool = true;
       }
+      if (newState == gsPaused)
+      {
+        TransitFromCrashedToPaused();
+        OnEnterPaused();
+        transitionCool = true;
+      }
       else if(newState == gsGameOver)
       {
         OnEnterGameOver();
@@ -1319,7 +1381,15 @@ function SetState(newState)
       // To keep stuff simple, there is no restart or abort game button in pause mode.
       if(newState == gsPlaying)
       {
+        OnExitPaused();
         TransitFromPausedToPlaying();
+        transitionCool = true;
+      }
+      else if(newState == gsStartScreen)
+      {
+        OnExitPaused();
+        ResetGameVariables();
+        TransitFromPauseScreenToIntroPlay();
         transitionCool = true;
       }
       break;
@@ -1399,14 +1469,19 @@ function TransitFromIntroPlayToPlaying()
   player.CrashState = "None";
   explosionAnimFrameLength = 400;
   player.RestartBlinkTimer = 0;
+  playerlivesCrashCheck = 0;
+  CreatePauseGameButton();
 }
+
+var playerlivesCrashCheck = 0; // Only used to store player lives when crashing, to avoid losing multiple lives on one crash, or no lives...
 function TransitFromPlayingToCrashed()
 {
-  // Crashing into a car! Draw some explosion, make a sound. 
+  // Crashing into a car! Draw some explosion, make a sound.
+  playerlivesCrashCheck = player.Lives;
+
   player.HasCollided = true;
   player.LivesBlinkTimer = 600;
   player.CrashState = "Exploding";
-  // player.RestartBlinkTimer = 3800;
   
   currentExplosionFrameIndex = randomizeNumber(3);
   currentExplosionFrame = explosionAnim[currentExplosionFrameIndex];
@@ -1419,11 +1494,32 @@ function TransitFromPlayingToCrashed()
 }
 function TransitFromCrashedToPlaying()
 {
-  player.RestartBlinkTimer = 0;
+    player.RestartBlinkTimer = 0;
+    playerlivesCrashCheck = 0;
+}
+function TransitFromCrashedToPaused()
+{
+    player.RestartBlinkTimer = 0;
+    player.RoadPos = 2;
+    player.Xposition = screenwidthFifth * (player.RoadPos + 1);
+    player.LivesBlinkTimer = 0;
+    player.Lives = playerlivesCrashCheck - 1;
+    explosionAnimFrameCounter = 0;
+    player.CrashState = "None";
+    player.HasCollided = false;
+    explosionAnimTimer = 0;
+}
+function TransitFromPauseScreenToIntroPlay()
+{
+    TimeToGoBackToPlay = Now + 2500;
+    player.CrashState = "Restarting";
+    player.RestartBlinkTimer = 0;
+    PlaySound(audioStart);
+    audioCurrentlyPlaying = audioStart;
 }
 function TransitFromPausedToPlaying()
 {
-  // Resume playing. I guess here will happen nothing.
+  CreatePauseGameButton();
 }
 function TransitFromGameOverToStartScreen()
 {
@@ -1438,6 +1534,12 @@ function TransitFromWinGameToStartScreen()
 function OnEnterPaused()
 {
   // Start a pause sound. (Lets see what happens when the app gets minimized..)
+  AllButtons.length = 0; // Clear the buttons!
+  CreatePauseRestartButton();
+}
+function OnExitPaused()
+{
+  AllButtons.length = 0; // Clear the buttons!
 }
 function OnEnterGameOver()
 {
@@ -1451,6 +1553,8 @@ function OnEnterGameOver()
   EndGameVariableResets();
 
   StoreStuff();
+
+  AllButtons.length = 0; // Clear the buttons!
 }
 function OnEnterWinGame()
 {
@@ -1467,6 +1571,8 @@ function OnEnterWinGame()
   EndGameVariableResets();
 
   StoreStuff();
+
+  AllButtons.length = 0; // Clear the buttons!
 }
 
 // Play sound only if the speaker is turned on.
@@ -1695,13 +1801,13 @@ function ScorePassedCars()
     
     nextLevel += 300 * gamespeed;
 
-    messageTimer = 3000;
+    messageTimer = 2600;
     speedIncreaseSoundPlaying = false;
   }
 }
 function CheckLivesBlinkTimer()
 {
-  if (player.LivesBlinkTimer > 0)
+  if (player.LivesBlinkTimer > 0 && player.CrashState != "None")
   {
     player.LivesBlinkTimer -= ElapsedTime;
     
@@ -1887,6 +1993,7 @@ function GameLoopIntroPlay()
   DrawPlayerCar(true);    
   DrawPlayerLives();
   DrawPlayerScore();
+  DrawButtons();
   
   if(Now > TimeToGoBackToPlay)
   {
@@ -1914,7 +2021,8 @@ function GameLoopCrashed()
   DrawPlayerCar(true);    
   DrawPlayerLives();
   DrawPlayerScore();
-  
+  DrawButtons();
+
   DrawSpeedIncreaseMessage();
   
   // Placed this timer function below all draw functions to avoid having the explosion changing frame just before the blinking, which was a bit ugly. This fixes it.
@@ -1977,6 +2085,7 @@ function GameLoopPlaying()
   DrawPlayerCar(true);
   DrawPlayerLives();
   DrawPlayerScore();
+  DrawButtons();
   
   DrawSpeedIncreaseMessage();
 
@@ -2023,9 +2132,12 @@ function GameLoopPaused()
   DrawPlayerCar(false);
   DrawPlayerLives();
   DrawPlayerScore();
+  DrawButtons();
       
   topctx.fillStyle = "black";
   topctx.textAlign = "center";
+  topctx.font = textSevenRows + "px CarStormFont2";
+  topctx.fillText("GAME PAUSED", screenwidthHalf, textFifteenRows * 6);
   topctx.font = textFifteenRows + "px CarStormFont1";
   topctx.fillText(txtTouchScreenToContinue, screenwidthHalf, textFifteenRows * 8);
 }
@@ -2147,6 +2259,10 @@ function GameTickTheCars(isPlaying)
 
     if(CheckIfPlayerCollidesWithOtherCars())
     {
+      if (player.Lives -1 <= 0)
+      {
+        AllButtons.length = 0; // Make sure that the pause button is removed on game over.
+      }
       SetState(gsCrashed);
     }
     else
@@ -2505,7 +2621,7 @@ function DrawSpeedIncreaseMessage()
 {
     if (messageTimer != 0)
     {
-        if (messageTimer % 600 > 300)
+        if (messageTimer % 650 > 250)
         {
             topctx.drawImage(SpeedIncreaseImage,
                 screenwidthHalf - screenwidthHalf / 2, ScreenHeight / 2 - ScreenHeight / 7,
@@ -2515,7 +2631,7 @@ function DrawSpeedIncreaseMessage()
             {
                 audioSpeedUp.pause();
                 audioSpeedUp.currentTime = 0;
-                audioSpeedUp.play();
+                PlaySound(audioSpeedUp);
                 speedIncreaseSoundPlaying = true;
             }
         }
