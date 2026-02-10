@@ -239,27 +239,27 @@ var ArrowRightImage = new Image();
 ArrowRightImage.src = "graphics/ArrowRight.png" + "?cache_killer=" + CacheKiller;
 
 var InputModeButtonNormal = new Image();
-InputModeButtonNormal.src = "graphics/InputModeButtonNormal.png" + "?cache_killer=" + CacheKiller;
+InputModeButtonNormal.src = "graphics/InputModeButtonNormal.webp" + "?cache_killer=" + CacheKiller;
 var InputModeButtonLeft = new Image();
-InputModeButtonLeft.src = "graphics/InputModeButtonLeft.png" + "?cache_killer=" + CacheKiller;
+InputModeButtonLeft.src = "graphics/InputModeButtonLeft.webp" + "?cache_killer=" + CacheKiller;
 var InputModeButtonRight = new Image();
-InputModeButtonRight.src = "graphics/InputModeButtonRight.png" + "?cache_killer=" + CacheKiller;
+InputModeButtonRight.src = "graphics/InputModeButtonRight.webp" + "?cache_killer=" + CacheKiller;
 var InputModeImages = [InputModeButtonNormal,InputModeButtonLeft,InputModeButtonRight];
 var SelectedInputMode = 0; // 0:Normal,1:Left,2:Right
 var CuttingCoordinate = 0;
 
 var BackButtonImage = new Image();
-BackButtonImage.src = "graphics/BackButton.png" + "?cache_killer=" + CacheKiller;
+BackButtonImage.src = "graphics/BackButton.webp" + "?cache_killer=" + CacheKiller;
 
 var SpeakerOnButtonImage = new Image();
-SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.png" + "?cache_killer=" + CacheKiller;
+SpeakerOnButtonImage.src = "graphics/SpeakerOnButton.webp" + "?cache_killer=" + CacheKiller;
 var SpeakerOffButtonImage = new Image();
-SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.png" + "?cache_killer=" + CacheKiller;
+SpeakerOffButtonImage.src = "graphics/SpeakerOffButton.webp" + "?cache_killer=" + CacheKiller;
 var SpeakerImages = [SpeakerOffButtonImage,SpeakerOnButtonImage];
 var SpeakerOn = true; // Made it into a boolean, and uses Number(SpeakerOn) for all places where it needs to be 0 or 1.
 
 var SettingsButtonImage = new Image();
-SettingsButtonImage.src = "graphics/SettingsButton.png" + "?cache_killer=" + CacheKiller;
+SettingsButtonImage.src = "graphics/SettingsButton.webp" + "?cache_killer=" + CacheKiller;
 
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
 
