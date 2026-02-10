@@ -184,8 +184,8 @@ var MoveSound = {
   lastPlayed: null,
 };
 
-var AppIconImage = new Image();
-AppIconImage.src = "graphics/AppIcon.png" + "?cache_killer=" + CacheKiller;
+var LogotypeImage = new Image();
+LogotypeImage.src = "graphics/MadskullCreations512x512.png" + "?cache_killer=" + CacheKiller;
 var StartBGImage = new Image();
 StartBGImage.src = "graphics/StartBackground.png" + "?cache_killer=" + CacheKiller;
 var MadSkullLogoImage = new Image();
@@ -263,6 +263,7 @@ SettingsButtonImage.src = "graphics/SettingsButton.webp" + "?cache_killer=" + Ca
 
 var AllButtons = [];  // When any button is created, it must be added here for the Resize and touch events to work. When leaving a window, remove all buttons!
 
+const txtAGameMadeBy = "A game made by";
 const txtCARSTORM = "CARSTORM";
 const txtLastDriveScore = "last drive score: ";
 const txtHighScore = "highscore: ";
@@ -276,6 +277,7 @@ const txtGAMEOVER = "GAME OVER";
 const txtYourFinalScoreWas = "Your final score was";
 const txtTouchScreenToContinue = "touch screen to continue";
 const txtTouchScreenToDrive = "touch screen to drive";
+const txtTouchTheScreen = "touch the screen to start";
 
 // Called as soon as the page has loaded. This happens from the screen saver app.
 // The init() function is the only function you need to have to make the screen saver work.
@@ -1341,6 +1343,7 @@ function SetState(newState)
     case gsNothing:
       if(newState == gsSplashScreen)
       {
+        OnEnterSplashScreen();
         transitionCool = true;
       }
       break;
@@ -1464,6 +1467,10 @@ function SetState(newState)
   gameState = newState;
 }
 
+function OnEnterSplashScreen()
+{
+  messageTimer = 1500;
+}
 function OnEnterStartScreen()
 {
   messageTimer = 3000; // Used for the message txtTouchScreenToDrive.
@@ -1734,11 +1741,10 @@ function GameLoop()
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   
-  // TODO: Should be here, but Date.now() returns integer ms, and the diff (ElapsedTime) can be zero sometimes.
-  // LastDraw = Now;
-
   if (ElapsedTime >= fpsInterval)
   {
+    LastDraw = Now;
+    
     switch(gameState)
     {
       case gsNothing:
@@ -1787,8 +1793,6 @@ function GameLoop()
 
 function UpdateTimers()
 {
-  LastDraw = Now;
-  
   ElapsedCarsTime += ElapsedTime;
   streetLightTimer += ElapsedTime;
   if (clearStreetTimer > 0)
@@ -1877,15 +1881,49 @@ function CheckExplosionAnimTimer()
   }
 }
 
+// Draw image smack-center on the screen, scaled to the given width. Height is adapted to keep ratio.
+function DrawImageCentered(theCanvas, theImage, width)
+{
+  DrawImageByWidth(
+    theCanvas, theImage, 
+    ScreenWidth / 2 - width / 2, ScreenHeight / 2 - width / 2,
+    width);
+}
+
+// Draw theImage scaled to the given width. Height is adapted to keep ratio.
+function DrawImageByWidth(theCanvas, theImage, x, y, width)
+{
+  theCanvas.drawImage(
+    theImage, 
+    x, y, 
+    width, width * theImage.height / theImage.width);    
+}
+
 function GameLoopSplashScreen()
 {
-  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  CheckMessageTimer();
   
-  var width = ScreenWidth/2.7;
-  topctx.drawImage(
-    AppIconImage, 
-    ScreenWidth * 0.015, ScreenHeight * 0.03, 
-    width, width * AppIconImage.height / AppIconImage.width);  
+  topctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+  DrawImageCentered(topctx, LogotypeImage, ScreenWidth/3);
+
+  topctx.textAlign = "center";
+  topctx.fillStyle = "black";
+  topctx.font = textFifteenRows + "px CarStormFont1";
+  topctx.strokeStyle = "white";
+  topctx.lineWidth = ScreenHeightOnePointOnePercent;
+  topctx.strokeText(txtAGameMadeBy, screenwidthHalf, textTwentyRows * 2);
+  topctx.fillText(txtAGameMadeBy, screenwidthHalf, textTwentyRows * 2);
+  
+  if (messageTimer == 0)
+  {
+    topctx.textAlign = "center";
+    topctx.fillStyle = "black";
+    topctx.font = textFifteenRows + "px CarStormFont1";
+    topctx.strokeStyle = "white";
+    topctx.lineWidth = ScreenHeightOnePointOnePercent;
+    topctx.strokeText(txtTouchTheScreen, screenwidthHalf, textTwentyRows * 18);
+    topctx.fillText(txtTouchTheScreen, screenwidthHalf, textTwentyRows * 18);
+  }  
 }
 function GameLoopStartScreen()
 {
