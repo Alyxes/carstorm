@@ -127,12 +127,12 @@ var PlayStartTime = 0;      // Set to Now when a new play round starts.
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
-var GameVersion = 4;    // Should be increased each time we publish a change in game code, and always be equal to the $serverHasGameVersion in version.php!
+var GameVersion = 5;    // Should be increased each time we publish a change in game code, and always be equal to the $serverHasGameVersion in version.php!
 var RandomId = "";      // The "unique" (probably unique) id for this game app installation. Sent to server to identify the user. Created in FetchOnlineStats().
 
 // Each time a new version (of this file) is downloaded, the cache_killer in each file url below should 
-// make sure all files are downloaded anew.
-var CacheKiller = GameVersion;
+// make sure all files are downloaded anew. getDate() returns day of the month, 1-31.
+var CacheKiller = GameVersion;// + "_" + (new Date()).getDate();
 
 var IntroMelodyPlayed = false;
 
@@ -147,6 +147,7 @@ var WinningScore = 9999;    // Game ends when you reach this score. Should be 99
 var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing the game right now.
 var TimeToFetchOnlineStats = 0;
 var ReloadCount = 0;        // Stored in storage so we don't reload page more than twice! 
+var TheGameHasJustBeenUpdated = false;  // Set to true if ReloadCount > 0 after a reload and code seem fresh.
 
 var roadWidth = 0;
 
@@ -678,7 +679,6 @@ function ResizeCanvas(canvas, willReadFrequently)
 
 function StoreStuff()
 {
-  localStorage.setItem("GameVersionToDownload", GameVersion);
   localStorage.setItem("GameVersion", GameVersion);
   localStorage.setItem("ServerVersion", ServerVersion);
   localStorage.setItem("LastDriveScore", LastDriveScore);
@@ -689,6 +689,12 @@ function StoreStuff()
   
   // From serverVersion 3 the random_id is expected.
   localStorage.setItem("RandomId", RandomId);
+
+  // From game version 4: 
+  localStorage.setItem("GameVersionToDownload", GameVersion);
+  
+  // From game version 5: 
+  localStorage.setItem("TheGameHasJustBeenUpdated", TheGameHasJustBeenUpdated);  
 }
 
 function ReadStuff()
@@ -732,9 +738,14 @@ function ReadStuff()
   }
   if(GameVersionInLocalStorage >= 4)
   {
-    // The third version introduces a fix where each file except index.html uses the cache_killer to make sure 
+    // The 4th version introduces a fix where each file except index.html uses the cache_killer to make sure 
     // new versions of the file(s) are downloaded. 
     GameVersionToDownload = parseInt(localStorage.getItem("GameVersionToDownload"));
+  }
+  if(GameVersionInLocalStorage >= 5)
+  {
+    // The 5th version has a neat flag which show the user the game has just been updated. 
+    TheGameHasJustBeenUpdated = parseInt(localStorage.getItem("TheGameHasJustBeenUpdated"));
   }
   
   if(GameVersionInLocalStorage >= 31)
@@ -916,6 +927,12 @@ async function FetchOnlineStats()
       //  3. and reload the game. Voila, index.html and all cache_killer's should make sure we get the latest
       //     version of any file. 
       
+      if(ServerHasNewGameVersion)
+      {
+        // Make sure we tell index.html to reload all files, the browser has a new version. 
+        GameVersionToDownload = OnlineStats.server_has_game_version;
+      }
+      
       if(!RunningSameAsServer && !GotUpdated || ServerHasNewGameVersion)
       {
         // Looks like server has a newer version that our code know nothing about. 
@@ -971,7 +988,18 @@ async function FetchOnlineStats()
           // Note that we fail nicely here to keep the game working. 
 
           // Not good, the game has reloaded the page a few times, but still this switch is not happy. Pretend like nothing.
-          Log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion + ". Giving up.");
+          if(OnlineStats.server_version != ServerVersion)
+          {
+            Log("Server version " + OnlineStats.server_version + " does not match expected "+ ServerVersion + ". Giving up.");
+          }
+          else if(ServerHasNewGameVersion)
+          {
+            Log("Server has a newer version of the game but we can't seem to get it. Our version: "+ GameVersion + ", Server game version: " + OnlineStats.server_has_game_version + ". Giving up.");
+          }
+          else
+          {
+            Log("Oddities during update. Giving up.");
+          }
           
           // Since ReloadCount increase by one each time the game reach the start screen, we will soon have a 
           // very high number. We reset it to zero after a few times (50), to retry the entire update procedure.
@@ -985,12 +1013,23 @@ async function FetchOnlineStats()
       }
       else
       {
+        if(ReloadCount > 0)
+        {
+          // Cool, we have reloaded the game to update to the latest files. Store a flag about it.
+          TheGameHasJustBeenUpdated = true;
+        }
+        else
+        {
+          // No reloading has happened, we are happily running same code as last time we checked this. Reset the flag.
+          TheGameHasJustBeenUpdated = false;
+        }
+        
         // All cool, reset ReloadCount, store any changes and keep going. (Note that a successful update further up the code ends up here as well!)
         ReloadCount = 0;
         StoreStuff();
       }
       
-      Log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion);
+      Log("GotUpdated: " + GotUpdated + ", OnlineStats.server_version: " + OnlineStats.server_version + ", ServerVersion: "+ ServerVersion + ", FromVersion:" + FromVersion + ", GameVersion: " + GameVersion + ", OnlineStats.server_has_game_version: " + OnlineStats.server_has_game_version);
     }
   }
   catch (error)
@@ -2044,10 +2083,15 @@ function GameLoopSettings()
   {
     if(ShowDebugStuff)
     {
-      topctx.fillText("Server version: " + ServerVersion, SafeWidthMargin, textFifteenRows * 13);
+      topctx.fillText("Server version: " + ServerVersion + ", Game version: " + GameVersion, SafeWidthMargin, textFifteenRows * 13);
     }
     
     topctx.fillText(txtPlayersOnlineNow + PlayersPlayingNow, SafeWidthMargin, textFifteenRows * 14);
+    
+    if(TheGameHasJustBeenUpdated)
+    {
+      topctx.fillText("Congratulations, you are running latest version of the game!", SafeWidthMargin, textFifteenRows * 12);
+    }
   }
   else
   {

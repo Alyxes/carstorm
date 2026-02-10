@@ -147,6 +147,14 @@
         // (happens first time we run this pwa, and if cache is emptied.)
         GameVersionToDownload = 0;
       }
+      
+      var gvtd = parseInt(localStorage.getItem("GameVersionToDownload"));
+      
+      if(gvtd > GameVersionToDownload)
+      {
+        // The game has detected the server has a newer version and stored it here, then reloaded the page.
+        GameVersionToDownload = gvtd;
+      }
     }
     
     // Anropas ifrån varje .js fil, sista raden.

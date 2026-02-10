@@ -10,7 +10,7 @@ $serverVersion = 4;
 // $serverVersion = $serverVersion + 1;
 
 // Increase version when we want the game/localhost to download a new set of the game's files.
-$serverHasGameVersion = 4;
+$serverHasGameVersion = 5;
 
 // FetchString() is friendly and returns empty string if there is no value given from the user.
 // intval() is friendly too, and returns 0 on empty string.
