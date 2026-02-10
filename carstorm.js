@@ -127,7 +127,7 @@ var PlayStartTime = 0;      // Set to Now when a new play round starts.
 var GotResponseFromServer = false;
 var FetchOnlineStatsDone = false;
 var ServerVersion = 1;  // Always set to 1 here. The cache will keep the players real version.
-var GameVersion = 4;    // Should be increased each time we do a change in game code, and always be equal to the $serverHasGameVersion in version.php!
+var GameVersion = 4;    // Should be increased each time we publish a change in game code, and always be equal to the $serverHasGameVersion in version.php!
 var RandomId = "";      // The "unique" (probably unique) id for this game app installation. Sent to server to identify the user. Created in FetchOnlineStats().
 
 // Each time a new version (of this file) is downloaded, the cache_killer in each file url below should 
@@ -812,7 +812,7 @@ async function FetchOnlineStats()
       var FromVersion = ServerVersion;
       
       // True if server has new game version. (New game files, js, images, sounds, etc)
-      var ServerHasNewGameVersion = (GameVersion == OnlineStats.server_has_game_version);
+      var ServerHasNewGameVersion = (GameVersion != OnlineStats.server_has_game_version);
       
       // Idea: If this is an old version of carstorm.js, it does not know about
       // any other versions than stated below. It should keep working!
@@ -916,7 +916,7 @@ async function FetchOnlineStats()
       //  3. and reload the game. Voila, index.html and all cache_killer's should make sure we get the latest
       //     version of any file. 
       
-      if(!RunningSameAsServer && !GotUpdated || !ServerHasNewGameVersion)
+      if(!RunningSameAsServer && !GotUpdated || ServerHasNewGameVersion)
       {
         // Looks like server has a newer version that our code know nothing about. 
         Log("We seem to be running an old version of the game!");
