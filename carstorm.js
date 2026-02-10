@@ -2703,12 +2703,16 @@ function DrawSnowstorm()
   var max;
   
   var snowImage;
-  
-  // r = min + Math.floor(Math.random() * max);
-  // g = b = r; // We want just grayscales.
-  
-  // Copy the center rectangle, margins 10 px in from screen border. (meaning the copied picture is 20 px smaller on each side than original)
-  var imgData = ctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
+
+  // Men bajs, copying the "entire" canvas ignores our math in ResizeCanvas(),
+  // we must give the function(s) the actual pixel sizes, since scale() is not 
+  // affecting getImageData() !!!
+  // 
+  var scaledScreenWidth = ScreenWidth * ScreenScale;
+  var scaledScreenHeight = ScreenHeight * ScreenScale;
+    
+  // Copy the entire canvas to  hiddenCtx. As said above, this ignores the scale() in ResizeCanvas().
+  var imgData = ctx.getImageData(0, 0, scaledScreenWidth, scaledScreenHeight);
   
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
   hiddenCtx.putImageData(imgData, 0, 0);
@@ -2727,7 +2731,13 @@ function DrawSnowstorm()
     
     // Stretch out the copied (smaller) image over the entire canvas.
     // Note! We are drawing the _canvas_ object, not its 2d context. 
-    ctx.drawImage(hiddenCanvas, xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 0, 0, ScreenWidth, ScreenHeight);
+    // Also here we must use _actual_ pixel sizes since scale() is ignored, but ONLY 
+    // for the source coordinates!! :O 
+    // 
+    ctx.drawImage(
+      hiddenCanvas, 
+      xSide, ySide, scaledScreenWidth - xSide * 2, scaledScreenHeight - ySide * 2,  // Source rectangle.
+      0, 0, ScreenWidth, ScreenHeight);                                             // Target rectangle.
   }
   ctx.restore();
   // Now draw some snow particles in the center of the image.
