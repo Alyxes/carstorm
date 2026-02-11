@@ -77,7 +77,8 @@ $arr = array(
 
 if(rand(0,30) == 0)
 {
-  $ush->PurgeOld();
+  // TMP: Removed, we don't have that many players anyway, and its fun to see the stats. 
+  // $ush->PurgeOld();
 }
 
 // In release mode the debug is only written to the log files on the server, not returned to user. (DBSettings::$debugLogOnly is true while DBSettings::$debug is false.)

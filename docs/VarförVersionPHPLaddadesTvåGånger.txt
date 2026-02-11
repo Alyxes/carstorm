@@ -1,0 +1,36 @@
+
+
+Sker på localhost med. Kolla loggen här:
+  log_11.2.2026_13.00.txt
+  <-Två anrop, så det är inget fel på php-sidan. 
+    Det är javascräpet.
+    
+    Säkert vi som anropar det två gånger på nåed vis.
+    
+    ...men så klart hände det bara en enda gång, nu när jag testar igen så händer det _INTE_. :-D
+    
+    ...prova gå o köpa öl, starta om datorn och prova igen.
+    
+    Coolt! Öltricket fungerade! 
+      <-service_worker/browsern/magic drog igång, och slutligen körs "About to fetch from server." när jag klickar på sidan och startsidan visas. 
+      Då blir det två inspelningar i databasen!
+      Dock ingen förklaring på varför!
+      <-WTF. Det hände när jag tog Ctrl+R igen. 
+
+    La in server_chat_count i databasen, varpå jag ser att det är ETT anrop, eller i varje fall SAMMA värde på server_chat_count på båda raderna.
+    ....Frågan kvarstår; blir det två anrop i javascriptet utav det enda anropet till fetch(), ELLER gör php-koden nåt skitskumt och sparar ner möget två gånger? 
+      <-Det verkar inte vara php, för returvärdet indikerar inte att grejer spelats in två gånger, och php-loggen indikerar två enskilda körningar, med exakt samma timestamp..
+        Se om du kan spela in en mer exakt timestamp.
+    
+    ÄNTLIGEN! Det ÄR två enskilda anrop! Jag spelade in microtime(true) i loggen, och ser att det är två enskilda anrop. FAN vad komplicerat...
+      <-Det är alltså javascriptet som förvandlar det till två anrop, så läs in dig på länken nedan.
+    
+    Slutligen:
+    https://stackoverflow.com/questions/50029580/why-is-my-fetch-request-being-called-twice
+    
+    Och här är lösningen i service worker som fixar det hela:
+    https://stackoverflow.com/questions/50129311/requests-through-service-worker-are-done-twice
+    
+    I princip så är fixen att undvika att service_worker skapar ett NYTT anrop, och istället göra det som jag trodde den gjorde, nämligen att ladda filen i vanlig ordning.
+    
+    

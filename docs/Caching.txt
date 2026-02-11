@@ -1,0 +1,36 @@
+Mjaha! Gör din egen preloader:
+  1. Ha en rand-string som i FetchOnlineStats(), cache_killer.
+  2. Men, ändra den _bara_ när spelet upptäckt att det kör på en gammal version.
+      <-Jag stuvade in game version, så den downloadar och cachar varje version finfint. :-)
+  3. Nu till det svåra, hur ska den veta det då? Se nästa 1,2,3 nedan. :)
+  
+  1. Anropa FetchOnlineStats() med sin cache_killer, det fungerar ju. 
+  2. Ojojoj, nu upptäcker vi att servern har en ny version, version.php påpekar ju det. 
+     Det skiljer sig ju i vanlig ordning från vår cookie-cache och det vi får ifrån servern.
+  3. Nu till det nya:
+      a. $serverVersion i version.php talar BARA om vad servern förväntar sig för data. 
+      b. Så det nya är att vi INTE LÄNGRE FÖRLITAR oss på service_worker.js, som ju funkar haphazardly eller i varje fall utanför min fattning.
+      c. Servern får ha nån $gameVersion, som vi måste öka för varje release. 
+  4. Så, när vi får ner gameVersion och ser att den är större än den vi har i vår cookie cache, så sker följande:
+      a. Skapa och spara ner en ny cache_killer i cookie cache. 
+      b. Ladda om spelet! (Det har vi löst i FetchOnlineStats(), window.location.reload())
+  5. Här kommer ytterligare en ny detalj:
+      a. Samtliga filer ifrån index.html ska laddas efter att cookie cache har laddats!
+      b. De ska laddas mha. cache_killer. 
+      
+Så, frågetecken: 
+  1. Kan fontfiler laddas mha. cache_killer? Är det ens nödvändigt? 
+      <-Inte nödvändigt, de filerna ändras ju _aldrig_! 
+  2. Bild och ljudfiler kan vi väl ladda med cache_killer? 
+      <-  <img src="image.png?80172489074" alt="a cool image" />
+        Detta har alltid fungerat, även på bilder och ljud, det är en url/fil-feature helt enkelt. 
+  3. I princip kan jag väl använda versionsnumret som cache killer? 
+  
+En sista liten sak till: 
+  index.html, hur uppdaterar vi den? :-P
+  Den kan iofs. laddas fräsch varje gång, men jag hade gärna sluppit. Allt ska ju fungera offline med. 
+
+Ännu en sak: 
+  service_worker.js är ju faktiskt också cachen. Det är delvis den som håller alla filerna i browserns cache. 
+  Men är det inte så att browsern automatiskt och väldigt aggressivt cachar alla filer? 
+  <-I princip kan du låta denna biten vara kvar, men städar gärna bort den för att få mer koll.
