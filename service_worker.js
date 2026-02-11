@@ -3,7 +3,7 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "67";
+const ServiceWorkerVersion = "69"; // This is actually a hate-counter. :-D
 
 const PleaseLitterWithConsoleLogs = true;
 const cacheName = "carstorm-madskullcreations-com";
@@ -122,7 +122,16 @@ self.addEventListener('fetch', event => {
     // 
     Log("Not caching .php files!");
     
-    return fetch(event.request);
+    // This seem to be fixing the double calling of the version.php.
+    // https://stackoverflow.com/questions/50129311/requests-through-service-worker-are-done-twice
+    event.respondWith(async function(){
+        const promiseChain = fetch(event.request.clone())
+            .catch(function(err) {
+                return queue.addRequest(event.request);
+        });
+        event.waitUntil(promiseChain);
+        return promiseChain;
+    }()); // Calling function here.
   }
   else {
     event.respondWith(cacheFirst(event.request));

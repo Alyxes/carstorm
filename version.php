@@ -4,7 +4,7 @@ require_once "private/handlers.php";
 // Good to know: error_log -file in server root contains the php errors when you make an error not happening on localhost but happening on the server. 
 
 // Increase version when server expect the given data to have a new format.
-$serverVersion = 4;
+$serverVersion = 5;
 
 //TEST: Funkar! FetchOnlineStats() (carstorm.js) laddar om sidan ett par gånger tills den ger upp. Har dubbelkollat med appen, funkar likaslurt.
 // $serverVersion = $serverVersion + 1;
@@ -27,6 +27,9 @@ $randomId = HandlerHelper::FetchString($_GET, 'random_id');
 
 // From serverVersion 4 the game_version_to_download is expected.
 $gameVersionToDownload = intval(HandlerHelper::FetchString($_GET, 'game_version_to_download'));
+
+// From serverVersion 5 the scc (server chat count) is expected.
+$serverChatCount = intval(HandlerHelper::FetchString($_GET, 'scc'));
 
 $ush = new UserStatsHandler();
 
@@ -58,12 +61,15 @@ $id = $ush->AddUserStats(
         $reloadCount, 
         $remoteAddr, 
         $httpUserAgent,
-        $randomId);
+        $randomId,
+        $gameVersionToDownload,
+        $serverChatCount);
 
 $arr = array(
   'server_version' => $serverVersion,
   'server_has_game_version' => $serverHasGameVersion,
   'players_now' => $playersNow + 1 // Including yourself. 
+  //'php_id' => getmypid()
   );
 
 // Purge could be done after result is echoed, but as we want the Debug() to be added to the result right now we keep this here.

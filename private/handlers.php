@@ -274,10 +274,38 @@ class UserStatsHandler
     MySqlConnection::Connect();
   }
   
-  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $remoteAddr, $httpUserAgent, $randomId)
+  // Ouch, not working! version.php fetches the values as strings, and this function cannot know what is supposed to be a string or not!
+  /*public function CreateSqlValuesString($arr)
+  {
+    $str = " values(";
+    
+    foreach($arr as $val)
+    {
+      if(is_string($val))
+      {
+        // A string must be surrounded with 'value'.
+        $val = "'".$val."'";
+      }
+      else
+      {
+        // Every other data type come as they are.
+      }
+      
+      $str .= $val;
+      $str .= ","
+    }
+    
+    // T: Remove last comma.
+    
+    $str .= ")";
+    
+    return $str;
+  }*/
+  
+  public function AddUserStats($serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $remoteAddr, $httpUserAgent, $randomId, $gameVersionToDownload, $serverChatCount)
   {
     if(HandlerHelper::ValueIsMySqlSafe(array(
-        $serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $randomId)) == false)
+        $serverVersion, $gameVersion, $winCount, $highScore, $playCount, $reloadCount, $randomId, $gameVersionToDownload, $serverChatCount)) == false)
     {
       // Någon av parametrarna är skumliga, abort!!
       return -1;
@@ -303,10 +331,14 @@ class UserStatsHandler
     
     $now = date("Y-m-d H:i:s");
     
+    $mt = microtime(true); // true because we want a float.
+    HandlerHelper::Debug($mt);
+    
     // Yikes. Håll reda på ordningen. Håll reda på var du sätter fnuttar, alltså '. Testa noga. 
-    $query = "insert into user_stats (server_version, game_version, win_count, high_score, play_count, reload_count, remote_addr, http_user_agent, random_id, created)".
+    $query = "insert into user_stats (server_version, game_version, game_version_to_download, win_count, high_score, play_count, reload_count, server_chat_count, remote_addr, http_user_agent, random_id, created)".
              " values (".
-             $serverVersion.",".$gameVersion.",".$winCount.",".$highScore.",".$playCount.",".$reloadCount.",'".$remoteAddr."','".$httpUserAgent."','".$randomId."','".$now.
+             $serverVersion.",".$gameVersion.",".$gameVersionToDownload.",".$winCount.",".$highScore.",".
+             $playCount.",".$reloadCount.",".$serverChatCount.",'".$remoteAddr."','".$httpUserAgent."','".$randomId."','".$now.
              "');";
     HandlerHelper::Debug($query);
 

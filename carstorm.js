@@ -148,6 +148,7 @@ var PlayersPlayingNow = 0;  // Online stats, how many other persons are playing 
 var TimeToFetchOnlineStats = 0;
 var ReloadCount = 0;        // Stored in storage so we don't reload page more than twice! 
 var TheGameHasJustBeenUpdated = false;  // Set to true if ReloadCount > 0 after a reload and code seem fresh.
+var ServerChatCount = 0;    // How many times the game has been callng version.php on the server.
 
 var roadWidth = 0;
 
@@ -694,7 +695,8 @@ function StoreStuff()
   localStorage.setItem("GameVersionToDownload", GameVersion);
   
   // From game version 5: 
-  localStorage.setItem("TheGameHasJustBeenUpdated", TheGameHasJustBeenUpdated);  
+  localStorage.setItem("TheGameHasJustBeenUpdated", TheGameHasJustBeenUpdated);
+  localStorage.setItem("ServerChatCount", ServerChatCount);  
 }
 
 function ReadStuff()
@@ -744,8 +746,9 @@ function ReadStuff()
   }
   if(GameVersionInLocalStorage >= 5)
   {
-    // The 5th version has a neat flag which show the user the game has just been updated. 
+    // The 5th version has a neat flag which show the user the game has just been updated, and a counter to keep track of how many times this game has contacted the server.
     TheGameHasJustBeenUpdated = parseInt(localStorage.getItem("TheGameHasJustBeenUpdated"));
+    ServerChatCount = parseInt(localStorage.getItem("ServerChatCount"));
   }
   
   if(GameVersionInLocalStorage >= 31)
@@ -782,6 +785,8 @@ async function FetchOnlineStats()
   
   GotResponseFromServer = false;
   
+  ServerChatCount++;
+  
   // For statistics and debugging, let's send GameVersionToDownload, it's read by index.html. 
   // Caching might serve us a new js file (this) but an old index.html, so lets assume GameVersionToDownload is not defined.
   var gvtd = GameVersion;
@@ -801,9 +806,21 @@ async function FetchOnlineStats()
     url += "reload_count="+ReloadCount+"&";
     url += "random_id="+RandomId+"&";
     url += "game_version_to_download="+gvtd+"&";
+    url += "scc="+ServerChatCount+"&";
     url += "cache_killer="+Math.random();// Last param omit the &.
     
-    const response = await fetch(url);
+    Log("About to fetch from server.");
+    Log(url);
+    
+    const response = await fetch(
+      url, 
+      {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'text/plain'
+        }
+      });
 
     if (!response.ok) 
     {
@@ -901,6 +918,25 @@ async function FetchOnlineStats()
         }
         
         // Server version 4 will appreciate game_version_to_download to exist in the url params, 
+        // which is mainly for my future debugging of why people's game are not working/updating properly.
+        // it is stored in localstorage further down.
+      }
+      if(OnlineStats.server_version >= 5)
+      {
+        if(ServerVersion < 5 && OnlineStats.server_version >= 5)
+        {
+          // 'Our' ServerVersion is smaller than 5, but we have this code for updating localstorage to version 5, 
+          // so we have the latest version of the code.
+          // The localstorage must be updated to version 5 though. 
+          GotUpdated = true;
+
+          Log("Updating localstorage from version " + ServerVersion + " to version " + 5);
+          ServerVersion = 5;
+          
+          ServerChatCount = 0;
+        }
+        
+        // Server version 5 will appreciate scc to exist in the url params, 
         // which is mainly for my future debugging of why people's game are not working/updating properly.
         // it is stored in localstorage further down.
       }
@@ -1483,7 +1519,7 @@ function SetState(newState)
       }
       break;
     case gsWinGame:
-    // After a timer, player can click/touch screen to go back to the start screen.
+      // After a timer, player can click/touch screen to go back to the start screen.
       if(newState == gsStartScreen)
       {
         TransitFromWinGameToStartScreen();
