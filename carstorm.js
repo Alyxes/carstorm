@@ -1186,13 +1186,13 @@ function CreateSettingsBackButton()
 
   CreateBackButton(y, settingsBackButtonCallBack);
 }
-function CreatePauseRestartButton()
+/*function CreatePauseRestartButton()
 {
   var y = textTenRows * 4;
   var settingsBackButtonCallBack = PauseScreenRestartButton;
 
   CreateBackButton(y, settingsBackButtonCallBack);
-}
+}*/
 function CreateBackButton(backButtonYpos, backButtonCallBack)
 {
     var x = SafeWidthMargin;
@@ -1553,6 +1553,8 @@ function OnEnterStartScreen()
   audioIntroMelody.pause();
   audioIntroMelody.currentTime = 0;  
   
+  ctx.drawImage(StartBGImage, 0, 0, ScreenWidth, ScreenHeight);
+  
   FetchOnlineStats();
   
   CreateToSettingsButton();
@@ -1654,8 +1656,10 @@ function TransitFromWinGameToStartScreen()
 function OnEnterPaused()
 {
   // Start a pause sound. (Lets see what happens when the app gets minimized..)
-  AllButtons.length = 0; // Clear the buttons!
-  CreatePauseRestartButton();
+  
+  
+  //AllButtons.length = 0; // Clear the buttons!
+  //CreatePauseRestartButton();
 }
 function OnExitPaused()
 {
