@@ -2712,7 +2712,7 @@ function DrawPlayerCar(isNotPaused)
       topctx.drawImage(
         PlayerCarShadowImage, 
         player.Xposition - player.Xposition/35, 
-        player.Yposition + player.Yposition/5, 
+        player.Yposition + player.Yposition/4, 
         player.Xsize * 1.12, 
         player.Ysize - player.Ysize/2);
       topctx.globalAlpha = 1;
