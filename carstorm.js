@@ -2833,7 +2833,7 @@ function DrawSnowstorm()
   var scaledScreenWidth = ScreenWidth * ScreenScale;
   var scaledScreenHeight = ScreenHeight * ScreenScale;
     
-  // Copy the entire canvas to  hiddenCtx. As said above, this ignores the scale() in ResizeCanvas().
+  // Copy the entire canvas to hiddenCtx. As said above, this ignores the scale() in ResizeCanvas().
   var imgData = ctx.getImageData(0, 0, scaledScreenWidth, scaledScreenHeight);
   
   // Would be nice to be able to just use imgData directly with drawImage(), but it looks like we have to do it this way. 
@@ -2841,7 +2841,7 @@ function DrawSnowstorm()
   
   ctx.save();
   {
-    var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
+    var speed = 0.0106 * gamespeed * ScreenScale;//0.01;  // Zoom-in speed.
     var xSide = ScreenWidth * speed;
     var ySide = ScreenHeight * speed;
     
@@ -2920,18 +2920,21 @@ function DrawSnowstorm()
 
 function DrawStreetLayer()
 {
+  var scaledScreenWidth = ScreenWidth * ScreenScale;
+  var scaledScreenHeight = ScreenHeight * ScreenScale;  
+  
   // Copy the entire ctx image.
-  var imgData = streetctx.getImageData(0, 0, ScreenWidth, ScreenHeight);
+  var imgData = streetctx.getImageData(0, 0, scaledScreenWidth, scaledScreenHeight);
   
   // Draw it here meanwhile.
   hiddenCtx.putImageData(imgData, 0, 0);
   
   // Empty! We don't want any smearing, just the zooming.
-  streetctx.clearRect(0,0,ScreenWidth,ScreenHeight);
-  
+  streetctx.clearRect(0,0,scaledScreenWidth,scaledScreenHeight);
+    
   streetctx.save();
   {
-    var speed = 0.0106 * gamespeed;//0.01;  // Zoom-in speed.
+    var speed = 0.0106 * gamespeed * ScreenScale;//0.01;  // Zoom-in speed.
     var xSide = ScreenWidth * speed;
     var ySide = ScreenHeight * speed;
       
@@ -2941,7 +2944,7 @@ function DrawStreetLayer()
     // Note! We are drawing the _canvas_ object, not its 2d context. 
     streetctx.drawImage(
       hiddenCanvas, 
-      xSide, ySide, ScreenWidth - xSide * 2, ScreenHeight - ySide * 2, 
+      xSide, ySide, scaledScreenWidth - xSide * 2, scaledScreenHeight - ySide * 2, 
       0, 0, ScreenWidth, ScreenHeight);
   }
   streetctx.restore();
