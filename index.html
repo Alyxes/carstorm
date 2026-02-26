@@ -74,12 +74,10 @@
   <script>
     if (navigator.userActivation.isActive)
     {
-      // I det här läget är den aldrig active, användaren har inte hunnit klicka nånstans.
       console.log("is active");
     }
     else
     {
-      // Så denna körs alltid.
       console.log("not active");
     }
     
@@ -87,45 +85,10 @@
     var scripts = ["button.js","carstorm.js"];
     var readyCount = 0;
 
-    // Det återstår bara ett problem! index.html uppdateras inte! Hur ska browsern veta om när den uppdateras? 
-    // service_worker.js bör väl fixa detta? ServiceWorkerVersion uppdaterar jag ju varje gång jag ändrar i de 
-    // andra filerna, inkl. index.html. Därmed ska den invalidera cachen även för index.html, till sist. 
-    // ..det är den enda lösningen jag har för tillfället. 
-
-    // Sources: 
-    // https://stackoverflow.com/questions/950087/how-do-i-include-a-javascript-file-in-another-javascript-file
-    // https://web.dev/articles/speed-script-loading
-    // https://unixpapa.com/js/dyna.html
-    // https://stackoverflow.com/questions/5113374/javascript-check-if-variable-exists-is-defined-initialized
-
-    // This flow happens:
-    // 1. Read GameVersion from the local storage, set GameVersionToDownload.
-    // 2. Download the javascript files, either from cache or from server, ruled by service_worker.js
-    // 3. Any lines like
-    //    const audioIntroMelody = new Audio("sound/intro_melody.mp3");
-    //    must be changed into 
-    //    const audioIntroMelody = new Audio("sound/intro_melody.mp3?cache_killer=" + GameVersion);
-    // 4. Call init() to start the game when everything is downloaded.
-    // 
     function Setup()
     {
       ReadLocalStorage();
 
-      // So here's the magic: 
-      // 1. script.src becomes "carstorm.js?cache_killer=3" if GameVersionToDownload is 3.
-      // 2. So when the game decides to reload due to a new game version in FetchOnlineStats()
-      //    the localstorage has been updated with the new version. 
-      // 3. Voila. The cache_killer=3 in the url of the file makes the url "new" to the browsers cache-keeper,
-      //    it simply has to download the file anew from the server.
-      // And more importantly; 
-      //   after upgrading to 3, the files are cached and not downloaded again. Not until we upgrade to 4.
-      // 
-      // And wow, we can now make sure we get the latest javascript file versions, regardless of the 
-      // haphazards of service_worker.js...
-      // 
-      // Furthermore, each file downloaded in the script files can use GameVersionToDownload since the code
-      // knows the variable is defined, since it is created long before any script files are downloaded here.
-      // 
       scripts.forEach(function(src) {
         var script = document.createElement('script');
         script.src = src + "?cache_killer=" + GameVersionToDownload;
@@ -143,8 +106,6 @@
       
       if(!GameVersionToDownload)
       {
-        // There is no GameVersion defined in local storage at the moment. 
-        // (happens first time we run this pwa, and if cache is emptied.)
         GameVersionToDownload = 0;
       }
       
@@ -152,28 +113,21 @@
       
       if(gvtd > GameVersionToDownload)
       {
-        // The game has detected the server has a newer version and stored it here, then reloaded the page.
         GameVersionToDownload = gvtd;
       }
     }
     
-    // Anropas ifrån varje .js fil, sista raden.
     function IncreaseReadyCount()
     {
       readyCount++;
       
       if(readyCount >= scripts.length)
       {
-        // Yey, alla e laddade, nu startar vi spelet!
-        // Vi har uppnått detta: 
-        //    All kod är laddad och har körts igenom av browsern, 
-        //    varje fil har ju anropat IncreaseReadyCount().
         init();
       }
     }
     
     setTimeout(() => {
-      // Nothing has been loaded for some time, are we offline?
       var om = document.getElementById("offline_message");
       om.style.display = "initial";
     }, 5000);
