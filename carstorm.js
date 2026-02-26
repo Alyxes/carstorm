@@ -2706,13 +2706,19 @@ function DrawPlayerCar(isNotPaused)
   
   if (drawCar)
   {
-    topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
     if (isNotPaused)
     {
-      streetctx.globalAlpha = 0.17;
-      streetctx.drawImage(PlayerCarShadowImage, player.Xposition - player.Xposition/35, player.Yposition + player.Yposition/8, player.Xsize * 1.12, player.Ysize - player.Ysize/2);
-      streetctx.globalAlpha = 1;
+      topctx.globalAlpha = 0.7;
+      topctx.drawImage(
+        PlayerCarShadowImage, 
+        player.Xposition - player.Xposition/35, 
+        player.Yposition + player.Yposition/5, 
+        player.Xsize * 1.12, 
+        player.Ysize - player.Ysize/2);
+      topctx.globalAlpha = 1;
     }
+    
+    topctx.drawImage(PlayerCarImage, player.Xposition, player.Yposition, player.Xsize, player.Ysize);
   }
   
   if (player.HasCollided)
@@ -2841,7 +2847,7 @@ function DrawSnowstorm()
   
   ctx.save();
   {
-    var speed = 0.0106 * gamespeed * ScreenScale;//0.01;  // Zoom-in speed.
+    var speed = 0.0106 * gamespeed * ScreenScale; // Zoom-in speed.
     var xSide = ScreenWidth * speed;
     var ySide = ScreenHeight * speed;
     
