@@ -1147,12 +1147,12 @@ function SettingsButtonSpeaker()
   // What image to show on button.
   return Number(SpeakerOn);
 }
-function PlayingToPauseButton()
+/*function PlayingToPauseButton()
 {
   SetState(gsPaused);
 
   return 0;
-}
+}*/
 function PauseScreenContinueButton()
 {
   SetState(gsPlaying);
@@ -1265,7 +1265,7 @@ function CreateToSettingsButton()
   CreateCogButton(x, y, width, callBack);
 }
 
-function CreatePauseGameButton()
+/*function CreatePauseGameButton()
 {
   var x = ScreenWidth - SafeWidthMargin * 3.5;
   var y = textFiveRows;
@@ -1273,7 +1273,7 @@ function CreatePauseGameButton()
   var callBack = PlayingToPauseButton;
 
   CreateCogButton(x, y, width, callBack);
-}
+}*/
 
 function CreateCogButton(cogButtonXpos, cogButtonYpos, cogButtonImgWidth, cogButtonCallBack)
 {
@@ -1590,7 +1590,7 @@ function TransitFromIntroPlayToPlaying()
   explosionAnimFrameLength = 400;
   player.RestartBlinkTimer = 0;
   playerlivesCrashCheck = 0;
-  CreatePauseGameButton();
+  //CreatePauseGameButton();
 }
 
 var playerlivesCrashCheck = 0; // Only used to store player lives when crashing, to avoid losing multiple lives on one crash, or no lives...
@@ -1639,7 +1639,7 @@ function TransitFromPauseScreenToIntroPlay()
 }
 function TransitFromPausedToPlaying()
 {
-  CreatePauseGameButton();
+  //CreatePauseGameButton();
 }
 function TransitFromGameOverToStartScreen()
 {
