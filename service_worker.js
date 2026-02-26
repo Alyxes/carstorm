@@ -5,7 +5,7 @@
 // 
 const ServiceWorkerVersion = "78"; // This is actually a hate-counter. :-D
 
-const PleaseLitterWithConsoleLogs = true;
+const PleaseLitterWithConsoleLogs = false;
 const cacheName = "carstorm-madskullcreations-com";
 
 // This way we keep line numbers in the log correctly.

@@ -1,0 +1,52 @@
+
+TODO: 
+android:appCategory <-game
+  <-finns inte alls i min AndroidManifest.xml,
+    borde ligga i <application android:appCategory="game" .....>
+    <-Jag tror jag kan lägga in den enkelt i nästa release.
+  
+  "Declares the category of this app. Categories are used to cluster multiple apps together into meaningful groups, such as when summarizing battery, network, or disk usage. Only define this value for apps that fit well into one of the specific categories."
+  
+  Tusen miljoner flaggor till att läsa om här:
+  https://developer.android.com/guide/topics/manifest/application-element#appCategory
+  
+  Orsaken till att jag hittade det här är denna artikeln:
+  https://android-developers.googleblog.com/2025/01/orientation-and-resizability-changes-in-android-16.html
+    <-Nya Android 16 fasar ut de dumma flaggorna för screen orientation! Smart, de låter app-makaren bestämma när appen får ett event för ändrat läge/upplösning, som i windows. Du får dock läsa mer om det, samt att äldre lurar ju fortfarande har flaggorna. 
+
+--------
+      
+När man bara sitter o uppdaterar filerna för spelet men inte "serverns" filer, så uppdaterar inte service_worker.js filerna förrän man dödar och startar om appen. :-P 
+  ...Trodde den skulle detektera själv och ladda om allt, men istället verkar den göra någon sorts mishmash. 
+  
+  <-FIXAT: En kvick fulfix är ju att låta serverns version.php returnera även förväntad gameVersion, något som spelet nu skickar upp för mitt höga nöjes skull. Då kan spelet i vanlig ordning ladda om sina filer om dess egen gameVersion skiljer sig från vad servern tycker att spelet ska ha.
+  
+  DONE: Det borde stå "Updated!" nånstans när spelet har uppdaterats.
+    <-Men det är svårt att upptäcka det eftersom man i vanlig ordning aldrig vet när den faktiskt laddat om sitt skit.
+    
+--------
+
+Appstore har en Developer page: (madskull creations loggan o sånt e här, samt en lista på alla spel vi släppt.)
+https://play.google.com/console/u/0/developers/7421392476990213978/account/public-details
+  <-jonlennryd@madskullcreations.com
+
+FIXAT: Hur FAN gör man en ny release med NY TEXT och NYA BILDER? När jag gör en ny App Bundle får jag inte ange dessa detaljer igen....???
+  <-Ny text fick jag lov att ange nu när jag gör den första public releasen.
+    Man får tillfälle att ändra det vid varje release, text o bilder.
+
+NJEE: Här har du några saker google tycker du kan fixa till din nästa release:
+
+  Remove resizability and orientation restrictions in your game to support large screen devices
+  Your game doesn't support all display configurations, and uses resizability and orientation restrictions that may lead to layout issues for your users.
+
+  We detected the following resizability and orientation restrictions in your game:
+
+  com.mask.carstorm.LauncherActivity.onCreate
+  To improve the user experience of your game, remove these restrictions and check that your game layouts work on various screen sizes and orientations.
+
+-----------
+
+Lilla varningen jag får när jag genererar mitt eget paket i android studio, jag skrev till bubblewrapparna:
+  https://github.com/GoogleChromeLabs/bubblewrap/discussions/980
+    <-De svarar inte. Skrev det för länge sen men inget svar.
+  

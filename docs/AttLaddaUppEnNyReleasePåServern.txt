@@ -37,7 +37,7 @@ TODO: Ta bort --mangle-props !! Det räcker ju för att INTE mangla sönder dem.
 
   OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 
-  Filstruktur som ska laddas upp:
+  Filstruktur som ska laddas upp till carstorm.madskullcreations.com:
     /fonts
     /graphics
     /private

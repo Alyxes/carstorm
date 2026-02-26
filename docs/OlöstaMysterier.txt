@@ -1,0 +1,61 @@
+Tim har hittat en helt vansinnig bugg! På mobilen endast, i browsern, gå till:
+carstorm-dev 
+samt
+carstorm
+i varsin browser.
+
+Titta på de gula ljusen. De ser olika ut! DET ÄR SAMMA KOD. 
+  -Både javascript och html är exakt samma. VAD HÄNDE?
+   De gula ljusen har sett bra ut hela tiden fram till de närmsta dagarna kring releasen. 
+   ...Vi har inte ändrat ett jota som går att koppla till dem. De är cirklar som ritas ut, inte grafik. 
+   
+   Mycket spännande.... !!
+   
+----------------------
+
+Jävla bajs. (Strunta i det här, det är den härliga kombon av service_worker, browserns maniska cachningssystem, egna missar och att browsern ibland bara slutar fungera ordentligt tills man stänger fliken och öppnar samma adress på nytt.)
+
+1. "FIXAT"
+  Nu spelar inte appen musiken...  
+  Funkar på pc så klart. 
+    <-Jaha!!! Så, dagen efter så spelar appen finfint all musik. Förklara det om du kan. 
+      Så länge det löser sig så här efter ett tag är jag benägen att strunta i det.
+
+2. Går ej att reproducera: 
+  Spelet fungerar fint i datorns browser, både på dev och release. Men i appen laddar den inte om... Det blir en svart skärm.
+  Jag var tvungen att döda appen och starta den igen, då ser jag i chromes remote console att allt fungerar, och allt laddas om korrekt. 
+
+  ...Men service_worker ska ju själv uppdatera sig även i appen?! 
+  Detta är inte bra.. 
+
+  OBSERVERA: Jag har ENDAST ändrat i service_worker.js, ingen annan fil! 
+    -Så i princip ska den starta om sig själv, invalidera cachen och sedan ladda om alla filer förr eller senare. 
+    -Men istället en vit skärm. Så den kommer en bit, se hur långt..
+
+  Tester att göra:
+  1. Öppna dev i chrome på telefonen. Se att den laddas. Se chrome remote console.
+  2. Gör en ändring i service_worker, ladda upp på dev.
+  3. Testa på telefonen igen. 
+    <-Hemskt, det fungerar som det ska. Utom när det inte gör det! 
+      När det INTE fungerar, så blir det flera 206or, som repareras och blir 200, men sedan verkar de inte vilja spela.
+     
+--Uppstått och löst 1/12-----------
+
+NOPE!!! -> Öörk, om man sätter telefonen i offline-läge och har spelet igång så fungerar det fint. Men om du dödar appen och startar igen,
+så får du upp en "This site can't be reached" trots alla fixar. :P
+  -Filerna är nog där lokalt, men det är nog index.html som.. Tja, den finns lixom inte när jag ansluter dev chrome console på datorn till telefonen. Inte ens service_worker.js vad det verkar, i varje fall inte i taben Sources.
+  <-EN SAK: Du byggde om release-filen i Android studio, ingen aning vad den kan ha gjort!!!
+    Skillnader:
+      settings.gradle, android studio la genast till den här raden: id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+      app/build.gradle, den lägger till nån JavaLanguageVersion.
+       <-Enda skillnaderna!
+  <-DET FUNGERAR VISST... När jag gör det tredje gången, alltså kör steg 1-6 nedan, så fungerar det, steg 6 ser ut som steg 2, allt fungerar. 
+    Kul att det var just tredje gången, måste ju varit service_worker återigen som gjort just det den ska. 
+    
+Återskapa det:
+  1. Ladda ner alla filer genom att starta och köra spelet. 
+  2. Minimera appen. Upp igen. Det fungerar. Dö och börja om fungerar.
+  3. Minimera appen. Sätt i offlineläge. Upp igen, allt fungerar som i steg 2.
+  4. Döda appen. 
+  5. Starta den igen, fortfarande offline-läge.
+  6. Nu visas "This site can't be reached."

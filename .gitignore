@@ -14,4 +14,7 @@
 .cxx
 local.properties
 
-/bubblewrap_buildfiles/.idea
+/bubblewrap_buildfiles
+/logs
+/logsFromServer
+/node_modules

@@ -1,0 +1,7 @@
+Länkar vi inte vet var vi annars ska lägga. Skriv en kommentar om vad det är för nåt.
+
+Yey! Det var ju lätt. Man sätter canvas.height o width till 3 ggr skärmens storlek, om ration är 3 vill säga.
+https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+
+"standard" att ha en splashscreen med sin logga: (det ligger i manifest.json!)
+https://simicart.com/blog/pwa-splash-screen/

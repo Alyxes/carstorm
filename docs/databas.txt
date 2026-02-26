@@ -41,3 +41,16 @@ FIXAT: Bugg! Det verkar precis som om det skapas två jävla rader per request i
     <-Dubbelkollade, det blir två rader med exakt samma klockslag, ibland. :-P
       SELECT * FROM `user_stats` as us where us.created > '2025-11-20' order by us.created;
 
+---------
+
+TODO: Jag vill ha en group by på statestek-adminsidan, som grupperar alla rader på en viss kolumn, 
+  group by http_user_agent <-egen sida som bara visar antalet av varje browser-typ. 
+    <-TODO: Det kanske är bättre/lättare att ha groupby_blaha.php som sedan leder till index.php med en url-param som låst den på det specifika värdet. 
+  group by us.remote_addr
+    <-Visar antal rader med samma ip-adress. 
+      Jo! Use-caset är detta:
+        1. Välj ut en spelare med given ip-adress.
+        2. Kommer till index.php där sökningen enbart har denna ip-adress. Nu kan du ytterligare filtrera och sortera. Tror det ger rätt mycket. 
+        3. Knappen "Reset filters" rensar även detta. 
+        
+    <-Det är svårt att bygga om index.php så den klarar en group by så här, så det är nog bättre med olika sidor med group by tills vidare.

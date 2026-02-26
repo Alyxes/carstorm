@@ -1,11 +1,7 @@
 
-1. Ladda upp alla filerna på carstorm.madskullcreations.com. Var säker på att version.php och service_worker.js noga speglar dina ändringar.
-  * Katalogerna graphics och icons ska laddas upp i sin helhet, samtliga filer.
-  * I rotkatalogen carstorm ska följande filer _inte_ laddas upp på servern:
-    a. .gitignore
-    b. carstormKeystore.jks !!
-    c. chrome.exe - Shortcut
-  * WELL, Följ stegen i AttLaddaUppEnNyReleasePåServern.txt minituöst.
+1. Följ stegen i AttLaddaUppEnNyReleasePåServern.txt minituöst.
+   Detta gör att vi har en ny release gjord även utan att publicera den på google play i stegen nedan! 
+   Men det är bra att göra dessa stegen ändå av sjuttiofemtusen anledningar, go on.
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
   a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 8
