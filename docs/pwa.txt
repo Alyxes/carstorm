@@ -17,6 +17,9 @@ Att debugga WPA-appen på din telefon!!
   4. Inspect kommer fram, dessutom MED en realtids skärmdump/video av telefonens skärm. 
   5. Kolla allt. :-) Du kan ju se service workern o att alla filer laddas från cache o såna finfina saker. 
 
+Om det (så klart) bara slutar fungera rätt som det är, följ hans steg här: (Det fungerade i varje fall en gång)
+  https://stackoverflow.com/questions/43102760/chrome-remote-debugging-pending-authentication
+
 ---------
 
 TWA är mycket av vad PWA är, den här videon e bra:

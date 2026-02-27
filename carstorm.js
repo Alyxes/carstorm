@@ -375,7 +375,9 @@ var mouseButtonDown = false;
 function SetupCallbacks()
 {
   // Add a fake browse history. This way the app is not closed when user presses the back button.
-  window.history.pushState({}, '');
+  // FIXAT: "A session history item was added by this document without any interaction from the user. .."
+  //  <-TouchClickEvent() anropar pushState() vid första touch/musklick, sedan fungerar det. :)
+  //window.history.pushState({}, '');
 
   // As soon as back button is pressed, this event happens. We just add a fake browse history again! 
   // NOTE: Double-clicking back button in windows chrome kind of override this and let the user go back anyway.
@@ -502,9 +504,29 @@ function SetupCallbacks()
   }
 }
 
+var haveAddedFirstPushStateAfterActivation = false;
+
 // Touch or click event happened. 
 function TouchClickEvent(xPos, yPos)
 {
+  if (navigator.userActivation.hasBeenActive)
+  {
+    if(haveAddedFirstPushStateAfterActivation == false)
+    {
+      window.history.pushState({}, '');
+      haveAddedFirstPushStateAfterActivation = true;
+      Log("Adding first pushstate.");
+    }
+    
+    Log("is active");    
+  }
+  else
+  {
+    // Minimize have happened or first time app start. 
+    haveAddedFirstPushStateAfterActivation = false;
+    Log("not active");
+  }
+  
   ButtonsOnTouchStart(xPos, yPos);
   
   // Eeh, ugly but works. Spreading out game state checks this way is error prone.

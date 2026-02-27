@@ -23,17 +23,18 @@ Steg 1:
     Det är DESSA filer som ska laddas upp, inte de som ligger i roten.
     (carstorm/minified/*.js, inte carstorm/*.js)
 
-TODO: Ta bort --mangle-props !! Det räcker ju för att INTE mangla sönder dem. Då blir de kvar, och du kan minimera även button.js, men testa först!!
-    uglifyjs carstorm.js -c -m --mangle-props --v8 -o minified\carstorm.js  
-    uglifyjs service_worker.js -c -m --mangle-props --v8 -o minified\service_worker.js 
-    NO!!! uglifyjs button.js -c -m --mangle-props --v8 -o minified\button.js 
-      <-Den minimerar _interna_ funktionsnamn, utan att fundera på om de används i andra filer! Så .Draw() heter plötsligt a() eller liknande, varpå carstorm.js givetvis kraschar...
-      <-TODO: Leta upp nån open source som plockar bort kommentarer, mellanslag och retur. Det räcker. 
+DONE: Ta bort --mangle-props !! Det räcker ju för att INTE mangla sönder dem. Då blir de kvar, och du kan minimera även button.js, men testa först!!
+  <-Funkar, raderna nedan gör sitt. 
+  
+    uglifyjs carstorm.js -c -m --v8 -o minified\carstorm.js  
+    uglifyjs service_worker.js -c -m --v8 -o minified\service_worker.js 
+    uglifyjs button.js -c -m --v8 -o minified\button.js 
       
-  5. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
-  6. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
+  5. Ta bort samtliga kommentarer i index.html! Just nu har jag index_with_comments.html som backup, så index.html är fri från kommentarer. (går inte att köra uglify på)
+  6. Var JÄVLIGT noga med veta EXAKT vilka filer som ändrats.
+  7. ELLER; Ladda upp spelets SAMTLIGA filer på nytt. 
 
-  Är du det minsta osäker, ta steg 6 istället för steg 5, så jäkla mycket filer rör det sig inte om. 
+  Är du det minsta osäker, ta steg 7 istället för steg 6, så jäkla mycket filer rör det sig inte om. 
 
   OBS: Ladda för säkerhets skull upp service_worker.js SIST, så ingen stackare sitter med gamla filer trots att de har senaste versionen av service_worker.js.
 
