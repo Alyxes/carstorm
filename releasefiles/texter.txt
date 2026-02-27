@@ -1,3 +1,18 @@
+
+OBS: Alltid; Release notes ska BARA innehålla nyheter för just den releasen, all annan text om spelet finns ju kvar. (Annars blir det dubbelt och det ser skräpigt ut)
+
+-----THIRD RELEASE-----
+  TODO: Den här gången, tagga releasen i github, så vi lätt kan backa till releasens exakta kod. "Release-3" heter den.
+
+Release name: 
+  9 (Third public release)
+  <-Det syns faktiskt ingenstans på app store, endast internt på app glurg console. 
+  
+Release notes:
+<en-GB>
+* This release includes a batch of fixes, worth to mention is game now run in full resolution! A few visual updates and code fixes.
+</en-GB>
+
 -----SECOND RELEASE-----
   DONE: Den här gången, tagga releasen i github, så vi lätt kan backa till releasens exakta kod. "Release-2" heter den.
 

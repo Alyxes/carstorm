@@ -4,7 +4,7 @@
    Men det är bra att göra dessa stegen ändå av sjuttiofemtusen anledningar, go on.
 2. Sparka igång dosprompten, gå till D:\Use\Programming\Javascript\carstorm\bubblewrap_buildfiles -katalogen.
 3. Bubblewrap the shit out of it. För detaljer se googlePlay.txt.
-  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 8
+  a. OBS: Öka versionsnumret varje gång! Här också. Nuvarande version: 9
   b. Följ stegen 7 och 8 i den filen jävligt noga.
   c. NYTT 28/11: (För att ta bort POST_NOTIFICATIONS!!)
       * Öppna app/src/main/AndroidManifest.xml.
@@ -14,6 +14,12 @@
       * Starta Android Studio, öppna projektet, klicka Assemble o allt annat den möjligen vill uppdatera.
       * Build->Generate Signed App Bundle or APK, välj Android App Bundle.
       * Nu hamnar allting under app/release/app-release.aab.
+  d. NOPE! NYTT 27/2: 
+      <-Varför inte, jo för att appCategory bara finns i API level 26 och högre, och vi har support för 21, och det tänker jag inte ändra på utan vidare!
+        TODO: Se vad du går miste om med att gå från 21 till 26, hur många använder 21-25 fortfarande? 
+    * Öppna app/src/main/AndroidManifest.xml.
+    * Under/i <application>, lägg till android:appCategory="game", tex. under raden med android:name="Application", typ rad 25.
+    * Spara, följ stegen under c ovan där du bygger om projektet.
 4. Gå till Google Play Console. (https://play.google.com/console) Se till att carstorm-projektet är uppe.
 5. Klicka Test and release, Testing, Internal testing. Klicka Create new release.
    Eller, nu när du släpper nya versioner: 
@@ -21,7 +27,7 @@
 6. 
   a. Ladda upp bubblewrap_buildfiles\app-release-bundle.aab
     <-Numera bubblewrap_buildfiles/app/release/app-release.aab istället!
-  b. Release name: "8 (Second public release)"
+  b. Release name: "9 (Third public release)"
   c. Jag skriver alla release-detaljer i releasefiles/texter.txt, följ dem!
 7. Publicera. 
   a. Publishing overview visar en "Running quick checks" som du kan låta köra färdigt.
@@ -40,7 +46,7 @@ Använd inte det här: Stegen för att göra en open testing istället för en i
 9. Send 1 change for review. (Running checks kan du låta vara, de kör först ändå)
 10. Nu kan det här ta en hel del tid! Upp till sju dar. Så det är inget vi ska använda för våra tester.
 
-Sist, gör en tag i git. "Release-2" döpte jag den senaste till, glöm inte pusha den (klicka i "tags too" eller vad det heter)
+Sist, gör en tag i git. "Release-3" döpte jag den senaste till, glöm inte pusha den (klicka i "tags too" eller vad det heter)
   <-Så vi kan ta ner den versionen en regnig dag. 
   
 För releaser som jag "bara" lägger upp på servern, tagga som "ServRel-4" och öka numret med den andra taggen, så det blir 3,4,5, men omväxlande Release och ServRel. 

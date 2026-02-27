@@ -1,9 +1,9 @@
 
-TODO: 
+DONE men inte: 
 android:appCategory <-game
   <-finns inte alls i min AndroidManifest.xml,
-    borde ligga i <application android:appCategory="game" .....>
-    <-Jag tror jag kan lägga in den enkelt i nästa release.
+    men ska ligga i <application android:appCategory="game" .....>
+    <-Bara att lägga in
   
   "Declares the category of this app. Categories are used to cluster multiple apps together into meaningful groups, such as when summarizing battery, network, or disk usage. Only define this value for apps that fit well into one of the specific categories."
   
