@@ -8,7 +8,7 @@
 
 // Set to false to remove all log messages, good for releases!
 // So use Log("Jamsy message here."); not console.log(). 
-const PleaseLitterWithConsoleLogs = false;
+const PleaseLitterWithConsoleLogs = true;
 
 if (PleaseLitterWithConsoleLogs)
   var Log = console.log;
@@ -16,7 +16,7 @@ else
   var Log = function(){};
 
 // Set to false to remove debug-prints onscreen in the game.
-const ShowDebugStuff = false;
+const ShowDebugStuff = true;
 
 // See Resize().
 var ScreenWidth;
@@ -77,6 +77,8 @@ var ElapsedCarsTime = 0; // Shut up, this is a great name for this variable!
 // Snow frame rate is smooth
 var fps = 30;
 var fpsInterval = 1000 / fps; // milliseconds.
+var currentFps = 0;           // just for seeing the actual fps.
+var averageFps = fps;         // 
 
 // Let the name and string be the same to avoid confusion. 
 var gsNothing = "Nothing";
@@ -1842,10 +1844,16 @@ function GameLoop()
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   
+  currentFps = Math.round(1000 / ElapsedTime);
+  
+  // The average for the last 10 frames, to get a more stable number if framerate is high.
+  averageFps *= 0.9;
+  averageFps += currentFps * 0.1;
+  
   if (ElapsedTime >= fpsInterval)
   {
     LastDraw = Now;
-    
+       
     switch(gameState)
     {
       case gsNothing:
@@ -2106,6 +2114,10 @@ function GameLoopStartScreen()
     // topctx.fillText("Scale: " + ScreenScale, 0, textTwentyRows * 16);
     topctx.fillText("X: " + ScreenWidth, SafeWidthMargin, textTwentyRows * 16);
     topctx.fillText("Y: " + ScreenHeight, SafeWidthMargin, textTwentyRows * 17);
+    
+    topctx.fillText(
+      "FPS: " + Math.round(averageFps) + ", " + Math.round(currentFps), 
+      SafeWidthMargin, textTwentyRows * 18);
   }
     
   if (messageTimer == 0)
@@ -2296,6 +2308,14 @@ function GameLoopPlaying()
         xLeft = CuttingCoordinate - arrowSide;
         xRight = ScreenWidth - arrowSide - SafeWidthMargin/3;
     }
+    
+    if(ShowDebugStuff)
+    {
+      topctx.fillText(
+        "FPS: " + Math.round(averageFps) + ", " + Math.round(currentFps), 
+        SafeWidthMargin, textTwentyRows * 18);
+    }
+    
     
     topctx.drawImage(ArrowLeftImage, xLeft, y, arrowSide, arrowSide);
     topctx.drawImage(ArrowRightImage, xRight, y, arrowSide, arrowSide);
