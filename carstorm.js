@@ -602,7 +602,7 @@ function Resize()
   ScreenHeight = window.innerHeight;
   
   ResizeCanvas(document.getElementById('canvas'), true);
-  ResizeCanvas(document.getElementById('street_canvas'), false);
+  ResizeCanvas(document.getElementById('street_canvas'), true);
   ResizeCanvas(document.getElementById('top_canvas'), false);
   ResizeCanvas(hiddenCanvas, false);
 
@@ -1424,7 +1424,7 @@ function ResumeFromSomeKindOfPause()
   screenSaverPaused = false;
   
   LastDraw = Date.now();
-  
+    
   GameLoop();
 }
 
@@ -1844,8 +1844,12 @@ function GameLoop()
   Now = Date.now();
   ElapsedTime = Now - LastDraw;
   
-  currentFps = Math.round(1000 / ElapsedTime);
-  
+  // Hard to divide with zero.
+  if(ElapsedTime > 0)
+  {
+    currentFps = Math.round(1000 / ElapsedTime);
+  }
+    
   // The average for the last 10 frames, to get a more stable number if framerate is high.
   averageFps *= 0.9;
   averageFps += currentFps * 0.1;

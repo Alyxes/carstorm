@@ -20,6 +20,14 @@ Att debugga WPA-appen på din telefon!!
 Om det (så klart) bara slutar fungera rätt som det är, följ hans steg här: (Det fungerade i varje fall en gång)
   https://stackoverflow.com/questions/43102760/chrome-remote-debugging-pending-authentication
 
+  Det räcker med de här stegen: (Men bakomliggande orsak borde du väl reda ut nån dag)
+  cd C:\Users\tornseglare\AppData\Local\Android\Sdk\platform-tools
+  adb kill-server
+  adb start-server
+
+  Verkar räcka med att bara starta en server: (verkar som ingen är startad!)
+  adb start-server
+
 ---------
 
 TWA är mycket av vad PWA är, den här videon e bra:

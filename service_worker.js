@@ -3,9 +3,9 @@
 // By changing this file, the browser detect the change and will run the "install" event again, which will invalidate the cache and inflorb the 
 // browser to reload all the files in the game from the server.
 // 
-const ServiceWorkerVersion = "78"; // This is actually a hate-counter. :-D
+const ServiceWorkerVersion = "2.4"; // This is actually a hate-counter. :-D
 
-const PleaseLitterWithConsoleLogs = false;
+const PleaseLitterWithConsoleLogs = true;
 const cacheName = "carstorm-madskullcreations-com";
 
 // This way we keep line numbers in the log correctly.
