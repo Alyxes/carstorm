@@ -2083,15 +2083,17 @@ function GameLoopStartScreen()
   topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
   
   // Second draw of the colours, these need to be alpha 0.5 so that the mix of the colours is even.
-  topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
-  topctx.fillText(txtCARSTORM, ScreenWidth/2 - BigLettersColorShift, titleHeight);
   topctx.fillStyle = "rgba(0,154,255,0.5)"; // blue-like
-  topctx.fillText(txtCARSTORM, ScreenWidth/2 + BigLettersColorShift, titleHeight);
+  topctx.fillText(txtCARSTORM, ScreenWidth / 2 + BigLettersColorShift, titleHeight);
+  topctx.fillStyle = "rgba(237,73,51,0.5)"; // red-like
+  topctx.fillText(txtCARSTORM, ScreenWidth / 2 - BigLettersColorShift, titleHeight);
   
   // Finally, black text.
-  topctx.fillStyle = "black";
+  topctx.fillStyle = "rgba(0,0,0,0.6)"; // Transparent black test
   topctx.fillText(txtCARSTORM, ScreenWidth/2, titleHeight);
-  
+
+  topctx.fillStyle = "black";
+
   if (LastDriveScore > 0)
   {
     topctx.font = textFifteenRows + "px CarStormFont2";
@@ -2852,12 +2854,13 @@ function DrawSpeedIncreaseMessage()
 }
 
 var stormRotationDegrees = 0;
-var stormRotationSpeed = 0.007;
+var stormRotationSpeed = 0.00021;
 var stormRotationMax = 0.4;
-
+var baseSpeed = 0.00032;
+var restSnowAmount = 0;
 function DrawSnowstorm()
 {
-  stormRotationDegrees += stormRotationSpeed;
+  stormRotationDegrees += stormRotationSpeed * ElapsedTime;
   
   if (stormRotationDegrees > stormRotationMax)
   {
@@ -2889,7 +2892,7 @@ function DrawSnowstorm()
   
   ctx.save();
   {
-    var speed = 0.0106 * gamespeed * ScreenScale; // Zoom-in speed.
+    var speed = baseSpeed * ElapsedTime * gamespeed * ScreenScale; // Zoom-in speed.
     var xSide = ScreenWidth * speed;
     var ySide = ScreenHeight * speed;
     
@@ -2918,51 +2921,59 @@ function DrawSnowstorm()
     // max = ScreenHeight/10;
     // var minSize = ScreenHeight/400;
     // var maxSize = ScreenHeight/80;
-    
+
     // var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
     // var yRand = max - Math.floor(Math.random() * (max));
     // xRand -= max / 2;
     // yRand -= max / 2;
-    
+
     // var size = minSize + Math.floor(Math.random() * (maxSize));
-    
+
     // ctx.beginPath();
     // ctx.arc(screenwidthHalf - 1 - xRand, ScreenHeight / 2 - 1 - yRand, size, 0, 2 * Math.PI);
     // ctx.fill();
   //}
+
+  // Har lagt till detta för att snömängden ska vara jämn oavsett frame rate.
+  var floatSnowAmount = (0.065 * ElapsedTime) + restSnowAmount;
+  var amountOfSnow = Math.floor(floatSnowAmount);
+  restSnowAmount = floatSnowAmount - amountOfSnow; // Save remainder for next frame.
+
   ctx.globalAlpha = 0.64;
+
   // snow images
-  for(var i=0; i<2; i++)
+  if (amountOfSnow > 0)
   {
-    snowImage = snowImages[randomizeNumber(5)];
-    
-    max = ScreenHeight/7;
-    var minSize = ScreenHeight/25;
-    var maxSize = ScreenHeight/16;
-    
-    var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
-    var yRand = max - Math.floor(Math.random() * (max));
-    xRand -= max / 2;
-    yRand -= max / 2;
-    
-    var size = minSize + Math.floor(Math.random() * maxSize);
-    var xPos = screenwidthHalf - 1 - xRand;
-    var yPos = ScreenHeight / 2 - 1 - yRand;
-    var imageHalf = size/2;
-    
-    var snowImageRotation = randomizeNumber(360);
-    
-    ctx.save();
-    {
-      ctx.translate(screenwidthHalf, ScreenHeight / 2);
-      ctx.rotate(snowImageRotation * Math.PI / 180);
-      ctx.translate(-screenwidthHalf, -ScreenHeight / 2);
-      
-      ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
+    for (var i = 0; i < amountOfSnow; i++) {
+      snowImage = snowImages[randomizeNumber(5)];
+
+      max = ScreenHeight / 7;
+      var minSize = ScreenHeight / 25;
+      var maxSize = ScreenHeight / 16;
+
+      var xRand = max - Math.floor(Math.random() * (max));  // 0 to max
+      var yRand = max - Math.floor(Math.random() * (max));
+      xRand -= max / 2;
+      yRand -= max / 2;
+
+      var size = minSize + Math.floor(Math.random() * maxSize);
+      var xPos = screenwidthHalf - 1 - xRand;
+      var yPos = ScreenHeight / 2 - 1 - yRand;
+      var imageHalf = size / 2;
+
+      var snowImageRotation = randomizeNumber(360);
+
+      ctx.save();
+      {
+          ctx.translate(screenwidthHalf, ScreenHeight / 2);
+          ctx.rotate(snowImageRotation * Math.PI / 180);
+          ctx.translate(-screenwidthHalf, -ScreenHeight / 2);
+
+          ctx.drawImage(snowImage, xPos - imageHalf, yPos - imageHalf, size, size);
+      }
+      ctx.restore();
     }
-    ctx.restore();
   }
-  
   ctx.globalAlpha = 1;
 }
 
@@ -2982,7 +2993,7 @@ function DrawStreetLayer()
     
   streetctx.save();
   {
-    var speed = 0.0106 * gamespeed * ScreenScale;//0.01;  // Zoom-in speed.
+    var speed = baseSpeed * ElapsedTime * gamespeed * ScreenScale;//0.01;  // Zoom-in speed.
     var xSide = ScreenWidth * speed;
     var ySide = ScreenHeight * speed;
       
