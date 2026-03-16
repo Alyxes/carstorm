@@ -189,59 +189,55 @@ var MoveSound = {
 };
 
 var LogotypeImage = new Image();
-LogotypeImage.src = "graphics/MadskullCreations512x512.png" + "?cache_killer=" + CacheKiller;
+LogotypeImage.src = "graphics/MadskullCreations512x512.webp" + "?cache_killer=" + CacheKiller;
 var StartBGImage = new Image();
-StartBGImage.src = "graphics/StartBackground.png" + "?cache_killer=" + CacheKiller;
+StartBGImage.src = "graphics/StartBackground.webp" + "?cache_killer=" + CacheKiller;
 var MadSkullLogoImage = new Image();
-MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.png" + "?cache_killer=" + CacheKiller;
+MadSkullLogoImage.src = "graphics/MadSkullCreationsLogo.webp" + "?cache_killer=" + CacheKiller;
 
 var SnowPuffImage1 = new Image();
-SnowPuffImage1.src = "graphics/SnowPuff1.png" + "?cache_killer=" + CacheKiller;
+SnowPuffImage1.src = "graphics/SnowPuff1.webp" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage2 = new Image();
-SnowPuffImage2.src = "graphics/SnowPuff2.png" + "?cache_killer=" + CacheKiller;
+SnowPuffImage2.src = "graphics/SnowPuff2.webp" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage3 = new Image();
-SnowPuffImage3.src = "graphics/SnowPuff3.png" + "?cache_killer=" + CacheKiller;
+SnowPuffImage3.src = "graphics/SnowPuff3.webp" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage4 = new Image();
-SnowPuffImage4.src = "graphics/SnowPuff4.png" + "?cache_killer=" + CacheKiller;
+SnowPuffImage4.src = "graphics/SnowPuff4.webp" + "?cache_killer=" + CacheKiller;
 var SnowPuffImage5 = new Image();
-SnowPuffImage5.src = "graphics/SnowPuff5.png" + "?cache_killer=" + CacheKiller;
+SnowPuffImage5.src = "graphics/SnowPuff5.webp" + "?cache_killer=" + CacheKiller;
 
 var PlayerCarImage = new Image();
-PlayerCarImage.src = "graphics/PlayerCar.png" + "?cache_killer=" + CacheKiller;
+PlayerCarImage.src = "graphics/PlayerCar.webp" + "?cache_killer=" + CacheKiller;
 var PlayerLifeImage = new Image();
-PlayerLifeImage.src = "graphics/PlayerLife.png" + "?cache_killer=" + CacheKiller;
+PlayerLifeImage.src = "graphics/PlayerLife.webp" + "?cache_killer=" + CacheKiller;
 
 var EnemyCar1Image = new Image();
-EnemyCar1Image.src = "graphics/EnemyCar1.png" + "?cache_killer=" + CacheKiller;
+EnemyCar1Image.src = "graphics/EnemyCar1.webp" + "?cache_killer=" + CacheKiller;
 var EnemyCar2Image = new Image();
-EnemyCar2Image.src = "graphics/EnemyCar2.png" + "?cache_killer=" + CacheKiller;
+EnemyCar2Image.src = "graphics/EnemyCar2.webp" + "?cache_killer=" + CacheKiller;
 var EnemyCar3Image = new Image();
-EnemyCar3Image.src = "graphics/EnemyCar3.png" + "?cache_killer=" + CacheKiller;
-
+EnemyCar3Image.src = "graphics/EnemyCar3.webp" + "?cache_killer=" + CacheKiller;
 var EnemyCarShadowImage = new Image();
-EnemyCarShadowImage.src = "graphics/EnemyCarShadow.png" + "?cache_killer=" + CacheKiller;
+EnemyCarShadowImage.src = "graphics/EnemyCarShadow.webp" + "?cache_killer=" + CacheKiller;
 var PlayerCarShadowImage = new Image();
-PlayerCarShadowImage.src = "graphics/PlayerCarShadow.png" + "?cache_killer=" + CacheKiller;
-
+PlayerCarShadowImage.src = "graphics/PlayerCarShadow.webp" + "?cache_killer=" + CacheKiller;
 var SpeedIncreaseImage = new Image();
-SpeedIncreaseImage.src = "graphics/SpeedIncreaseMessage.png" + "?cache_killer=" + CacheKiller;
+SpeedIncreaseImage.src = "graphics/SpeedIncreaseMessage.webp" + "?cache_killer=" + CacheKiller;
 
 var Explosion1Image = new Image();
-Explosion1Image.src = "graphics/Explosion1.png" + "?cache_killer=" + CacheKiller;
+Explosion1Image.src = "graphics/Explosion1.webp" + "?cache_killer=" + CacheKiller;
 var Explosion2Image = new Image();
-Explosion2Image.src = "graphics/Explosion2.png" + "?cache_killer=" + CacheKiller;
+Explosion2Image.src = "graphics/Explosion2.webp" + "?cache_killer=" + CacheKiller;
 var Explosion3Image = new Image();
-Explosion3Image.src = "graphics/Explosion3.png" + "?cache_killer=" + CacheKiller;
+Explosion3Image.src = "graphics/Explosion3.webp" + "?cache_killer=" + CacheKiller;
 var Smoke1Image = new Image();
-Smoke1Image.src = "graphics/Smoke1.png" + "?cache_killer=" + CacheKiller;
+Smoke1Image.src = "graphics/Smoke1.webp" + "?cache_killer=" + CacheKiller;
 var Smoke2Image = new Image();
-Smoke2Image.src = "graphics/Smoke2.png" + "?cache_killer=" + CacheKiller;
-
+Smoke2Image.src = "graphics/Smoke2.webp" + "?cache_killer=" + CacheKiller;
 var ArrowLeftImage = new Image();
-ArrowLeftImage.src = "graphics/ArrowLeft.png" + "?cache_killer=" + CacheKiller;
+ArrowLeftImage.src = "graphics/ArrowLeft.webp" + "?cache_killer=" + CacheKiller;
 var ArrowRightImage = new Image();
-ArrowRightImage.src = "graphics/ArrowRight.png" + "?cache_killer=" + CacheKiller;
-
+ArrowRightImage.src = "graphics/ArrowRight.webp" + "?cache_killer=" + CacheKiller;
 var InputModeButtonNormal = new Image();
 InputModeButtonNormal.src = "graphics/InputModeButtonNormal.webp" + "?cache_killer=" + CacheKiller;
 var InputModeButtonLeft = new Image();
