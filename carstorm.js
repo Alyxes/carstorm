@@ -1118,35 +1118,38 @@ function CreateUniqueId()
 function SetCuttingCoordinate()
 {
   CuttingCoordinate = screenwidthHalf;
-  if(SelectedInputMode == 1) // Left
-  {
+
+  if (SelectedInputMode == 1) // Left
       CuttingCoordinate = screenwidthSeventh;
-  }
-  else if(SelectedInputMode == 2) // Right
-  {
+  else if (SelectedInputMode == 2) // Right
       CuttingCoordinate = 6 * screenwidthSeventh;
-  }
 }
 
 // De här skickar vi med till knapparna, som anropar denna funktion när man klickar på den.
 function StartScreenToSettingsButton()
 {
+  PlayButtonClickSound();
+
   SetState(gsSettings);
   
   return 0;
 }
 function SettingsBackButton()
 {
+  PlayButtonClickSound();
+  
   SetState(gsStartScreen);
   
   return 0;
 }
 function SettingsButtonSwitchInputMode()
 {
+  PlayButtonClickSound();
+
   SelectedInputMode++;
   
   if(SelectedInputMode > 2)
-    SelectedInputMode = 0;
+        SelectedInputMode = 0;
 
   SetCuttingCoordinate();
   Log("SelectedInputMode: " + SelectedInputMode);
@@ -1169,21 +1172,36 @@ function SettingsButtonSpeaker()
 }
 /*function PlayingToPauseButton()
 {
+  PlayButtonClickSound();
+
   SetState(gsPaused);
 
   return 0;
 }*/
 function PauseScreenContinueButton()
 {
+  PlayButtonClickSound();
+  
   SetState(gsPlaying);
 
   return 0;
 }
 function PauseScreenRestartButton()
 {
+  PlayButtonClickSound();
+  
   SetState(gsIntroPlay);
 
   return 0;
+}
+function PlayButtonClickSound()
+{
+  if (SpeakerOn)
+  {
+    audioButtonClick.pause();
+    audioButtonClick.currentTime = 0;
+    PlaySound(audioButtonClick);
+  }
 }
 
 // Alla knapparna ska ha samma färger o margins.
