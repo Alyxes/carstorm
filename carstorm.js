@@ -592,6 +592,14 @@ function Resize()
   // We should read this article. I don't have time tonight...
   // https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
   
+  // This sucks, but until there is an explanation to why 3 kills the framerate we do this. 
+  // (furthermore, all we know is that this fixes the fps on our two phones.. :P)
+  // 
+  if(ScreenScale > 2)
+  {
+    ScreenScale = 2;
+  }
+  
   // realScreenWidth = Math.floor(window.innerWidth * ScreenScale);
   // realScreenHeight = Math.floor(window.innerHeight * ScreenScale);
   ScreenWidth = window.innerWidth;
